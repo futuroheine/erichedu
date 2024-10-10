@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signup - Erich Edu</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #083888; /* Cor de fundo azul escuro */
+            color: #fff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .signup-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            width: 350px;
+        }
+
+        .signup-container h2 {
+            text-align: center;
+            color: #083888; /* Título azul escuro */
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            color: #083888; /* Azul escuro para rótulos */
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"], input[type="email"], input[type="password"], input[type="date"], select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .btn-submit {
+            background-color: #89d156; /* Verde Limão */
+            color: #fff;
+            border: none;
+            padding: 10px;
+            width: 100%;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-submit:hover {
+            background-color: #6db947; /* Tom mais escuro de verde ao passar o mouse */
+        }
+
+        .signup-container p {
+            color: #ff3131; /* Vermelho para mensagens de erro */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="signup-container">
+        <h2>Cadastro - Erich Edu</h2>
+        <form method="POST" action="/signup">
+            <label for="nome_completo">Nome Completo:</label>
+            <input type="text" id="nome_completo" name="nome_completo" required>
+        
+            <label for="turma">Turma:</label>
+            <select id="turma" name="turma" required>
+                <option value="">Selecione a turma</option>
+                <option value="1001">1001</option>
+                <option value="1002">1002</option>
+                <option value="1003">1003</option>
+                <option value="1004">1004</option>
+                <option value="1005">1005</option>
+                <option value="2001">2001</option>
+                <option value="2002">2002</option>
+                <option value="2003">2003</option>
+                <option value="2004">2004</option>
+                <option value="2005">2005</option>
+                <option value="3001">3001</option>
+                <option value="3002">3002</option>
+                <option value="3003">3003</option>
+                <option value="3004">3004</option>
+                <option value="3005">3005</option>
+            </select>
+        
+            <label for="data_nascimento">Data de Nascimento:</label>
+            <input type="date" id="data_nascimento" name="data_nascimento" required>
+        
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+        
+            <label for="senha_hash">Senha:</label>
+            <input type="password" id="senha_hash" name="senha_hash" required>
+        
+            <button type="submit" class="btn-submit">Cadastrar</button>
+        </form>
+        
+    </div>
+
+</body>
+</html>
