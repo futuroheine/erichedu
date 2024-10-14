@@ -15,8 +15,18 @@
         header {
             background-color: #004a87;
             color: white;
-            padding: 20px 0;
+            padding: 10px 0;
             text-align: center;
+        }
+
+        nav {
+            position: relative;
+        }
+
+        .menu-toggle {
+            display: none;
+            cursor: pointer;
+            font-size: 24px;
         }
 
         nav ul {
@@ -25,6 +35,7 @@
             margin: 0;
             display: flex;
             justify-content: center;
+            flex-wrap: wrap;
         }
 
         nav ul li {
@@ -43,7 +54,7 @@
         }
 
         .banner {
-            background: url('https://via.placeholder.com/1500x500') no-repeat center center;
+            background: url('{{ url_for('static', filename='banner.png') }}') no-repeat center center;
             background-size: cover;
             color: white;
             text-align: center;
@@ -173,16 +184,63 @@
         footer p {
             margin: 0;
         }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            nav ul {
+                display: none; /* Oculta os itens do menu em telas pequenas */
+                flex-direction: column;
+                width: 100%;
+                background-color: #004a87; /* Cor do fundo do menu */
+                position: absolute;
+                top: 50px; /* Distância do topo */
+                left: 0;
+                z-index: 1000;
+            }
+
+            nav ul.show {
+                display: flex; /* Mostra o menu quando ativado */
+            }
+
+            .menu-toggle {
+                display: block; /* Exibe o botão de menu */
+            }
+
+            .banner h1 {
+                font-size: 36px; /* Ajusta o tamanho do título */
+            }
+
+            .banner p {
+                font-size: 18px; /* Ajusta o tamanho do texto */
+            }
+
+            .card {
+                width: 90%; /* Ajusta a largura do cartão em telas pequenas */
+                margin: 10px auto; /* Margem automática para centralizar */
+            }
+        }
     </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const menuToggle = document.querySelector('.menu-toggle');
+            const navLinks = document.querySelector('nav ul');
+
+            menuToggle.addEventListener('click', function () {
+                navLinks.classList.toggle('show');
+            });
+        });
+    </script>
 </head>
 <body>
 
     <header>
         <nav>
+            <div class="menu-toggle">&#9776;</div> <!-- Ícone de menu -->
             <ul>
                 <li><a href="#">Início</a></li>
                 <li><a href="#">Funcionalidades</a></li>
-                <li><a href="#">Login</a></li>
+                <li><a href="{{ url_for('signup') }}">Cadastre-se aqui</a></li>
+                <li><a href="{{ url_for('login') }}">Faça Login</a></li>
                 <li><a href="#">Contato</a></li>
             </ul>
         </nav>
@@ -190,8 +248,8 @@
 
     <section class="banner">
         <h1>Bem-vindo ao ErichEDU</h1>
-        <p>Conectando Alunos, Professores e Pais</p>
-        <a href="#" class="btn">Baixe o App Agora</a>
+        <p>Conectando Alunos e Professores de uma forma NUNCA ANTES VISTA!</p>
+        <a href="{{ url_for('login') }}" class="btn">Faça Login</a>
     </section>
 
     <section class="funcionalidades">
@@ -208,20 +266,9 @@
                 <p>Comunique-se diretamente com professores e colegas.</p>
             </div>
             <div class="card">
-                <h3>Notas e Desempenho</h3>
-                <p>Veja suas notas e acompanhe o progresso escolar.</p>
+                <h3>Desempenho</h3>
+                <p>Veja suas faltas e acompanhe o progresso escolar.</p>
             </div>
-        </div>
-    </section>
-
-    <section class="login-section">
-        <h2>Login</h2>
-        <div class="login-form">
-            <form action="#" method="post">
-                <input type="email" name="email" placeholder="Digite seu e-mail" required>
-                <input type="password" name="password" placeholder="Digite sua senha" required>
-                <button type="submit">Entrar</button>
-            </form>
         </div>
     </section>
 

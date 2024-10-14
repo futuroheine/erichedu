@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cardápio</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        table {
+            width: 100%; /* Largura total da tabela */
+            border-collapse: collapse; /* Para unir bordas */
+            margin-top: 20px; /* Espaço acima da tabela */
+        }
+        th, td {
+            padding: 12px; /* Espaçamento interno das células */
+            text-align: left; /* Alinhamento do texto */
+            border-bottom: 1px solid #ddd; /* Linha de separação */
+        }
+        th {
+            background-color: var(--secondary-color); /* Cor de fundo dos cabeçalhos */
+            color: white; /* Cor do texto dos cabeçalhos */
+        }
+        tr:hover {
+            background-color: #f1f1f1; /* Cor de fundo ao passar o mouse */
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Menu</h2>
+        <ul>
+            <li><a href="{{ url_for('home') }}">INÍCIO</a></li>
+            <li><a href="{{ url_for('profile') }}">EU</a></li>
+            <li><a href="{{ url_for('chat') }}">CHAT</a></li>
+            <li><a href="{{ url_for('cardapio') }}">CARDÁPIO</a></li>
+            <li><a href="{{ url_for('logout') }}">LOGOUT</a></li>
+        </ul>
+    </div>
+    
+    <div class="content">
+        <h1>Cardápio da Escola</h1>
+
+        <!-- Exibir o cardápio -->
+        <table>
+            <tr>
+                <th>Dia</th>
+                <th>Almoço</th>
+                <th>Café</th>
+                <th>1º Ano</th>
+                <th>2º Ano</th>
+                <th>3º Ano</th>
+            </tr>
+            {% for item in menu_items %}
+            <tr>
+                <td>{{ item.day }}</td>
+                <td>{{ item.lunch }}</td>
+                <td>{{ item.coffee }}</td>
+                <td>{{ item.first_year_time }}</td>
+                <td>{{ item.second_year_time }}</td>
+                <td>{{ item.third_year_time }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        <!-- Exibir a opção de adicionar/editar o cardápio apenas para usuários do grêmio -->
+        {% if is_gremio %}
+        <h2>Adicionar/Editar Cardápio</h2>
+        <form method="POST">
+            <label for="day">Dia:</label>
+            <input type="text" id="day" name="day" required>
+            
+            <label for="lunch">Almoço:</label>
+            <input type="text" id="lunch" name="lunch" required>
+            
+            <label for="coffee">Café:</label>
+            <input type="text" id="coffee" name="coffee" required>
+            
+            <label for="first_year_time">Horário 1º Ano:</label>
+            <input type="text" id="first_year_time" name="first_year_time" required>
+            
+            <label for="second_year_time">Horário 2º Ano:</label>
+            <input type="text" id="second_year_time" name="second_year_time" required>
+            
+            <label for="third_year_time">Horário 3º Ano:</label>
+            <input type="text" id="third_year_time" name="third_year_time" required>
+            
+            <button type="submit">Salvar</button>
+        </form>
+        <button id="addMenuButton">Adicionar Cardápio</button>
+        {% endif %}
+
+        <!-- Seção para adicionar novo item ao cardápio -->
+        <div id="editMenuSection">
+            <h2>Adicionar Item</h2>
+            <input type="text" id="newMenuItem" placeholder="Nome do Item" />
+            <button id="saveMenuButton">Salvar</button>
+        </div>
+    </div>
+</body>
+</html>
