@@ -1,7 +1,12 @@
 Flask
 Flask-SQLAlchemy
 Flask-Login
-Werkzeug
-requests
 psycopg2-binary
+requests
+google-cloud-storage
+firebase-admin
+cryptography
+Flask-SocketIO
+eventlet
+Werkzeug
 gunicorn
