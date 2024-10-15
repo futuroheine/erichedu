@@ -5,11 +5,3 @@ Werkzeug
 requests
 psycopg2-binary
 gunicorn
-google-cloud-storage
-hashlib
-uuid
-firebase-admin
-cryptography
-pycryptodome
-flask_socketio
-eventlet

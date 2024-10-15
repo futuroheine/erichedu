@@ -8,13 +8,28 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-    <div class="login-container">
-        <img src="{{ url_for('static', filename='erichedu-icon.png') }}" alt="ErichEdu Logo" class="login-logo">
-        <h1 class="login-title">Login</h1>
-        <form action="{{ url_for('login') }}" method="POST">
-            <input type="email" name="email" class="login-input" placeholder="E-mail" required>
-            <input type="password" name="senha" class="login-input" placeholder="Senha" required>
-            <button type="submit" class="login-button">Entrar</button>
+    <div class="<img src="{{ url_for('static', filename='erichedu-icon.png') }}" alt="ErichEdu Logo" class="logo">
+        <h1>Login</h1>
+        {% with messages = get_flashed_messages(with_categories=True) %}
+            {% if messages %}
+                <ul>
+                {% for category, message in messages %}
+                    <li class="{{ category }}">{{ message }}</li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+        <form method="POST">
+            <div>
+                <label for="email">Email:</label>
+                <input type="email" name="email" required>
+            </div>
+            <div>
+                <label for="senha">Senha:</label>
+                <input type="password" name="senha" required> <!-- Alterado para "senha" -->
+            </div>
+            <button type="submit">Entrar</button>
+            <p>Não tem uma conta? <a href="{{ url_for('signup') }}">Cadastre-se aqui</a></p>
         </form>
         <div class="login-message">{{ message }}</div> <!-- Exibir mensagens aqui -->
     
