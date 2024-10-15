@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Responsividade -->
+    <title>Meu Perfil</title>
+
+</head>
+<body>
+    <div class="profile-container">
+        <h1>Meu Perfil</h1>
+        <img src="{{ user.foto_perfil }}" alt="Foto de Perfil" />
+        <p>Nome: {{ user.nome_completo }}</p>
+        <p>Email: {{ user.email }}</p>
+        <p>Faltas deste mês: {{ faltas_count }}</p> <!-- Contagem de faltas -->
+        <a href="{{ url_for('editar_perfil') }}">Editar Perfil</a>
+    </div>
+</body>
+</html>

@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ErichEDU - Conectando Alunos e Professores de uma forma nunca antes vista. Acompanhe suas aulas, mensagens e desempenho em um só lugar!">
+    <meta name="keywords" content="educação, plataforma educacional, escola, professores, alunos, comunicação, desempenho, agenda">
+    <meta name="author" content="ErichEDU">
     <title>ErichEDU - Conectando Educação</title>
     <style>
         body {
@@ -218,6 +221,12 @@
                 width: 90%; /* Ajusta a largura do cartão em telas pequenas */
                 margin: 10px auto; /* Margem automática para centralizar */
             }
+            .system-logo {
+            width: 50vw;  /* 50% da largura da tela */
+            max-width: 100%;  /* Impede que a imagem ultrapasse o tamanho máximo */
+            height: auto;  /* Mantém a proporção da imagem */
+           }
+
         }
     </style>
     <script>
@@ -270,6 +279,30 @@
                 <p>Veja suas faltas e acompanhe o progresso escolar.</p>
             </div>
         </div>
+        <section class="install-section">
+            <h2>Instale o ErichEDU no seu dispositivo</h2>
+            <p>Siga os passos abaixo para instalar o ErichEDU como um aplicativo no seu iOS ou Android.</p>
+    
+            <div class="install-steps">
+                <div class="step">
+                    <img src="{{ url_for('static', filename='ios-icon.png') }}" class="system-logo" alt="iOS">
+                    <h3>iOS (Safari)</h3>
+                    <p>1. Abra o Safari e acesse o nosso site.<br>
+                       2. Toque no ícone de compartilhar na parte inferior da tela.<br>
+                       3. Selecione "Adicionar à Tela de Início".<br>
+                       4. Pronto! O ErichEDU será instalado como um aplicativo.</p>
+                </div>
+    
+                <div class="step">
+                    <img src="{{ url_for('static', filename='android-icon.png') }}" class="system-logo" alt="Android">
+                    <h3>Android (Chrome)</h3>
+                    <p>1. Abra o Google Chrome e acesse o nosso site.<br>
+                       2. Toque no menu de três pontos no canto superior direito.<br>
+                       3. Selecione "Adicionar à Tela de Início".<br>
+                       4. Pronto! O ErichEDU será instalado como um aplicativo.</p>
+                </div>
+            </div>
+        </section>
     </section>
 
     <footer>

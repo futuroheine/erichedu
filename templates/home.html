@@ -3,29 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home</title>
+    <title>EricEdu - Home</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
+    <!-- Meta Tags para Android -->
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <meta name="theme-color" content="#25D366"> <!-- Cor da barra de navegação -->
+    
+    <!-- Meta Tags para iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="EricEdu">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='erichedu-icon.png') }}"> <!-- Ícone do App -->
+    
+    <!-- Meta Tags padrão para ícones -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='erichedu-icon.png') }}">
+    
+    <!-- Tela de splash para iOS -->
+    <link rel="apple-touch-startup-image" href="{{ url_for('static', filename='erichedu-icon.png') }}">
+
+    <!-- JQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
     <div class="container">
+        <!-- Barra lateral -->
         <div class="sidebar" id="sidebar">
             <button class="toggle-btn" id="toggle-btn">☰</button>
             <h2 class="sidebar-title">Menu</h2>
             <ul class="sidebar-menu">
                 <li><a href="{{ url_for('home') }}">INÍCIO</a></li>
                 <li><a href="{{ url_for('profile') }}">EU</a></li>
-                <li><a href="{{ url_for('chat') }}">CHAT</a></li>
+                <li><a href="{{ url_for('chat', turma_id=user.turma_id) }}">CHAT</a></li>
                 <li><a href="{{ url_for('cardapio') }}">CARDÁPIO</a></li>
                 <li><a href="{{ url_for('logout') }}">LOGOUT</a></li>
             </ul>
         </div>
+
+        <!-- Conteúdo principal -->
         <div class="content">
-            <h1>Bem-vindo à sua página inicial!</h1>
-            <p>Este é o conteúdo principal da sua página.</p>
-            <!-- Adicione mais conteúdo aqui -->
+            <h1>Bem-vindo, {{ user.nome_completo }}!</h1>
+            <h2>Avisos Recentes</h2>
+            <ul class="avisos-list">
+                {% for aviso in avisos %}
+                <li>{{ aviso }}</li>
+                {% endfor %}
+            </ul>
+
+            <div class="atalhos">
+                <a href="{{ url_for('upload_materia') }}" class="btn">Enviar Matéria</a>
+                <a href="{{ url_for('contagem_faltas') }}" class="btn">Ver Faltas</a>
+                <a href="{{ url_for('cardapio') }}" class="btn">Ver Cardápio</a>
+            </div>
         </div>
     </div>
+
     <script>
         $(document).ready(function() {
             $('#toggle-btn').click(function() {
