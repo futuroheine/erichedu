@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat - {{ turma.nome }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
+    <style>
+        /* Estilo da área de mensagens */
+        .messages {
+            max-height: 400px;
+            overflow-y: scroll;
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+
+        /* Estilo de cada mensagem */
+        .message {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 10px;
+        }
+
+        /* Balão de mensagem de outros */
+        .message-content.neutro {
+            background-color: #f1f1f1;
+            padding: 10px;
+            border-radius: 10px;
+            max-width: 80%;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            position: relative;
+            align-self: flex-start;
+        }
+
+        /* Balão de mensagem minha */
+        .message-content.meu {
+            background-color: #dcf8c6;
+            padding: 10px;
+            border-radius: 10px;
+            max-width: 80%;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            position: relative;
+            align-self: flex-end;
+        }
+
+        /* Nome do remetente */
+        .message-content strong {
+            color: #25D366;
+        }
+
+        /* Hora da mensagem */
+        .message-time {
+            font-size: 0.8em;
+            color: gray;
+            margin-top: 2px;
+            align-self: flex-end;
+        }
+
+        /* Estilo da barra de digitação */
+        .message-form {
+            display: flex;
+            align-items: center;
+            border-top: 1px solid #ccc;
+            padding-top: 10px;
+        }
+
+        .message-form input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            margin-right: 10px;
+        }
+
+        /* Botão de enviar */
+        .message-form button {
+            padding: 10px;
+            background-color: #25D366;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            color: white;
+        }
+
+        .message-form button:hover {
+            background-color: #20B559;
+        }
+
+        /* Estilo do ícone de envio */
+        .send-icon {
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <h1>Chat da Turma: {{ turma.nome }}</h1>
+
+        <!-- Área de mensagens -->
+        <div class="messages" id="messages">
+            {% for mensagem in mensagens %}
+                {% set user_nome, mensagem_texto, rotulos, foto_perfil, hora_envio = mensagem %}
+                <div class="message">
+                    <div class="message-content {% if user_nome == current_user.nome_completo %}meu{% else %}neutro{% endif %}">
+                        <strong>{{ user_nome }}</strong>
+                        {% for rotulo in rotulos %}
+                            <span class="label label-{{ rotulo | lower }}">{{ rotulo }}</span>
+                        {% endfor %}
+                        <p>{{ mensagem_texto }}</p>
+                        <span class="message-time">{{ hora_envio }}</span>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Formulário de envio de mensagem -->
+        <form id="chat-form" class="message-form">
+            <input type="text" id="mensagem" required placeholder="Digite sua mensagem..." autocomplete="off">
+            <button type="submit">
+                <i class="send-icon">➤</i>
+            </button>
+        </form>
+
+        <!-- Som de notificação -->
+        <audio id="notification-sound" src="{{ url_for('static', filename='plim-sound.mp3') }}"></audio>
+    </div>
+
+    <script>
+        const socket = io();
+
+        // Entra na sala
+        const turmaId = "{{ turma.id }}";
+        socket.emit('join', { room: turmaId });
+
+        // Enviar mensagem
+        document.getElementById('chat-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const mensagem = document.getElementById('mensagem').value;
+            const horaAtual = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            // Emitir mensagem
+            socket.emit('send_message', {
+                turma_id: turmaId,
+                message: mensagem,
+                time: horaAtual
+            });
+
+            document.getElementById('mensagem').value = ''; // Limpa o campo
+        });
+
+        // Receber nova mensagem
+        socket.on('receive_message', function(data) {
+            const messageContainer = document.getElementById('messages');
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message');
+            const classBalon = (data.user_nome === "{{ current_user.nome_completo }}") ? 'meu' : 'neutro';
+
+            messageElement.innerHTML = `
+                <div class="message-content ${classBalon}">
+                    <strong>${data.user_nome}</strong>
+                    ${data.rotulos.map(rotulo => `<span class="label label-${rotulo.toLowerCase()}">${rotulo}</span>`).join('')}
+                    <p>${data.message}</p>
+                    <span class="message-time">${data.time}</span>
+                </div>
+            `;
+            messageContainer.appendChild(messageElement);
+            messageContainer.scrollTop = messageContainer.scrollHeight; // Rolar para a última mensagem
+
+            // Tocar som de notificação
+            const notificationSound = document.getElementById('notification-sound');
+            notificationSound.play();
+        });
+    </script>
+</body>
+</html>

@@ -1,192 +1,165 @@
-/* Paleta de cores ErichEdu */
+
 :root {
-    --primary-color: #083888;   /* Azul escuro */
+    --primary-color: #083888; /* Azul escuro ErichEdu */
     --secondary-color: #89d156; /* Verde vibrante */
-    --accent-color: #ffe458;    /* Amarelo */
-    --error-color: #ff3131;     /* Vermelho de alerta */
-    --background-color: #f4f4f4; /* Fundo claro */
+    --accent-color: #ffe458; /* Amarelo */
     --white: #FFFFFF;
+    --gray-light: #f2f2f2; /* Cinza claro */
+    --gray-dark: #444444; /* Cinza escuro para textos */
 }
 
-body, html {
+body {
     margin: 0;
-    padding: 0;
     font-family: Arial, sans-serif;
-    background-color: var(--background-color);
-    height: 100vh;
-    display: flex;
+    background-color: var(--gray-light);
 }
 
+/* Container Principal */
 .container {
-    display: flex; /* Altera para flex para organizar a sidebar e o conteúdo */
-    width: 100%;
-    transition: transform 0.3s ease; /* Transição suave ao recolher */
+    display: flex;
+    height: 100vh; /* Ocupa toda a altura da tela */
 }
 
+/* Barra Lateral */
 .sidebar {
     width: 250px; /* Largura da barra lateral */
-    background-color: var(--primary-color); /* Cor de fundo da barra lateral */
-    color: #fff; /* Cor do texto */
-    padding: 15px; /* Espaçamento interno */
-    transition: width 0.3s ease; /* Transição suave para largura */
-    overflow: hidden; /* Esconde conteúdo extra */
+    background-color: var(--primary-color); /* Azul ErichEdu */
+    color: var(--white);
+    padding: 20px;
+    transition: width 0.3s; /* Transição suave */
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); /* Sombra */
 }
 
 .sidebar.collapsed {
-    width: 60px; /* Largura quando recolhido */
+    width: 60px; /* Largura quando recolhida */
 }
 
+.sidebar-title {
+    font-size: 24px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+/* Menu da Barra Lateral */
+.sidebar-menu {
+    list-style-type: none;
+    padding: 0;
+}
+
+.sidebar-menu li {
+    margin: 15px 0;
+}
+
+.sidebar-menu a {
+    color: var(--white);
+    text-decoration: none;
+    font-size: 18px;
+    display: block; /* Para que o link ocupe toda a área */
+    transition: background-color 0.3s; /* Transição suave */
+    padding: 10px 15px; /* Espaçamento interno */
+}
+
+.sidebar-menu a:hover {
+    background-color: var(--secondary-color); /* Verde ao passar o mouse */
+}
+
+/* Esconder itens do menu */
+.hidden {
+    display: none;
+}
+
+/* Botão de Toggle */
 .toggle-btn {
     background: none;
     border: none;
-    color: #fff;
+    color: var(--white);
     font-size: 24px;
     cursor: pointer;
-    margin-bottom: 15px; /* Espaço abaixo do botão */
-}
-
-.sidebar h2 {
-    margin-top: 0; /* Remove a margem superior do título */
-    font-size: 18px; /* Tamanho da fonte do título */
-    text-align: center; /* Centraliza o título */
-    display: block; /* Mostra o título apenas se não estiver colapsado */
-}
-
-.sidebar-menu {
-    opacity: 1; /* Opacidade padrão */
-    transition: opacity 0.3s; /* Transição suave para opacidade */
-}
-
-.sidebar.collapsed .sidebar-menu {
-    opacity: 0; /* Esconde as opções do menu quando colapsado */
-}
-
-.sidebar ul {
-    list-style-type: none; /* Remove os marcadores da lista */
-    padding: 0; /* Remove o preenchimento da lista */
-}
-
-.sidebar ul li {
-    margin: 15px 0; /* Espaçamento entre os itens da lista */
-}
-
-.sidebar ul li a {
-    color: #fff; /* Cor dos links */
-    text-decoration: none; /* Remove o sublinhado dos links */
-    display: block; /* Faz o link ocupar toda a largura do item */
-    padding: 10px; /* Espaçamento interno dos links */
-    border-radius: 5px; /* Arredonda os cantos dos links */
-    transition: background 0.3s; /* Transição suave para a cor de fundo */
-}
-
-.sidebar ul li a:hover {
-    background: var(--secondary-color); /* Fundo verde ao passar o mouse */
-}
-
-.content {
-    flex: 1; /* Ocupa o espaço restante da tela */
-    padding: 20px; /* Espaçamento interno do conteúdo */
-    background-color: #fff; /* Cor de fundo do conteúdo */
-    overflow-y: auto; /* Permite rolagem vertical */
-}
-
-h1 {
-    font-size: 24px;
     margin-bottom: 20px;
-    color: var(--primary-color);
 }
 
-/* Responsividade */
-@media (max-width: 768px) {
-    .sidebar {
-        width: 100px; /* Largura da barra lateral em dispositivos menores */
-    }
-
-    .sidebar.collapsed {
-        width: 60px; /* Largura quando recolhido em dispositivos menores */
-    }
-
-    .sidebar h2 {
-        display: none; /* Esconde o título quando a barra lateral está colapsada */
-    }
-}
-/* Estilos do conteúdo principal */
+/* Conteúdo Principal */
 .content {
-    flex: 1; /* Ocupa o espaço restante da tela */
-    padding: 20px; /* Espaçamento interno do conteúdo */
-    background-color: #fff; /* Cor de fundo do conteúdo */
-    overflow-y: auto; /* Permite rolagem vertical */
-}
-/* Estilos do cardápio */
-.menu-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); /* Grade responsiva */
-    gap: 10px; /* Espaço entre os itens */
+    flex-grow: 1; /* Preenche o espaço restante */
+    padding: 20px;
+    background-color: var(--white);
+    overflow-y: auto; /* Permite rolagem */
+    border-radius: 10px; /* Bordas arredondadas para o conteúdo */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Sombra sutil */
 }
 
-.menu-item {
-    background-color: var(--accent-color); /* Fundo amarelo para itens do cardápio */
-    padding: 15px;
-    border-radius: 8px; /* Cantos arredondados */
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Sombra leve */
-    transition: background-color 0.3s; /* Efeito ao passar o mouse */
-    text-align: left; /* Alinhamento do texto */
+/* Títulos */
+.content h1 {
+    color: var(--primary-color);
+    margin-bottom: 10px;
 }
 
-.menu-item:hover {
-    background-color: var(--secondary-color); /* Muda a cor no hover */
-}
-
-#editMenuSection {
-    display: none; /* Esconde a seção de edição inicialmente */
+.content h2 {
+    color: var(--primary-color);
     margin-top: 20px;
 }
 
-#newMenuItem {
-    margin-bottom: 10px; /* Espaçamento inferior para o campo de entrada */
+/* Lista de Avisos */
+.avisos-list {
+    list-style-type: none;
+    padding: 0;
 }
-.container {
+
+.avisos-list li {
+    background-color: var(--secondary-color);
+    color: var(--white);
+    padding: 10px;
+    border-radius: 5px;
+    margin: 5px 0;
+}
+
+/* Atalhos Rápidos */
+.atalhos {
+    margin-top: 20px;
+}
+
+.atalhos .btn {
+    background-color: var(--primary-color);
+    color: var(--white);
+    padding: 10px 15px;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+    display: inline-block; /* Para que os botões fiquem na mesma linha */
+    margin-right: 10px; /* Espaçamento entre botões */
+}
+
+.atalhos .btn:hover {
+    background-color: var(--secondary-color); /* Verde no hover */
+}
+.login-container {
     width: 90%; /* Largura responsiva */
-    max-width: 400px; /* Limite máximo de largura */
+    max-width: 350px; /* Limite de largura */
     background-color: var(--white);
     padding: 20px;
     border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Sombra mais suave */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     text-align: center;
-    transition: transform 0.3s; /* Adiciona animação */
+    margin-top: 20px; /* Espaçamento superior */
 }
 
-.container:hover {
-    transform: translateY(-5px); /* Eleva o cardápio ao passar o mouse */
-}
-
-.logo {
+/* Logo no Login */
+.login-logo {
     display: block;
     margin: 0 auto;
-    width: 70px; /* Aumenta o logo */
-    height: 70px;
+    width: 50px;
+    height: 50px;
 }
 
-h1 {
-    font-size: 28px; /* Título maior */
+/* Título da Tela de Login */
+.login-title {
+    font-size: 24px;
     margin-bottom: 20px;
     color: var(--primary-color);
 }
 
-.menu-item {
-    background-color: var(--accent-color); /* Fundo amarelo para itens do cardápio */
-    padding: 15px;
-    margin: 10px 0;
-    border-radius: 8px; /* Cantos arredondados */
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Sombra leve */
-    transition: background-color 0.3s; /* Efeito ao passar o mouse */
-}
-
-.menu-item:hover {
-    background-color: var(--secondary-color); /* Muda a cor no hover */
-}
-
-input, select {
+/* Estilo dos Inputs */
+.login-input {
     width: 100%;
     padding: 15px;
     margin: 10px 0;
@@ -197,7 +170,134 @@ input, select {
     box-sizing: border-box;
 }
 
-input:focus, select:focus {
+.login-input:focus {
     border-color: var(--secondary-color); /* Verde no foco */
 }
+
+/* Estilo do Botão de Login */
+.login-button {
+    width: 100%;
+    padding: 15px;
+    background-color: var(--secondary-color); /* Verde */
+    color: var(--white);
+    font-size: 18px;
+    border: none;
+    border-radius: 10px; /* Redução no arredondamento */
+    cursor: pointer;
+    margin-top: 20px;
+    transition: background-color 0.3s;
+}
+
+.login-button:hover {
+    background-color: var(--primary-color); /* Azul escuro no hover */
+}
+
+/* Mensagens de Erro ou Sucesso */
+.login-message {
+    margin: 20px 0;
+    color: var(--error-color); /* Mensagens de erro */
+}
+
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #e5ddd5;
+    margin: 0;
+    padding: 0;
+}
+
+.chat-container {
+    max-width: 600px;
+    margin: auto;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+header {
+    display: flex;
+    justify-content: center;
+    padding: 10px;
+    background-color: #25D366; /* Cor do WhatsApp */
+    color: white;
+    border-radius: 10px 10px 0 0;
+}
+
+.messages {
+    max-height: 400px;
+    overflow-y: scroll;
+    margin-bottom: 20px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+.message {
+    display: flex;
+    align-items: flex-start; /* Alinhamento dos elementos */
+    margin-bottom: 10px;
+}
+
+.profile-pic {
+    width: 40px; /* Tamanho da imagem de perfil */
+    height: 40px; /* Tamanho da imagem de perfil */
+    border-radius: 50%; /* Faz a imagem ser redonda */
+    margin-right: 10px; /* Espaçamento entre a imagem e o texto */
+}
+
+.message-content {
+    background-color: #ffffff;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.message-content strong {
+    color: #25D366; /* Cor do nome do remetente */
+}
+
+.message-form {
+    display: flex;
+}
+
+.message-form input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.message-form button {
+    padding: 10px 15px;
+    background-color: #25D366; /* Cor do botão */
+    border: none;
+    color: white;
+    border-radius: 5px;
+    margin-left: 5px;
+    cursor: pointer; /* Muda o cursor ao passar sobre o botão */
+}
+
+.message-form button:hover {
+    background-color: #20B559; /* Cor do botão ao passar o mouse */
+}
+
+.m-profile-pic {
+    width: 40px; /* ajuste o tamanho conforme necessário */
+    height: 40px;
+    border-radius: 50%; /* faz a imagem ficar redonda */
+    margin-right: 10px; /* espaço entre a foto e o nome do usuário */
+    vertical-align: middle; /* alinha a imagem com o texto */
+}
+
+.label {
+    background-color: #f0f0f0; /* Cor de fundo do rótulo */
+    border-radius: 5px; /* Borda arredondada */
+    padding: 2px 5px; /* Espaçamento interno */
+    margin-left: 5px; /* Espaçamento entre o nome e o rótulo */
+    font-size: 0.8em; /* Tamanho da fonte */
+    color: #333; /* Cor do texto */
+}
+
 

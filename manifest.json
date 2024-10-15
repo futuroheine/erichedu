@@ -1,0 +1,22 @@
+{
+    "name": "EricEdu",
+    "short_name": "EricEdu",
+    "description": "Conectando Alunos e Professores de uma forma NUNCA ANTES VISTA!",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#25D366",
+    "icons": [
+      {
+        "src": "/static/erichedu-icon.png",
+        "sizes": "192x192",
+        "type": "image/png"
+      },
+      {
+        "src": "/static/erichedu-icon.png",
+        "sizes": "512x512",
+        "type": "image/png"
+      }
+    ]
+  }
+  

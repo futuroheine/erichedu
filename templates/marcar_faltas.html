@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marcar Faltas</title>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: var(--background-color); margin: 0; padding: 20px;">
+    <style>
+        :root {
+            --primary-color: #083888;   /* Azul escuro */
+            --secondary-color: #89d156; /* Verde vibrante */
+            --accent-color: #ffe458;    /* Amarelo */
+            --error-color: #ff3131;     /* Vermelho de alerta */
+            --background-color: #083888; /* Fundo azul escuro */
+            --white: #FFFFFF;
+        }
+
+        body {
+            color: var(--white);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: var(--white);
+            color: var(--primary-color);
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: var(--white);
+        }
+
+        select {
+            padding: 5px;
+            font-size: 16px;
+        }
+
+        .presente { background-color: #89d156; color: #FFFFFF; }   /* Verde para presença */
+        .falta { background-color: #ff3131; color: #FFFFFF; }      /* Vermelho para falta */
+        .falta-justificada { background-color: #ffa500; color: #FFFFFF; } /* Laranja para falta justificada */
+        .sem-aula { background-color: #A9A9A9; color: #FFFFFF; }   /* Cinza para sem aula */
+    </style>
+
+    <h1 style="text-align: center; color: var(--accent-color);">Marcar Faltas para a Turma: {{ turma.nome }}</h1>
+
+    <div style="max-width: 900px; margin: 0 auto;">
+        <h2>Mês: {{ dias_do_mes[0].strftime('%B') }}</h2>
+        <h3>Legenda:</h3>
+        <ul style="list-style-type: none; padding: 0;">
+            <li><strong style="color: #89d156;">P:</strong> Presença</li>
+            <li><strong style="color: #ff3131;">F:</strong> Falta</li>
+            <li><strong style="color: #ffa500;">FJ:</strong> Falta Justificada</li>
+            <li><strong style="color: #A9A9A9;">SA:</strong> Sem Aula</li>
+        </ul>
+    </div>
+
+    <form method="POST" style="max-width: 900px; margin: 0 auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Aluno</th>
+                    {% for dia in dias_do_mes %}
+                        <th>{{ dia.day }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for aluno in alunos %}
+                    <tr>
+                        <td>{{ aluno.nome_completo }}</td>
+                        {% for dia in dias_do_mes %}
+                            <td>
+                                <select name="presente_{{ aluno.id }}_{{ dia.day }}" style="background-color: var(--white);">
+                                    <option value="presente" class="presente" style="background-color: #89d156; color: #FFFFFF;" {% if faltas[aluno.id][dia.day] == 'presente' %}selected{% endif %}>P</option>
+                                    <option value="falta" class="falta" style="background-color: #ff3131; color: #FFFFFF;" {% if faltas[aluno.id][dia.day] == 'falta' %}selected{% endif %}>F</option>
+                                    <option value="falta_justificada" class="falta-justificada" style="background-color: #ffa500; color: #FFFFFF;" {% if faltas[aluno.id][dia.day] == 'falta_justificada' %}selected{% endif %}>FJ</option>
+                                    <option value="sem_aula" class="sem-aula" style="background-color: #A9A9A9; color: #FFFFFF;" {% if faltas[aluno.id][dia.day] == 'sem_aula' %}selected{% endif %}>SA</option>
+                                </select>
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div style="text-align: center; margin-top: 20px;">
+            <button type="submit" style="padding: 10px 20px; font-size: 16px; background-color: var(--accent-color); color: var(--primary-color); border: none; border-radius: 4px; cursor: pointer;">Salvar Faltas</button>
+        </div>
+    </form>
+</body>
+</html>
