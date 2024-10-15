@@ -369,7 +369,7 @@ def cardapio():
         return redirect(url_for('cardapio'))
 
     menu_items = Menu.query.all()
-    return render_template('cardapio.html', menu_items=menu_items, is_gremio=current_user.is_gremio)
+    return render_template('cardapio.html', menu_items=menu_items, is_gremio=current_user.is_gremio, user=current_user)
 
 @app.route('/contagem_faltas', methods=['GET', 'POST'])
 @login_required

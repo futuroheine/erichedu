@@ -1,41 +1,51 @@
-<!-- login.html -->
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
+
 <body>
-    <div class="<img src="{{ url_for('static', filename='erichedu-icon.png') }}" alt="ErichEdu Logo" class="logo">
-        <h1>Login</h1>
+    <div class="login-container">
+        <!-- Logo do login -->
+        <div class="login-logo">
+            <img src="{{ url_for('static', filename='erichedu-icon.png') }}" alt="ErichEdu Logo" class="login-logo">
+        </div>
+        <h1 class="login-title">Login</h1>
+
+        <!-- Mensagens de erro ou sucesso -->
         {% with messages = get_flashed_messages(with_categories=True) %}
-            {% if messages %}
-                <ul>
-                {% for category, message in messages %}
-                    <li class="{{ category }}">{{ message }}</li>
-                {% endfor %}
-                </ul>
-            {% endif %}
+        {% if messages %}
+        <ul>
+            {% for category, message in messages %}
+            <li class="{{ category }}">{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
         {% endwith %}
+
+        <!-- Formulário de login -->
         <form method="POST">
             <div>
                 <label for="email">Email:</label>
-                <input type="email" name="email" required>
+                <input type="email" name="email" class="login-input" required>
             </div>
             <div>
                 <label for="senha">Senha:</label>
-                <input type="password" name="senha" required> <!-- Alterado para "senha" -->
+                <input type="password" name="senha" class="login-input" required>
             </div>
-            <button type="submit">Entrar</button>
-            <p>Não tem uma conta? <a href="{{ url_for('signup') }}">Cadastre-se aqui</a></p>
+            <button type="submit" class="login-button">Entrar</button>
         </form>
-        <div class="login-message">{{ message }}</div> <!-- Exibir mensagens aqui -->
-    
-    <p>Não tem uma conta? <a href="{{ url_for('signup') }}">Cadastre-se aqui
+
+        <!-- Link para criar conta -->
+        <p>Não tem uma conta? <a href="{{ url_for('signup') }}">Cadastre-se aqui</a></p>
+
+        <!-- Exibição de mensagens de erro ou sucesso -->
+        <div class="login-message">{{ message }}</div>
     </div>
-    
-    
 </body>
+
 </html>
