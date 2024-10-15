@@ -1,5 +1,6 @@
-Flask 
-Flask-SQLAlchemy 
-Flask-Login
-psycopg2-binary
-supabase
+Flask==2.2.2
+Flask-SQLAlchemy==2.5.1
+Flask-Login==0.6.2
+Werkzeug==2.2.2
+requests==2.28.1
+psycopg2-binary==2.9.3
