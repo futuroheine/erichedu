@@ -3,9 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home</title>
+    <title>Home - ErichEDU</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#4CAF50"> <!-- Cor da barra de endereço no Android -->
+    <meta name="mobile-web-app-capable" content="yes"> <!-- Android -->
+    <meta name="apple-mobile-web-app-capable" content="yes"> <!-- iOS -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="default"> <!-- Cor da barra de status no iOS -->
+    <meta name="apple-mobile-web-app-title" content="ErichEDU"> <!-- Título da PWA no iOS -->
+    
+    <!-- Apple Touch Icon -->
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='erichedu-icon.png') }}">
+    
+    <!-- Manifest File -->
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    
+    <!-- Favicon e Ícones -->
+    <link rel="icon" type="image/png" sizes="192x192" href="{{ url_for('static', filename='erichedu-icon.png') }}">
+    <link rel="icon" type="image/png" sizes="512x512" href="{{ url_for('static', filename='erichedu-icon.png') }}">
+    
+    <!-- Estilos e Scripts -->
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- Splash Screen para iOS -->
+    <link rel="apple-touch-startup-image" href="{{ url_for('static', filename='erichedu-icon.png') }}">
 </head>
 <body>
     <div class="container">
