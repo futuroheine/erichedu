@@ -9,3 +9,4 @@ cryptography
 Flask-SocketIO
 eventlet
 Werkzeug
+gunicorn
