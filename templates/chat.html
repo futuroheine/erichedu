@@ -139,7 +139,9 @@
     </div>
 
     <script>
-        const socket = io();
+        // Conexão com o Socket.io
+        const socket = io(window.location.origin);
+
 
         // Entra na sala
         const turmaId = "{{ turma.id }}";
