@@ -3,18 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Responsividade -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Meu Perfil</title>
-
 </head>
 <body>
-    <div class="profile-container">
-        <h1>Meu Perfil</h1>
-        <img src="{{ user.foto_perfil }}" alt="Foto de Perfil" />
-        <p>Nome: {{ user.nome_completo }}</p>
-        <p>Email: {{ user.email }}</p>
-        <p>Faltas deste mês: {{ faltas_count }}</p> <!-- Contagem de faltas -->
-        <a href="{{ url_for('editar_perfil') }}">Editar Perfil</a>
+    <div class="container">
+        <!-- Barra Lateral -->
+        <div class="sidebar">
+            <button class="toggle-btn" onclick="toggleSidebar()">&#9776;</button>
+            <h2 class="sidebar-title">Menu</h2>
+            <ul class="sidebar-menu">
+                <li><a href="{{ url_for('home') }}">INÍCIO</a></li>
+                <li><a href="{{ url_for('profile') }}">EU</a></li>
+                <li><a href="{{ url_for('chat', turma_id=user.turma_id) }}">CHAT</a></li>
+                <li><a href="{{ url_for('cardapio') }}">CARDÁPIO</a></li>
+                <li><a href="{{ url_for('logout') }}">LOGOUT</a></li>
+            </ul>
+        </div>
+
+        <!-- Conteúdo Principal -->
+        <div class="content">
+            <div class="profile-container">
+                <h1>Meu Perfil</h1>
+                <img class="m-profile-pic" src="{{ user.foto_perfil }}" alt="Foto de Perfil" />
+                <p><strong>Nome:</strong> {{ user.nome_completo }}</p>
+                <p><strong>Email:</strong> {{ user.email }}</p>
+                <p><strong>Faltas deste mês:</strong> <span class="label">{{ faltas_count }}</span></p>
+                <a class="btn" href="{{ url_for('editar_perfil') }}">Editar Perfil</a>
+            </div>
+
+        </div>
     </div>
+
+    <script>
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('collapsed');
+        }
+    </script>
 </body>
 </html>

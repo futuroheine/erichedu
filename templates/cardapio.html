@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cardápio</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
     <style>
         :root {
             --primary-color: #083888; /* Azul escuro ErichEdu */
@@ -19,47 +21,23 @@
             margin: 0;
             padding: 0;
             background-color: var(--gray-light);
+            display: flex; /* Para controlar o layout com flexbox */
         }
 
-        .sidebar {
-            width: 250px;
-            height: 100vh;
-            background-color: var(--primary-color);
-            color: var(--white);
-            position: fixed;
-            left: -250px;
-            top: 0;
-            transition: 0.3s;
-        }
-
-        .sidebar ul {
-            list-style-type: none;
-            padding: 0;
-        }
-
-        .sidebar ul li {
-            padding: 15px;
-        }
-
-        .sidebar ul li a {
-            color: var(--white);
-            text-decoration: none;
-        }
 
         .toggle-btn {
-            position: absolute;
-            left: 10px;
-            top: 10px;
             background-color: var(--primary-color);
             color: var(--white);
             padding: 10px;
             cursor: pointer;
+            margin-bottom: 20px; /* Para dar um espaço do topo da sidebar */
+            border: none;
         }
 
         .content {
-            margin-left: 0;
             padding: 20px;
             transition: margin-left 0.3s;
+            flex-grow: 1; /* Faz o conteúdo ocupar o espaço restante */
         }
 
         table {
@@ -119,21 +97,23 @@
     </style>
 </head>
 <body>
-    <div class="toggle-btn" onclick="toggleMenu()">☰ Menu</div>
 
     <div class="sidebar" id="sidebar">
-        <h2>Menu</h2>
-        <ul>
+        <button class="toggle-btn" id="toggle-btn">☰</button>
+        <h2 class="sidebar-title"><span class="menu-text">Menu</span></h2>
+        <ul class="sidebar-menu">
             <li><a href="{{ url_for('home') }}">INÍCIO</a></li>
             <li><a href="{{ url_for('profile') }}">EU</a></li>
+            <li><a href="{{ url_for('materias') }}">MATÉRIAS</a></li>
             <li><a href="{{ url_for('chat', turma_id=user.turma_id) }}">CHAT</a></li>
             <li><a href="{{ url_for('cardapio') }}">CARDÁPIO</a></li>
             <li><a href="{{ url_for('logout') }}">LOGOUT</a></li>
+            
         </ul>
     </div>
 
     <div class="content" id="content">
-        <h1>Cardápio da Escola</h1>
+        <h1>Cardápio</h1>
 
         <!-- Exibir o cardápio -->
         <table>
@@ -188,31 +168,27 @@
     </div>
 
     <script>
-        function toggleMenu() {
+        document.getElementById('toggle-btn').addEventListener('click', function() {
             var sidebar = document.getElementById('sidebar');
             var content = document.getElementById('content');
-            if (sidebar.style.left === "-250px") {
-                sidebar.style.left = "0";
-                content.style.marginLeft = "250px";
+            sidebar.classList.toggle('collapsed'); // Alterna a classe collapsed
+            if (sidebar.classList.contains('collapsed')) {
+                content.style.marginLeft = "60px"; // Ajusta o conteúdo quando a sidebar está recolhida
             } else {
-                sidebar.style.left = "-250px";
-                content.style.marginLeft = "0";
+                content.style.marginLeft = "250px"; // Ajusta o conteúdo quando a sidebar está aberta
             }
-        }
+        });
 
         function toggleEditMenu() {
-            var editSection = document.getElementById('editMenuSection');
-            if (editSection.style.display === "none") {
-                editSection.style.display = "block";
+            var editMenuSection = document.getElementById('editMenuSection');
+            if (editMenuSection.style.display === "none" || editMenuSection.style.display === "") {
+                editMenuSection.style.display = "block";
+                document.getElementById('addMenuButton').style.display = "none";
             } else {
-                editSection.style.display = "none";
+                editMenuSection.style.display = "none";
+                document.getElementById('addMenuButton').style.display = "block";
             }
         }
-
-        // Mostrar botão "Editar Cardápio" se o usuário for do grêmio
-        {% if is_gremio %}
-        document.getElementById('addMenuButton').style.display = 'block';
-        {% endif %}
     </script>
 </body>
 </html>

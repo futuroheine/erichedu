@@ -3,7 +3,6 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 import requests
-from datetime import datetime
 from google.cloud import storage
 import hashlib
 import uuid
@@ -13,6 +12,8 @@ from cryptography.fernet import Fernet, InvalidToken
 import random
 from flask_socketio import SocketIO, emit, join_room, leave_room
 import eventlet
+from pytz import timezone  
+from datetime import datetime, timedelta
 
 
 
@@ -86,13 +87,76 @@ class ChatMessage(db.Model):
     turma_id = db.Column(db.Integer, db.ForeignKey('turma.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     mensagem = db.Column(db.Text, nullable=False)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-
+    timestamp = db.Column(db.DateTime, default=lambda: datetime.now(timezone('America/Sao_Paulo')))  # Campo de timestamp
     turma = db.relationship('Turma', back_populates='mensagens')
     user = db.relationship('User', back_populates='mensagens')
 
 Turma.mensagens = db.relationship('ChatMessage', order_by=ChatMessage.timestamp, back_populates='turma')
 User.mensagens = db.relationship('ChatMessage', order_by=ChatMessage.timestamp, back_populates='user')
+
+class Materia(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(100), nullable=False)
+    turma_id = db.Column(db.Integer, db.ForeignKey('turma.id'), nullable=False)
+    dia_da_semana = db.Column(db.String(20), nullable=False)
+    professor = db.Column(db.String(100), nullable=False)
+    imagem_url = db.Column(db.String(255), nullable=True)  # Campo para armazenar o link da imagem da matéria
+    timestamp = db.Column(db.DateTime, default=lambda: datetime.now(timezone('America/Sao_Paulo')))  # Campo de timestamp
+    turma = db.relationship('Turma', back_populates='materias')
+
+Turma.materias = db.relationship('Materia', back_populates='turma')
+
+class QH(db.Model):
+    __tablename__ = 'qh'
+    id = db.Column(db.Integer, primary_key=True)
+    materia = db.Column(db.String(100), nullable=False)  # Nome da matéria
+    professor = db.Column(db.String(100), nullable=False)  # Nome do professor
+    horario = db.Column(db.Time, nullable=False)  # Campo de horário
+    turma_id = db.Column(db.Integer, db.ForeignKey('turma.id'), nullable=False)
+    dia_da_semana = db.Column(db.String(10), nullable=False)
+
+    def __repr__(self):
+        return f'<QH {self.id}: {self.materia} - {self.professor} - {self.horario} - {self.dia_da_semana} - Turma ID {self.turma_id}>'
+    
+from flask_wtf import FlaskForm
+from wtforms import StringField, TimeField, SelectField, SubmitField
+from wtforms.validators import DataRequired
+
+class QHForm(FlaskForm):
+    materia = StringField('Matéria', validators=[DataRequired()])
+    professor = StringField('Professor', validators=[DataRequired()])
+    horario = TimeField('Horário', format='%H:%M', validators=[DataRequired()])
+    dia_da_semana = SelectField('Dia da Semana', choices=[
+        ('segunda', 'Segunda-feira'),
+        ('terca', 'Terça-feira'),
+        ('quarta', 'Quarta-feira'),
+        ('quinta', 'Quinta-feira'),
+        ('sexta', 'Sexta-feira'),
+        ('sabado', 'Sábado'),
+        ('domingo', 'Domingo')
+    ], validators=[DataRequired()])  # Novo campo para o dia da semana
+    turma_id = SelectField('Turma', coerce=int, validators=[DataRequired()])
+    submit = SubmitField('Adicionar QH')
+
+@app.route('/add_qh', methods=['GET', 'POST'])
+def add_qh():
+    form = QHForm()
+    form.turma_id.choices = [(turma.id, turma.nome) for turma in Turma.query.all()]
+
+    if form.validate_on_submit():
+        nova_aula = QH(
+            materia=form.materia.data,
+            professor=form.professor.data,
+            horario=form.horario.data,
+            dia_da_semana=form.dia_da_semana.data,  # Novo campo
+            turma_id=form.turma_id.data
+        )
+        db.session.add(nova_aula)
+        db.session.commit()
+        flash('Aula adicionada com sucesso!', 'success')
+        return redirect(url_for('add_qh'))
+
+    return render_template('add_qh.html', form=form, user=current_user)
 
 
 
@@ -140,29 +204,105 @@ def login():
     
     return render_template('login.html')
 
-@app.route('/admin_area')
+@app.route('/materias', methods=['GET'])
 @login_required
-def admin_area():
-    if not current_user.is_admin:
-        flash('Acesso restrito a administradores.', 'danger')
-        return redirect(url_for('index'))
-    
-    return render_template('admin_area.html')
+def materias():
+    # Verifica a turma do usuário atual
+    turma = current_user.turma
 
-@app.route('/upload_materia', methods=['POST'])
+    # Se a turma não for encontrada ou o usuário não tiver uma turma associada
+    if not turma:
+        flash('Você não está associado a nenhuma turma.', 'danger')
+        return redirect(url_for('index'))
+
+    # Busca todas as matérias da turma do usuário, ordenadas da mais nova para a mais antiga
+    materias = Materia.query.filter_by(turma_id=turma.id).order_by(Materia.id.desc()).all()
+
+    # Renderiza a página com as matérias
+    return render_template('materias.html', materias=materias)
+
+
+@app.route('/upload_materia', methods=['GET', 'POST'])
 @login_required
 def upload_materia():
-    if not current_user.is_admin:
-        flash('Apenas representantes e o grêmio podem enviar matérias.', 'danger')
+    # Verifica se o usuário é administrador, do grêmio ou representante
+    if not current_user.is_admin and not current_user.is_gremio and not current_user.is_representante:
+        flash('Apenas administradores, grêmio ou representantes podem enviar matérias.', 'danger')
         return redirect(url_for('index'))
-    
-    return "Matéria enviada com sucesso!"
+
+    if request.method == 'POST':
+        # Obtém os dados do formulário
+        nome_materia = request.form.get('nome_materia')
+        turma_nome = request.form.get('turma_nome')  # O nome da turma fornecido
+        dia_da_semana = request.form.get('dia_da_semana')
+        professor = request.form.get('professor')
+        imagem_materia = request.files.get('imagem_materia')
+
+        # Verifica se a turma existe no banco de dados
+        turma = Turma.query.filter_by(nome=turma_nome).first()  # Busca a turma pelo nome
+
+        if not turma:
+            flash(f'Turma {turma_nome} não encontrada.', 'danger')
+            return redirect(url_for('upload_materia'))
+
+        turma_id = turma.id  # Obtém o ID da turma encontrada
+
+        # Verifica se o arquivo de imagem está presente e válido
+        if imagem_materia:
+            imagem_url = save_profile_picture(imagem_materia)
+        else:
+            imagem_url = None
+
+        # Cria uma nova matéria
+        nova_materia = Materia(
+            nome=nome_materia,
+            turma_id=turma_id,  # Usa o turma_id encontrado
+            dia_da_semana=dia_da_semana,
+            professor=professor,
+            imagem_url=imagem_url
+        )
+
+        # Adiciona e confirma a nova matéria no banco de dados
+        db.session.add(nova_materia)
+        db.session.commit()
+
+        flash('Matéria enviada com sucesso!', 'success')
+        return redirect(url_for('home'))
+
+    # Renderiza o formulário caso seja uma requisição GET
+    return render_template('enviar_materia.html')
+
+
+
 
 @app.route('/home')
 @login_required
 def home():
     user = User.query.get(session['user_id'])
-    return render_template('home.html', user=user)
+    # Obter a turma do usuário
+    turma_id = user.turma_id
+    
+    # Criar um dicionário para mapear dias da semana
+    dias_da_semana = {
+        'monday': 'segunda',
+        'tuesday': 'terça',
+        'wednesday': 'quarta',
+        'thursday': 'quinta',
+        'friday': 'sexta',
+        'saturday': 'sábado',
+        'sunday': 'domingo'
+    }
+    
+    # Determinar o dia da semana atual em inglês e converter para português
+    dia_atual_ingles = datetime.now().strftime('%A').lower()
+    dia_atual = dias_da_semana.get(dia_atual_ingles, dia_atual_ingles)  # Pega o dia em pt-BR
+
+    horario_atual = datetime.now().time()
+
+    # Buscar a próxima aula
+    proxima_aula = QH.query.filter_by(turma_id=turma_id, dia_da_semana=dia_atual).filter(QH.horario > horario_atual).order_by(QH.horario).first()
+
+    return render_template('home.html', user=user, proxima_aula=proxima_aula)
 
 @app.route('/logout')
 def logout():
@@ -183,7 +323,11 @@ def quadro_almoco():
 @login_required
 def profile():
     user = User.query.get(session['user_id'])
-    return render_template('eu.html', user=user)
+    # Filtrando apenas as faltas que não são presentes e não são justificadas
+    faltas = Falta.query.filter_by(user_id=current_user.id, presente=False, falta_justificada=False).all()
+    total_faltas = len(faltas)
+    return render_template('eu.html', user=user, faltas_count=total_faltas)
+
 
 # Inicializar o Firebase Admin SDK
 cred = credentials.Certificate("serviceAccountKey.json")
@@ -370,6 +514,38 @@ def cardapio():
 
     menu_items = Menu.query.all()
     return render_template('cardapio.html', menu_items=menu_items, is_gremio=current_user.is_gremio, user=current_user)
+
+@app.route('/admin', methods=['GET', 'POST'])
+@login_required
+def admin():
+    # Verifica se o usuário é administrador
+    if not current_user.is_admin:
+        flash('Acesso negado. Apenas administradores podem acessar esta página.', 'danger')
+        return redirect(url_for('index'))
+
+    if request.method == 'POST':
+        # Obtém os dados do formulário
+        nome_aula = request.form.get('nome_aula')
+        dia_aula = request.form.get('dia_aula')
+        horario_aula = request.form.get('horario_aula')
+        professor_aula = request.form.get('professor_aula')
+
+        # Você pode armazenar esses dados em um dicionário ou adicionar a um modelo de banco de dados
+        # Aqui, vamos apenas imprimir para o console como exemplo
+        aula_dados = {
+            'nome': nome_aula,
+            'dia': dia_aula,
+            'horario': horario_aula,
+            'professor': professor_aula
+        }
+        print("Dados da aula:", aula_dados)
+
+        flash('Aula criada com sucesso!', 'success')
+        return redirect(url_for('admin'))
+
+    # Renderiza o formulário caso seja uma requisição GET
+    return render_template('admin.html')
+
 
 @app.route('/contagem_faltas', methods=['GET', 'POST'])
 @login_required

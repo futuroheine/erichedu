@@ -1,4 +1,3 @@
-
 :root {
     --primary-color: #083888; /* Azul escuro ErichEdu */
     --secondary-color: #89d156; /* Verde vibrante */
@@ -21,6 +20,7 @@ body {
 }
 
 /* Barra Lateral */
+/* Barra Lateral */
 .sidebar {
     width: 250px; /* Largura da barra lateral */
     background-color: var(--primary-color); /* Azul ErichEdu */
@@ -28,16 +28,11 @@ body {
     padding: 20px;
     transition: width 0.3s; /* Transição suave */
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); /* Sombra */
+    overflow: hidden; /* Evita overflow quando recolhida */
 }
 
 .sidebar.collapsed {
     width: 60px; /* Largura quando recolhida */
-}
-
-.sidebar-title {
-    font-size: 24px;
-    margin-bottom: 20px;
-    text-align: center;
 }
 
 /* Menu da Barra Lateral */
@@ -54,18 +49,37 @@ body {
     color: var(--white);
     text-decoration: none;
     font-size: 18px;
-    display: block; /* Para que o link ocupe toda a área */
+    display: flex; /* Para alinhar ícone e texto */
+    align-items: center; /* Centraliza verticalmente */
     transition: background-color 0.3s; /* Transição suave */
     padding: 10px 15px; /* Espaçamento interno */
 }
 
-.sidebar-menu a:hover {
-    background-color: var(--secondary-color); /* Verde ao passar o mouse */
+/* Novo estilo para esconder o texto */
+.sidebar.collapsed .sidebar-menu a  {
+    opacity: 0; /* Torna o texto invisível */
+    visibility: hidden; /* Oculta o texto */
+    transition: opacity 0.3s, visibility 0.3s; /* Transição suave */
+}
+.sidebar.collapsed .menu-text {
+    opacity: 0; /* Torna o texto invisível */
+    visibility: hidden; /* Oculta o texto */
+    transition: opacity 0.3s, visibility 0.3s; /* Transição suave */
 }
 
-/* Esconder itens do menu */
-.hidden {
-    display: none;
+.menu-text {
+    margin-left: 10px; /* Espaçamento entre o botão e o texto */
+    transition: opacity 0.3s; /* Transição suave */
+}
+
+/* Quando a sidebar não está recolhida, o texto deve ser visível */
+.sidebar .sidebar-menu a {
+    opacity: 1; /* Torna o texto visível */
+    visibility: visible; /* Mostra o texto */
+}
+
+.sidebar-menu a:hover {
+    background-color: var(--secondary-color); /* Verde ao passar o mouse */
 }
 
 /* Botão de Toggle */
@@ -132,6 +146,8 @@ body {
 .atalhos .btn:hover {
     background-color: var(--secondary-color); /* Verde no hover */
 }
+
+/* Estilo do Container de Login */
 .login-container {
     width: 90%; /* Largura responsiva */
     max-width: 350px; /* Limite de largura */
@@ -198,14 +214,7 @@ body {
     color: var(--error-color); /* Mensagens de erro */
 }
 
-
-body {
-    font-family: Arial, sans-serif;
-    background-color: #e5ddd5;
-    margin: 0;
-    padding: 0;
-}
-
+/* Container de Chat */
 .chat-container {
     max-width: 600px;
     margin: auto;
@@ -283,6 +292,7 @@ header {
     background-color: #20B559; /* Cor do botão ao passar o mouse */
 }
 
+/* Estilo da imagem de perfil em mensagens */
 .m-profile-pic {
     width: 40px; /* ajuste o tamanho conforme necessário */
     height: 40px;
@@ -291,13 +301,26 @@ header {
     vertical-align: middle; /* alinha a imagem com o texto */
 }
 
+/* Estilo do rótulo */
 .label {
     background-color: #f0f0f0; /* Cor de fundo do rótulo */
-    border-radius: 5px; /* Borda arredondada */
-    padding: 2px 5px; /* Espaçamento interno */
-    margin-left: 5px; /* Espaçamento entre o nome e o rótulo */
-    font-size: 0.8em; /* Tamanho da fonte */
-    color: #333; /* Cor do texto */
+    padding: 5px 10px;
+    border-radius: 5px;
+    display: inline-block; /* Garante que o rótulo fique como um bloco */
+    margin-right: 5px; /* Espaçamento entre rótulos */
 }
 
+/* Estilo para botões de ação */
+.action-button {
+    padding: 10px;
+    background-color: var(--secondary-color);
+    color: var(--white);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
 
+.action-button:hover {
+    background-color: var(--primary-color); /* Cor ao passar o mouse */
+}

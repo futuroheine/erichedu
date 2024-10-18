@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Administração</title>
+</head>
+<body>
+    <h1>Painel de Administração</h1>
+
+    <form method="POST">
+        <label for="nome_aula">Nome da Aula:</label>
+        <input type="text" name="nome_aula" required><br>
+
+        <label for="dia_aula">Dia da Aula:</label>
+        <input type="text" name="dia_aula" required><br>
+
+        <label for="horario_aula">Horário da Aula:</label>
+        <input type="text" name="horario_aula" required><br>
+
+        <label for="professor_aula">Professor da Aula:</label>
+        <input type="text" name="professor_aula" required><br>
+
+        <button type="submit">Criar Aula</button>
+    </form>
+
+    <a href="{{ url_for('home') }}">Voltar para Home</a>
+</body>
+</html>

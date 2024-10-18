@@ -8,14 +8,23 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
     <style>
         /* Estilo da área de mensagens */
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            padding: 10px;
+            background-color: #e5ddd5; /* Fundo do chat */
+        }
+
         .messages {
+            flex: 1;
             max-height: 400px;
-            overflow-y: scroll;
+            overflow-y: auto;
             margin-bottom: 20px;
             padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            background-color: #f9f9f9;
+            border-radius: 8px;
+            background-color: #ffffff;
+            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
         }
 
         /* Estilo de cada mensagem */
@@ -31,9 +40,9 @@
             padding: 10px;
             border-radius: 10px;
             max-width: 80%;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            position: relative;
             align-self: flex-start;
+            position: relative;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
         /* Balão de mensagem minha */
@@ -42,9 +51,9 @@
             padding: 10px;
             border-radius: 10px;
             max-width: 80%;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            position: relative;
             align-self: flex-end;
+            position: relative;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
         /* Nome do remetente */

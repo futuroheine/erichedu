@@ -10,3 +10,5 @@ Flask-SocketIO
 eventlet
 Werkzeug
 gunicorn
+pytz
+flask_wtf

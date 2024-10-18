@@ -14,7 +14,7 @@
     
     <!-- Apple Touch Icon -->
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='erichedu-icon.png') }}">
-    
+
     <!-- Manifest File -->
     <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
     
@@ -25,40 +25,24 @@
     <!-- Estilos e Scripts -->
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 
-    <!-- Meta Tags para Android -->
-    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-    <meta name="theme-color" content="#25D366"> <!-- Cor da barra de navegação -->
-    
-    <!-- Meta Tags para iOS -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="EricEdu">
-    <link rel="apple-touch-icon" href="{{ url_for('static', filename='erichedu-icon.png') }}"> <!-- Ícone do App -->
-    
-    <!-- Meta Tags padrão para ícones -->
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='erichedu-icon.png') }}">
-    
-    <!-- Tela de splash para iOS -->
-    <link rel="apple-touch-startup-image" href="{{ url_for('static', filename='erichedu-icon.png') }}">
-
     <!-- JQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     
-    <!-- Splash Screen para iOS -->
-    <link rel="apple-touch-startup-image" href="{{ url_for('static', filename='erichedu-icon.png') }}">
 </head>
 <body>
     <div class="container">
         <!-- Barra lateral -->
         <div class="sidebar" id="sidebar">
             <button class="toggle-btn" id="toggle-btn">☰</button>
-            <h2 class="sidebar-title">Menu</h2>
+            <h2 class="sidebar-title"><span class="menu-text">Menu</span></h2>
             <ul class="sidebar-menu">
                 <li><a href="{{ url_for('home') }}">INÍCIO</a></li>
                 <li><a href="{{ url_for('profile') }}">EU</a></li>
+                <li><a href="{{ url_for('materias') }}">MATÉRIAS</a></li>
                 <li><a href="{{ url_for('chat', turma_id=user.turma_id) }}">CHAT</a></li>
                 <li><a href="{{ url_for('cardapio') }}">CARDÁPIO</a></li>
                 <li><a href="{{ url_for('logout') }}">LOGOUT</a></li>
+                
             </ul>
         </div>
 
@@ -77,6 +61,22 @@
                 <a href="{{ url_for('contagem_faltas') }}" class="btn">Ver Faltas</a>
                 <a href="{{ url_for('cardapio') }}" class="btn">Ver Cardápio</a>
             </div>
+
+            <!-- Exibição da Próxima Aula -->
+            {% if proxima_aula %}
+            <div class="proxima-aula">
+                <h3>Próxima Aula:</h3>
+                <p><strong>Matéria:</strong> {{ proxima_aula.materia }}</p>
+                <p><strong>Professor:</strong> {{ proxima_aula.professor }}</p>
+                <p><strong>Horário:</strong> {{ proxima_aula.horario.strftime('%H:%M') }}</p>
+                <p><strong>Dia da Semana:</strong> {{ proxima_aula.dia_da_semana|capitalize }}</p>
+            </div>
+            {% else %}
+            <div class="proxima-aula">
+                <h3>Próxima Aula:</h3>
+                <p>Nenhuma aula agendada para hoje.</p>
+            </div>
+            {% endif %}
         </div>
     </div>
 
@@ -84,6 +84,7 @@
         $(document).ready(function() {
             $('#toggle-btn').click(function() {
                 $('#sidebar').toggleClass('collapsed');
+                $('#menu-text').toggleClass('collapsed');
             });
         });
     </script>

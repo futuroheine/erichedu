@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adicionar Quadro de Horários - ErichEDU</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#4CAF50"> <!-- Cor da barra de endereço no Android -->
+    <meta name="mobile-web-app-capable" content="yes"> <!-- Android -->
+    <meta name="apple-mobile-web-app-capable" content="yes"> <!-- iOS -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="default"> <!-- Cor da barra de status no iOS -->
+    <meta name="apple-mobile-web-app-title" content="ErichEDU"> <!-- Título da PWA no iOS -->
+    
+    <!-- Favicon e Ícones -->
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='erichedu-icon.png') }}">
+    <link rel="icon" type="image/png" sizes="192x192" href="{{ url_for('static', filename='erichedu-icon.png') }}">
+    <link rel="icon" type="image/png" sizes="512x512" href="{{ url_for('static', filename='erichedu-icon.png') }}">
+    
+    <!-- Estilos -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    
+    <!-- JQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <style>
+        .form-group {
+            margin-bottom: 20px; /* Espaço entre os elementos do formulário */
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        .login-input:focus {
+            border-color: var(--secondary-color); /* Verde no foco */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Barra lateral -->
+        <div class="sidebar" id="sidebar">
+            <button class="toggle-btn" id="toggle-btn">☰</button>
+            <h2 class="sidebar-title">Menu</h2>
+            <ul class="sidebar-menu">
+                <li><a href="{{ url_for('home') }}">INÍCIO</a></li>
+                <li><a href="{{ url_for('profile') }}">EU</a></li>
+                <li><a href="{{ url_for('materias') }}">MATÉRIAS</a></li>
+                <li><a href="{{ url_for('chat', turma_id=user.turma_id) }}">CHAT</a></li>
+                <li><a href="{{ url_for('cardapio') }}">CARDÁPIO</a></li>
+                <li><a href="{{ url_for('logout') }}">LOGOUT</a></li>
+            </ul>
+        </div>
+
+        <!-- Conteúdo principal -->
+        <div class="content">
+            <h1>Adicionar Quadro de Horários</h1>
+            <form method="POST">
+                {{ form.hidden_tag() }}
+                
+                <div class="form-group">
+                    {{ form.materia.label }} 
+                    {{ form.materia(class="login-input") }} <!-- Aplicando a classe de estilo -->
+                </div>
+                
+                <div class="form-group">
+                    {{ form.professor.label }} 
+                    {{ form.professor(class="login-input") }} <!-- Aplicando a classe de estilo -->
+                </div>
+                
+                <div class="form-group">
+                    {{ form.horario.label }} 
+                    {{ form.horario(class="login-input") }} <!-- Aplicando a classe de estilo -->
+                </div>
+                
+                <div class="form-group">
+                    {{ form.dia_da_semana.label }} 
+                    {{ form.dia_da_semana(class="login-input") }}  <!-- Novo campo para o dia da semana, aplicando a classe -->
+                </div>
+                
+                <div class="form-group">
+                    {{ form.turma_id.label }} 
+                    {{ form.turma_id(class="login-input") }} <!-- Aplicando a classe de estilo -->
+                </div>
+                
+                <div class="form-group">
+                    {{ form.submit(class="login-input") }} <!-- Aplicando a mesma classe para o botão de submit -->
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            $('#toggle-btn').click(function() {
+                $('#sidebar').toggleClass('collapsed');
+            });
+        });
+    </script>
+</body>
+</html>
