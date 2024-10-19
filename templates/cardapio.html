@@ -74,14 +74,14 @@
         }
 
         #addMenuButton {
-            display: none;
-            margin-top: 20px;
-            background-color: var(--accent-color);
-            color: var(--primary-color);
-            padding: 10px;
-            border: none;
-            cursor: pointer;
-        }
+    display: block; /* Ou remova completamente essa regra */
+    margin-top: 20px;
+    background-color: var(--accent-color);
+    color: var(--primary-color);
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+}
 
         button {
             padding: 10px 15px;
@@ -107,8 +107,10 @@
             <li><a href="{{ url_for('materias') }}">MATÉRIAS</a></li>
             <li><a href="{{ url_for('chat', turma_id=user.turma_id) }}">CHAT</a></li>
             <li><a href="{{ url_for('cardapio') }}">CARDÁPIO</a></li>
+            {% if current_user.is_admin %}
+                <li><a href="{{ url_for('admin') }}">ÁREA DO ADMINISTRADOR</a></li>
+            {% endif %}
             <li><a href="{{ url_for('logout') }}">LOGOUT</a></li>
-            
         </ul>
     </div>
 
@@ -168,16 +170,17 @@
     </div>
 
     <script>
-        document.getElementById('toggle-btn').addEventListener('click', function() {
-            var sidebar = document.getElementById('sidebar');
-            var content = document.getElementById('content');
-            sidebar.classList.toggle('collapsed'); // Alterna a classe collapsed
-            if (sidebar.classList.contains('collapsed')) {
-                content.style.marginLeft = "60px"; // Ajusta o conteúdo quando a sidebar está recolhida
-            } else {
-                content.style.marginLeft = "250px"; // Ajusta o conteúdo quando a sidebar está aberta
-            }
-        });
+document.getElementById('toggle-btn').addEventListener('click', function() {
+    var sidebar = document.getElementById('sidebar');
+    var content = document.getElementById('content');
+    sidebar.classList.toggle('collapsed'); // Alterna a classe collapsed
+    if (sidebar.classList.contains('collapsed')) {
+        content.style.marginLeft = "60px"; // Ajusta o conteúdo quando a sidebar está recolhida
+    } else {
+        content.style.marginLeft = "250px"; // Ajusta o conteúdo quando a sidebar está aberta
+    }
+});
+
 
         function toggleEditMenu() {
             var editMenuSection = document.getElementById('editMenuSection');

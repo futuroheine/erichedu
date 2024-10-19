@@ -42,10 +42,13 @@
                 <li><a href="{{ url_for('materias') }}">MATÉRIAS</a></li>
                 <li><a href="{{ url_for('chat', turma_id=user.turma_id) }}">CHAT</a></li>
                 <li><a href="{{ url_for('cardapio') }}">CARDÁPIO</a></li>
+                {% if current_user.is_admin %}
+                    <li><a href="{{ url_for('admin') }}">ÁREA DO ADMINISTRADOR</a></li>
+                {% endif %}
                 <li><a href="{{ url_for('logout') }}">LOGOUT</a></li>
-                
             </ul>
         </div>
+        
 
         <!-- Conteúdo principal -->
         <div class="content">

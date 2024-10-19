@@ -523,28 +523,40 @@ def admin():
         flash('Acesso negado. Apenas administradores podem acessar esta página.', 'danger')
         return redirect(url_for('index'))
 
-    if request.method == 'POST':
-        # Obtém os dados do formulário
-        nome_aula = request.form.get('nome_aula')
-        dia_aula = request.form.get('dia_aula')
-        horario_aula = request.form.get('horario_aula')
-        professor_aula = request.form.get('professor_aula')
+    # Instancia o formulário QHForm
+    form = QHForm()
 
-        # Você pode armazenar esses dados em um dicionário ou adicionar a um modelo de banco de dados
-        # Aqui, vamos apenas imprimir para o console como exemplo
-        aula_dados = {
-            'nome': nome_aula,
-            'dia': dia_aula,
-            'horario': horario_aula,
-            'professor': professor_aula
-        }
-        print("Dados da aula:", aula_dados)
-
-        flash('Aula criada com sucesso!', 'success')
+    # Se o formulário for enviado e validado
+    if form.validate_on_submit():
+        # Lógica para adicionar um novo QH baseado no formulário
+        novo_qh = QH(
+            materia=form.materia.data,
+            professor=form.professor.data,
+            horario=form.horario.data,
+            turma_id=form.turma_id.data,
+            dia_da_semana=form.dia_da_semana.data
+        )
+        db.session.add(novo_qh)
+        db.session.commit()
+        flash('QH adicionado com sucesso!', 'success')
         return redirect(url_for('admin'))
 
-    # Renderiza o formulário caso seja uma requisição GET
-    return render_template('admin.html')
+    # Busca os dados necessários para exibir na página
+    menus = Menu.query.all()
+    turmas = Turma.query.all()
+    faltas = Falta.query.all()
+
+    # Renderiza o template e passa o formulário
+    return render_template('admin.html', form=form, menus=menus, turmas=turmas, faltas=faltas)
+
+@app.route('/delete_menu/<int:menu_id>', methods=['POST'])
+@login_required
+def delete_menu(menu_id):
+    menu = Menu.query.get_or_404(menu_id)
+    db.session.delete(menu)
+    db.session.commit()
+    flash('Cardápio excluído com sucesso!', 'success')
+    return redirect(url_for('admin'))
 
 
 @app.route('/contagem_faltas', methods=['GET', 'POST'])

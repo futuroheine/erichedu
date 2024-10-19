@@ -9,18 +9,21 @@
 <body>
     <div class="container">
         <!-- Barra Lateral -->
-        <div class="sidebar">
-            <button class="toggle-btn" onclick="toggleSidebar()">&#9776;</button>
-            <h2 class="sidebar-title">Menu</h2>
+        <div class="sidebar" id="sidebar">
+            <button class="toggle-btn" id="toggle-btn">☰</button>
+            <h2 class="sidebar-title"><span class="menu-text">Menu</span></h2>
             <ul class="sidebar-menu">
                 <li><a href="{{ url_for('home') }}">INÍCIO</a></li>
                 <li><a href="{{ url_for('profile') }}">EU</a></li>
+                <li><a href="{{ url_for('materias') }}">MATÉRIAS</a></li>
                 <li><a href="{{ url_for('chat', turma_id=user.turma_id) }}">CHAT</a></li>
                 <li><a href="{{ url_for('cardapio') }}">CARDÁPIO</a></li>
+                {% if current_user.is_admin %}
+                    <li><a href="{{ url_for('admin') }}">ÁREA DO ADMINISTRADOR</a></li>
+                {% endif %}
                 <li><a href="{{ url_for('logout') }}">LOGOUT</a></li>
             </ul>
         </div>
-
         <!-- Conteúdo Principal -->
         <div class="content">
             <div class="profile-container">

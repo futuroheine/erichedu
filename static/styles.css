@@ -29,7 +29,12 @@ body {
     transition: width 0.3s; /* Transição suave */
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); /* Sombra */
     overflow: hidden; /* Evita overflow quando recolhida */
+    height: 100vh; /* Ocupa a altura total da janela */
+    padding: 20px;
+    box-sizing: border-box; /* Para incluir o padding dentro da largura */
+    position: fixed; /* Fixa a barra lateral na tela */
 }
+
 
 .sidebar.collapsed {
     width: 60px; /* Largura quando recolhida */
@@ -94,8 +99,10 @@ body {
 
 /* Conteúdo Principal */
 .content {
-    flex-grow: 1; /* Preenche o espaço restante */
     padding: 20px;
+    transition: margin-left 0.3s; /* Transição suave para a margem */
+    flex-grow: 1; /* Faz o conteúdo ocupar o espaço restante */
+    margin-left: 250px; /* Compensa a largura da barra lateral */
     background-color: var(--white);
     overflow-y: auto; /* Permite rolagem */
     border-radius: 10px; /* Bordas arredondadas para o conteúdo */
