@@ -13,3 +13,4 @@ gunicorn
 pytz
 flask_wtf
 jsonify
+pusher
