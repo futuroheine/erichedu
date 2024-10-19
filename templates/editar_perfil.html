@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <meta charset="UTF-8">
+    <title>Editar Perfil</title>
+</head>
+<body>
+    <h1>Editar Perfil</h1>
+    <form method="POST" enctype="multipart/form-data">
+        <label for="nome">Nome:</label>
+        <input type="text" name="nome" value="{{ user.nome }}" required><br>
+
+        <label for="senha">Nova Senha:</label>
+        <input type="password" name="senha" placeholder="Nova senha"><br>
+
+        <label for="foto_perfil">Foto de Perfil:</label>
+        <input type="file" name="foto_perfil" accept="image/*"><br>
+
+        <input type="submit" value="Atualizar">
+    </form>
+    <a href="{{ url_for('profile') }}">Voltar</a>
+</body>
+</html>

@@ -1,0 +1,15 @@
+Flask
+Flask-SQLAlchemy
+Flask-Login
+psycopg2-binary
+requests
+google-cloud-storage
+firebase-admin
+cryptography
+Flask-SocketIO
+eventlet
+Werkzeug
+gunicorn
+pytz
+flask_wtf
+jsonify

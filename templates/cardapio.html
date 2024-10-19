@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cardápio</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
+    <style>
+        :root {
+            --primary-color: #083888; /* Azul escuro ErichEdu */
+            --secondary-color: #89d156; /* Verde vibrante */
+            --accent-color: #ffe458; /* Amarelo */
+            --white: #FFFFFF;
+            --gray-light: #f2f2f2; /* Cinza claro */
+            --gray-dark: #444444; /* Cinza escuro para textos */
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--gray-light);
+            display: flex; /* Para controlar o layout com flexbox */
+        }
+
+
+        .toggle-btn {
+            background-color: var(--primary-color);
+            color: var(--white);
+            padding: 10px;
+            cursor: pointer;
+            margin-bottom: 20px; /* Para dar um espaço do topo da sidebar */
+            border: none;
+        }
+
+        .content {
+            padding: 20px;
+            transition: margin-left 0.3s;
+            flex-grow: 1; /* Faz o conteúdo ocupar o espaço restante */
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: var(--white);
+        }
+
+        table, th, td {
+            border: 1px solid var(--gray-dark);
+        }
+
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--secondary-color);
+            color: var(--white);
+        }
+
+        td {
+            background-color: var(--gray-light);
+        }
+
+        #editMenuSection {
+            display: none;
+            margin-top: 20px;
+            background-color: var(--gray-light);
+            padding: 20px;
+            border-radius: 5px;
+        }
+
+        #addMenuButton {
+    display: block; /* Ou remova completamente essa regra */
+    margin-top: 20px;
+    background-color: var(--accent-color);
+    color: var(--primary-color);
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+}
+
+        button {
+            padding: 10px 15px;
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: var(--secondary-color);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar" id="sidebar">
+        <button class="toggle-btn" id="toggle-btn">☰</button>
+        <h2 class="sidebar-title"><span class="menu-text">Menu</span></h2>
+        <ul class="sidebar-menu">
+            <li><a href="{{ url_for('home') }}">INÍCIO</a></li>
+            <li><a href="{{ url_for('profile') }}">EU</a></li>
+            <li><a href="{{ url_for('materias') }}">MATÉRIAS</a></li>
+            <li><a href="{{ url_for('chat', turma_id=user.turma_id) }}">CHAT</a></li>
+            <li><a href="{{ url_for('cardapio') }}">CARDÁPIO</a></li>
+            {% if current_user.is_admin %}
+                <li><a href="{{ url_for('admin') }}">ÁREA DO ADMINISTRADOR</a></li>
+            {% endif %}
+            <li><a href="{{ url_for('logout') }}">LOGOUT</a></li>
+        </ul>
+    </div>
+
+    <div class="content" id="content">
+        <h1>Cardápio</h1>
+
+        <!-- Exibir o cardápio -->
+        <table>
+            <tr>
+                <th>Dia</th>
+                <th>Almoço</th>
+                <th>Café</th>
+                <th>1º Ano</th>
+                <th>2º Ano</th>
+                <th>3º Ano</th>
+            </tr>
+            {% for item in menu_items %}
+            <tr>
+                <td>{{ item.day }}</td>
+                <td>{{ item.lunch }}</td>
+                <td>{{ item.coffee }}</td>
+                <td>{{ item.first_year_time }}</td>
+                <td>{{ item.second_year_time }}</td>
+                <td>{{ item.third_year_time }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        <!-- Exibir a opção de adicionar/editar o cardápio apenas para usuários do grêmio -->
+        {% if is_gremio %}
+        <button id="addMenuButton" onclick="toggleEditMenu()">Editar Cardápio</button>
+        <div id="editMenuSection">
+            <h2>Adicionar/Editar Cardápio</h2>
+            <form method="POST">
+                <label for="day">Dia:</label>
+                <input type="text" id="day" name="day" required><br><br>
+                
+                <label for="lunch">Almoço:</label>
+                <input type="text" id="lunch" name="lunch" required><br><br>
+                
+                <label for="coffee">Café:</label>
+                <input type="text" id="coffee" name="coffee" required><br><br>
+                
+                <label for="first_year_time">Horário 1º Ano:</label>
+                <input type="text" id="first_year_time" name="first_year_time" required><br><br>
+                
+                <label for="second_year_time">Horário 2º Ano:</label>
+                <input type="text" id="second_year_time" name="second_year_time" required><br><br>
+                
+                <label for="third_year_time">Horário 3º Ano:</label>
+                <input type="text" id="third_year_time" name="third_year_time" required><br><br>
+                
+                <button type="submit">Salvar</button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+document.getElementById('toggle-btn').addEventListener('click', function() {
+    var sidebar = document.getElementById('sidebar');
+    var content = document.getElementById('content');
+    sidebar.classList.toggle('collapsed'); // Alterna a classe collapsed
+    if (sidebar.classList.contains('collapsed')) {
+        content.style.marginLeft = "60px"; // Ajusta o conteúdo quando a sidebar está recolhida
+    } else {
+        content.style.marginLeft = "250px"; // Ajusta o conteúdo quando a sidebar está aberta
+    }
+});
+
+
+        function toggleEditMenu() {
+            var editMenuSection = document.getElementById('editMenuSection');
+            if (editMenuSection.style.display === "none" || editMenuSection.style.display === "") {
+                editMenuSection.style.display = "block";
+                document.getElementById('addMenuButton').style.display = "none";
+            } else {
+                editMenuSection.style.display = "none";
+                document.getElementById('addMenuButton').style.display = "block";
+            }
+        }
+    </script>
+</body>
+</html>
