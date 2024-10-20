@@ -240,38 +240,41 @@ header {
     border-radius: 10px 10px 0 0;
 }
 
-.messages {
-    max-height: 400px;
-    overflow-y: scroll;
-    margin-bottom: 20px;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    background-color: #f9f9f9;
-}
-
-.message {
-    display: flex;
-    align-items: flex-start; /* Alinhamento dos elementos */
-    margin-bottom: 10px;
-}
-
-.profile-pic {
-    width: 40px; /* Tamanho da imagem de perfil */
-    height: 40px; /* Tamanho da imagem de perfil */
-    border-radius: 50%; /* Faz a imagem ser redonda */
-    margin-right: 10px; /* Espaçamento entre a imagem e o texto */
+body {
+    background-color: var(--gray-light);
+    font-family: Arial, sans-serif;
+    color: var(--gray-dark);
+    margin: 0;
+    padding: 0;
 }
 
 .message-content {
-    background-color: #ffffff;
+    border-radius: 10px;
     padding: 10px;
-    border-radius: 5px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin: 10px;
+    position: relative;
+    display: inline-block;
+    max-width: 70%; /* Limita a largura da mensagem */
 }
 
-.message-content strong {
-    color: #25D366; /* Cor do nome do remetente */
+.meu {
+    background-color: var(--secondary-color);
+    color: var(--white);
+    margin-left: auto; /* Alinha mensagens do usuário à direita */
+}
+
+.neutro {
+    background-color: var(--primary-color);
+    color: var(--white);
+    margin-right: auto; /* Alinha mensagens de outros usuários à esquerda */
+}
+
+.message-time {
+    font-size: 0.8em;
+    color: var(--gray-dark);
+    position: absolute;
+    bottom: 5px;
+    right: 10px; /* Alinha o horário à direita da mensagem */
 }
 
 .message-form {

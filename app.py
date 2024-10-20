@@ -688,6 +688,10 @@ def marcar_faltas(turma_id):
 def fiv():
     return send_from_directory('static', 'favicon.ico')
 
+@app.route('/test')
+def test():
+    return "rota teste"
+
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
