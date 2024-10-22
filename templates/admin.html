@@ -4,89 +4,133 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel do Administrador</title>
-    <style>
-:root {
-    --primary-color: #083888; /* Azul escuro ErichEdu */
-    --secondary-color: #89d156; /* Verde vibrante */
-    --accent-color: #ffe458; /* Amarelo */
+<style>        :root {
+    --primary-color: #083888;
+    --secondary-color: #89d156;
+    --accent-color: #ffe458;
     --white: #FFFFFF;
-    --gray-light: #f2f2f2; /* Cinza claro */
-    --gray-dark: #444444; /* Cinza escuro para textos */
+    --gray-light: #f2f2f2;
+    --gray-dark: #444444;
 }
 
-        body {
-            font-family: var(--font-family);
-            background-color: var(--light-gray);
-            color: var(--dark-gray);
-            margin: 0;
-            padding: 0;
-        }
+body {
+    font-family: var(--font-family);
+    background-color: var(--light-gray);
+    color: var(--dark-gray);
+    margin: 0;
+    padding: 0;
+}
 
-        h1 {
-            text-align: center;
-            color: var(--primary-color);
-            margin-top: 20px;
-        }
+h1 {
+    text-align: center;
+    color: var(--primary-color);
+    margin-top: 20px;
+}
 
-        h2 {
-            color: var(--primary-color);
-            margin-top: 30px;
-        }
+h2 {
+    color: var(--primary-color);
+    margin-top: 30px;
+}
 
-        table {
-            width: 80%;
-            margin: 20px auto;
-            border-collapse: collapse;
-            background-color: var(--white);
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
+table {
+    width: 80%;
+    margin: 20px auto;
+    border-collapse: collapse;
+    background-color: var(--white);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
 
-        th, td {
-            padding: 15px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
+th, td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
 
-        th {
-            background-color: var(--primary-color);
-            color: var(--white);
-        }
+th {
+    background-color: var(--primary-color);
+    color: var(--white);
+}
 
-        tr:hover {
-            background-color: #f1f1f1; /* Destaque ao passar o mouse */
-        }
+tr:hover {
+    background-color: #f1f1f1;
+}
 
-        a {
-            display: inline-block;
-            margin: 20px auto;
-            padding: 10px 15px;
-            color: var(--white);
-            background-color: var(--primary-color);
-            text-decoration: none;
-            border-radius: 5px;
-            text-align: center;
-        }
+a {
+    display: inline-block;
+    margin: 20px auto;
+    padding: 10px 15px;
+    color: var(--white);
+    background-color: var(--primary-color);
+    text-decoration: none;
+    border-radius: 5px;
+    text-align: center;
+}
 
-        a:hover {
-            background-color: #0056b3; /* Cor ao passar o mouse */
-        }
+a:hover {
+    background-color: #0056b3;
+}
 
-        button {
-            background-color: var(--primary-color);
-            color: var(--white);
-            border: none;
-            padding: 8px 12px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
+button {
+    background-color: var(--primary-color);
+    color: var(--white);
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+}
 
-        button:hover {
-            background-color: #0056b3; /* Cor ao passar o mouse */
-        }
-    </style>
+button:hover {
+    background-color: #0056b3;
+}
+
+form {
+    width: 80%;
+    margin: 20px auto;
+    background-color: var(--white);
+    padding: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+label {
+    display: block;
+    margin-bottom: 10px;
+    color: var(--primary-color);
+}
+
+input, textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+textarea {
+    height: 100px;
+}</style>
 </head>
 <body>
     <h1>Painel do Administrador</h1>
+
+
+    <h2>Envio de Avisos</h2>
+    <form method="POST" action="{{ url_for('admin') }}">
+        {{ aviso_form.hidden_tag() }}
+        {{ aviso_form.csrf_token }}
+        <label for="titulo">Título:</label>
+        {{ aviso_form.titulo }}
+        <label for="mensagem">Mensagem:</label>
+        {{ aviso_form.mensagem }}
+        <label for="tipo_aviso">Tipo de Aviso:</label>
+        {{ aviso_form.tipo_aviso }}
+        <label for="turma_id">Turma:</label>
+        {{ aviso_form.turma_id }}
+        <label for="serie">Série:</label>
+        {{ aviso_form.serie }}
+        <label for="geral">Aviso Geral:</label>
+        {{ aviso_form.geral }}
+        <button type="submit" name="submit_aviso">Enviar Aviso</button>
+    </form>
 
     <h2>Gerenciamento de QHs</h2>
     <a href="{{ url_for('add_qh') }}">Adicionar QH</a>
@@ -142,7 +186,32 @@
             {% endfor %}
         </tbody>
     </table>
-
-    <a href="{{ url_for('home') }}">Voltar ao início</a>
+    <script>
+        // Lógica para esconder o campo série se uma turma for selecionada ou aviso geral estiver marcado
+        document.getElementById('turma_id').addEventListener('change', function() {
+            let turmaField = document.getElementById('turma_id');
+            let serieField = document.getElementById('serie');
+            if (turmaField.value) {
+                serieField.disabled = true;  // Desabilita o campo série
+            } else {
+                serieField.disabled = false; // Habilita o campo série
+            }
+        });
+    
+        // Lógica para esconder os campos de turma e série se o aviso for geral
+        document.getElementById('geral').addEventListener('change', function() {
+            let geralCheckbox = document.getElementById('geral');
+            let turmaField = document.getElementById('turma_id');
+            let serieField = document.getElementById('serie');
+    
+            if (geralCheckbox.checked) {
+                turmaField.disabled = true;
+                serieField.disabled = true;
+            } else {
+                turmaField.disabled = false;
+                serieField.disabled = false;
+            }
+        });
+    </script>
 </body>
 </html>

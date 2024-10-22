@@ -14,12 +14,14 @@ from flask_socketio import SocketIO, emit, join_room, leave_room
 import eventlet
 from pytz import timezone  
 from datetime import datetime, timedelta
+from wtforms import StringField, TextAreaField, SelectField, BooleanField, SubmitField
+from wtforms.validators import DataRequired
 
 
 
 app = Flask(__name__)
 login_manager = LoginManager(app)
-app.config['SECRET_KEY'] = 'futuroheine2024'
+app.config['SECRET_KEY'] = 'DeusSejaLouvado'
 socketio = SocketIO(app)
 
 # Configuração da base de dados (usando Supabase com PostgreSQL)
@@ -60,6 +62,7 @@ class Turma(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(10), nullable=False)
     key = db.Column(db.String(255), nullable=True)  # Nova coluna para a chave
+    avisos = db.relationship('Aviso', back_populates='turma')
 
     def __repr__(self):
         return f'<Turma {self.nome}>'
@@ -120,7 +123,7 @@ class QH(db.Model):
     
 from flask_wtf import FlaskForm
 from wtforms import StringField, TimeField, SelectField, SubmitField
-from wtforms.validators import DataRequired
+from wtforms.validators import DataRequired, Optional
 
 class QHForm(FlaskForm):
     materia = StringField('Matéria', validators=[DataRequired()])
@@ -137,6 +140,47 @@ class QHForm(FlaskForm):
     ], validators=[DataRequired()])  # Novo campo para o dia da semana
     turma_id = SelectField('Turma', coerce=int, validators=[DataRequired()])
     submit = SubmitField('Adicionar QH')
+
+class Aviso(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    titulo = db.Column(db.String(255), nullable=False)
+    mensagem = db.Column(db.Text, nullable=False)
+    tipo_aviso = db.Column(db.String(50), nullable=False)  # gremio, representante, direção, administrador
+    turma_id = db.Column(db.Integer, db.ForeignKey('turma.id'), nullable=True)  # Campo opcional para avisos específicos de turma
+    serie = db.Column(db.String(20), nullable=True)  # Campo opcional para avisos específicos de série
+    geral = db.Column(db.Boolean, default=False)  # Aviso geral para todos
+
+    timestamp = db.Column(db.DateTime, default=lambda: datetime.now(timezone('America/Sao_Paulo')))
+
+    turma = db.relationship('Turma', back_populates='avisos')
+
+    def get_label(self):
+        # Função para retornar a cor do rótulo baseado no tipo de aviso
+        labels = {
+            'gremio': 'var(--secondary-color)',  # Verde vibrante
+            'representante': 'var(--accent-color)',  # Amarelo
+            'direcao': 'var(--primary-color)',  # Azul escuro
+            'administrador': 'var(--gray-dark)'  # Cinza escuro
+        }
+        return labels.get(self.tipo_aviso, 'var(--gray-light)')  # Retorna cinza claro por padrão
+
+class AvisoForm(FlaskForm):
+    titulo = StringField('Título', validators=[DataRequired()])
+    mensagem = TextAreaField('Mensagem', validators=[DataRequired()])
+    tipo_aviso = SelectField('Tipo de Aviso', choices=[
+        ('gremio', 'Grêmio'),
+        ('representante', 'Representante'),
+        ('direcao', 'Direção'),
+        ('administrador', 'Administrador')
+    ], validators=[DataRequired()])
+    turma_id = SelectField('Turma', coerce=int, choices=[], validators=[Optional()])  # Agora é opcional
+    serie = SelectField('Série', choices=[
+        ('1', '1º Ano'),
+        ('2', '2º Ano'),
+        ('3', '3º Ano')
+    ], validators=[Optional()])  # Agora é opcional
+    geral = BooleanField('Aviso Geral', default=False)
+    submit = SubmitField('Enviar Aviso')
 
 @app.route('/add_qh', methods=['GET', 'POST'])
 def add_qh():
@@ -279,6 +323,7 @@ def upload_materia():
 @login_required
 def home():
     user = User.query.get(session['user_id'])
+    
     # Obter a turma do usuário
     turma_id = user.turma_id
     
@@ -295,14 +340,18 @@ def home():
     
     # Determinar o dia da semana atual em inglês e converter para português
     dia_atual_ingles = datetime.now().strftime('%A').lower()
-    dia_atual = dias_da_semana.get(dia_atual_ingles, dia_atual_ingles)  # Pega o dia em pt-BR
+    dia_atual = dias_da_semana.get(dia_atual_ingles, dia_atual_ingles)
 
     horario_atual = datetime.now().time()
 
     # Buscar a próxima aula
     proxima_aula = QH.query.filter_by(turma_id=turma_id, dia_da_semana=dia_atual).filter(QH.horario > horario_atual).order_by(QH.horario).first()
 
-    return render_template('home.html', user=user, proxima_aula=proxima_aula)
+    # Buscar avisos recentes da turma do usuário
+    avisos = Aviso.query.filter_by(turma_id=turma_id).order_by(Aviso.timestamp.desc()).limit(5).all()
+
+    return render_template('home.html', user=user, proxima_aula=proxima_aula, avisos=avisos)
+
 
 @app.route('/logout')
 def logout():
@@ -559,31 +608,37 @@ def admin():
         flash('Acesso negado. Apenas administradores podem acessar esta página.', 'danger')
         return redirect(url_for('index'))
 
-    # Instancia o formulário QHForm
-    form = QHForm()
-
-    # Se o formulário for enviado e validado
-    if form.validate_on_submit():
-        # Lógica para adicionar um novo QH baseado no formulário
-        novo_qh = QH(
-            materia=form.materia.data,
-            professor=form.professor.data,
-            horario=form.horario.data,
-            turma_id=form.turma_id.data,
-            dia_da_semana=form.dia_da_semana.data
-        )
-        db.session.add(novo_qh)
-        db.session.commit()
-        flash('QH adicionado com sucesso!', 'success')
-        return redirect(url_for('admin'))
-
-    # Busca os dados necessários para exibir na página
+    # Instancia o formulário AvisoForm
+    qh_form = QHForm()
+    aviso_form = AvisoForm()
     menus = Menu.query.all()
     turmas = Turma.query.all()
     faltas = Falta.query.all()
 
-    # Renderiza o template e passa o formulário
-    return render_template('admin.html', form=form, menus=menus, turmas=turmas, faltas=faltas)
+    # Popula as opções de turma
+    aviso_form.turma_id.choices = [(t.id, t.nome) for t in Turma.query.all()]  # Lista de opções de turma
+
+    # Se o formulário for enviado e validado
+    if aviso_form.validate_on_submit():
+        # Lógica para adicionar um novo aviso
+        novo_aviso = Aviso(
+            titulo=aviso_form.titulo.data,
+            mensagem=aviso_form.mensagem.data,
+            tipo_aviso=aviso_form.tipo_aviso.data,
+            geral=aviso_form.geral.data
+        )
+
+        # Se o aviso não for geral, verificar turma e série
+        if not aviso_form.geral.data:
+            novo_aviso.turma_id = aviso_form.turma_id.data if aviso_form.turma_id.data else None
+            novo_aviso.serie = aviso_form.serie.data if aviso_form.serie.data else None
+
+        db.session.add(novo_aviso)
+        db.session.commit()
+        flash('Aviso adicionado com sucesso!', 'success')
+        return redirect(url_for('admin'))
+
+    return render_template('admin.html', aviso_form=aviso_form, qh_form=qh_form, menus=menus, turmas=turmas, faltas=faltas)
 
 @app.route('/delete_menu/<int:menu_id>', methods=['POST'])
 @login_required

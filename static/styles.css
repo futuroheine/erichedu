@@ -313,7 +313,7 @@ body {
 
 /* Estilo do rótulo */
 .label {
-    background-color: #f0f0f0; /* Cor de fundo do rótulo */
+    background-color: var(--primary-color); /* Cor de fundo do rótulo */
     padding: 5px 10px;
     border-radius: 5px;
     display: inline-block; /* Garante que o rótulo fique como um bloco */

@@ -55,10 +55,15 @@
             <h1>Bem-vindo, {{ user.nome_completo }}!</h1>
             <h2>Avisos Recentes</h2>
             <ul class="avisos-list">
-                {% for aviso in avisos %}
-                <li>{{ aviso }}</li>
-                {% endfor %}
+                {% if avisos %}
+                    {% for aviso in avisos %}
+                    <li><strong>{{ aviso.titulo }}</strong> - {{ aviso.mensagem }} <br><small>Publicado em: {{ aviso.timestamp.strftime('%d/%m/%Y %H:%M') }}</small></li>
+                    {% endfor %}
+                {% else %}
+                    <li>Nenhum aviso recente.</li>
+                {% endif %}
             </ul>
+            
 
             <div class="atalhos">
                 <a href="{{ url_for('upload_materia') }}" class="btn">Enviar Matéria</a>
