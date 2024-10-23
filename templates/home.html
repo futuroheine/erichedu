@@ -242,7 +242,10 @@
 
             <div class="atalhos">
                 {% if current_user.is_representante %}
+                {% if current_user.is_representante %}
                 <a href="{{ url_for('upload_materia') }}" class="btn">Enviar Matéria</a>
+                <a href="{{ url_for('contagem_faltas') }}" class="btn">Fazer Chamada</a>
+                {% endif %}
                 <a href="{{ url_for('contagem_faltas') }}" class="btn">Fazer Chamada</a>
                 {% endif %}
                 <a href="{{ url_for('cardapio') }}" class="btn">Ver Cardápio</a>
