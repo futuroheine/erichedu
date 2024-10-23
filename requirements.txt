@@ -14,3 +14,4 @@ pytz
 flask_wtf
 jsonify
 pusher
+calendar

@@ -16,6 +16,7 @@ from pytz import timezone
 from datetime import datetime, timedelta
 from wtforms import StringField, TextAreaField, SelectField, BooleanField, SubmitField
 from wtforms.validators import DataRequired
+import calendar
 
 
 
@@ -263,7 +264,7 @@ def materias():
     materias = Materia.query.filter_by(turma_id=turma.id).order_by(Materia.id.desc()).all()
 
     # Renderiza a página com as matérias
-    return render_template('materias.html', materias=materias)
+    return render_template('materias.html', materias=materias, user=current_user)
 
 
 @app.route('/upload_materia', methods=['GET', 'POST'])
@@ -357,6 +358,7 @@ def home():
 
     return render_template('home.html', user=user, proxima_aula=proxima_aula, avisos=avisos)
 
+login_manager.login_view = 'login'
 
 @app.route('/logout')
 def logout():
@@ -403,11 +405,17 @@ def save_profile_picture(picture):
         new_filename = f"{uuid.uuid4().hex}.{ext}"
         
         blob = bucket.blob(new_filename)
-        blob.upload_from_file(picture, content_type=picture.content_type)
-        blob.make_public()  # Tornar a imagem pública
-        return blob.public_url
+        try:
+            blob.upload_from_file(picture, content_type=picture.content_type)
+            blob.make_public()  # Tornar a imagem pública
+            return blob.public_url
+        except Exception as e:
+            print(f"Erro ao fazer upload da imagem: {e}")
+            return None
     return None
 
+
+# Rota para edição de perfil
 # Rota para edição de perfil
 @app.route('/editar_perfil', methods=['GET', 'POST'])
 @login_required
@@ -417,22 +425,27 @@ def editar_perfil():
         senha = request.form.get('senha')
         foto_perfil = request.files.get('foto_perfil')
         
+        # Atualiza o nome se fornecido
         if nome:
             current_user.nome_completo = nome
         
+        # Atualiza a senha se fornecida
         if senha:
             current_user.generate_password_hash(senha)  # Assumindo que você tem um método para hash a senha
         
+        # Atualiza a foto de perfil se fornecida
         if foto_perfil:
             url_foto = save_profile_picture(foto_perfil)
             if url_foto:
                 current_user.foto_perfil = url_foto
         
-        db.session.commit()  # Salva as alterações no banco de dados
+        # Salva as alterações no banco de dados
+        db.session.commit()  
         flash('Perfil atualizado com sucesso!', 'success')
         return redirect(url_for('editar_perfil'))
 
     return render_template('editar_perfil.html', user=current_user)
+
 
 
 # Função para gerar uma chave válida para Fernet
@@ -807,6 +820,20 @@ def signup():
             return redirect(url_for('signup'))
 
     return render_template('signup.html')
+@app.route('/minhas_faltas')
+@login_required
+def minhas_faltas():
+    # Busca as faltas do usuário atual
+    faltas = Falta.query.filter_by(user_id=current_user.id).all()
+    turma = current_user.turma_id
+    agora = datetime.now()
+    mes_atual = agora.month
+    ano_atual = agora.year
+
+    # Calcular os dias do mês atual
+    dias_do_mes = [datetime(ano_atual, mes_atual, dia) for dia in range(1, calendar.monthrange(ano_atual, mes_atual)[1] + 1)]
+
+    return render_template('minhas_faltas.html', faltas=faltas, turma=turma, dias_do_mes=dias_do_mes)
 
 if __name__ == '__main__':
     with app.app_context():

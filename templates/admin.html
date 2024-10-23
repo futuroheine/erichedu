@@ -186,6 +186,7 @@ textarea {
             {% endfor %}
         </tbody>
     </table>
+    <a href="{{ url_for('home') }}">Voltar</a>
     <script>
         // Lógica para esconder o campo série se uma turma for selecionada ou aviso geral estiver marcado
         document.getElementById('turma_id').addEventListener('change', function() {

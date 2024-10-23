@@ -1,21 +1,77 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <meta charset="UTF-8">
     <title>Editar Perfil</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4; /* Cor de fundo suave */
+            margin: 0;
+            padding: 20px;
+            color: #333; /* Cor do texto */
+        }
+        h1 {
+            text-align: center;
+            color: #4a90e2; /* Cor do título */
+        }
+        form {
+            background-color: #fff; /* Cor de fundo do formulário */
+            padding: 20px;
+            border-radius: 8px; /* Bordas arredondadas */
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Sombra suave */
+            max-width: 400px; /* Largura máxima do formulário */
+            margin: 0 auto; /* Centraliza o formulário */
+        }
+        label {
+            display: block; /* Faz o rótulo ocupar a largura total */
+            margin-bottom: 5px; /* Espaço abaixo do rótulo */
+        }
+        input[type="text"],
+        input[type="password"],
+        input[type="file"] {
+            width: 100%; /* Largura total */
+            padding: 10px; /* Preenchimento interno */
+            margin-bottom: 15px; /* Espaço abaixo do campo */
+            border: 1px solid #ddd; /* Borda leve */
+            border-radius: 4px; /* Bordas arredondadas */
+        }
+        input[type="submit"] {
+            background-color: #4a90e2; /* Cor do botão */
+            color: #fff; /* Cor do texto do botão */
+            border: none; /* Sem borda */
+            border-radius: 4px; /* Bordas arredondadas */
+            padding: 10px; /* Preenchimento interno do botão */
+            cursor: pointer; /* Cursor de ponteiro */
+            font-size: 16px; /* Tamanho da fonte */
+            transition: background-color 0.3s; /* Transição suave */
+        }
+        input[type="submit"]:hover {
+            background-color: #357ab8; /* Cor do botão ao passar o mouse */
+        }
+        a {
+            display: block; /* Torna o link um bloco */
+            text-align: center; /* Centraliza o link */
+            margin-top: 15px; /* Espaço acima do link */
+            color: #4a90e2; /* Cor do link */
+            text-decoration: none; /* Remove sublinhado */
+        }
+        a:hover {
+            text-decoration: underline; /* Sublinha ao passar o mouse */
+        }
+    </style>
 </head>
 <body>
     <h1>Editar Perfil</h1>
     <form method="POST" enctype="multipart/form-data">
         <label for="nome">Nome:</label>
-        <input type="text" name="nome" value="{{ user.nome }}" required><br>
+        <input type="text" name="nome" value="{{ user.nome }}" required>
 
         <label for="senha">Nova Senha:</label>
-        <input type="password" name="senha" placeholder="Nova senha"><br>
+        <input type="password" name="senha" placeholder="Nova senha">
 
         <label for="foto_perfil">Foto de Perfil:</label>
-        <input type="file" name="foto_perfil" accept="image/*"><br>
+        <input type="file" name="foto_perfil" accept="image/*">
 
         <input type="submit" value="Atualizar">
     </form>

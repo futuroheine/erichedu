@@ -51,15 +51,19 @@
             <button class="toggle-btn" id="toggle-btn">☰</button>
             <h2 class="sidebar-title"><span class="menu-text">Menu</span></h2>
             <ul class="sidebar-menu">
-                <li><a href="{{ url_for('home') }}">INÍCIO</a></li>
-                <li><a href="{{ url_for('profile') }}">EU</a></li>
-                <li><a href="{{ url_for('materias') }}">MATÉRIAS</a></li>
-                <li><a href="{{ url_for('chat', turma_id=user.turma_id) }}">CHAT</a></li>
-                <li><a href="{{ url_for('cardapio') }}">CARDÁPIO</a></li>
+                <li><a href="{{ url_for('home') }}"><span class="menu-text">INÍCIO</span></a></li>
+                <li><a href="{{ url_for('profile') }}"><span class="menu-text">EU</span></a></li>
+                <li><a href="{{ url_for('materias') }}"><span class="menu-text">MATÉRIAS</span></a></li>
+                <li><a href="{{ url_for('chat', turma_id=user.turma_id) }}"><span class="menu-text">CHAT</span></a></li>
+                <li><a href="{{ url_for('cardapio') }}"><span class="menu-text">CARDÁPIO</span></a></li>
                 {% if current_user.is_admin %}
-                    <li><a href="{{ url_for('admin') }}">ÁREA DO ADMINISTRADOR</a></li>
+                    <li><a href="{{ url_for('admin') }}"><span class="menu-text">ÁREA DO ADMINISTRADOR</span></a></li>
                 {% endif %}
-                <li><a href="{{ url_for('logout') }}">LOGOUT</a></li>
+                {% if current_user.is_representante %}
+                    <li><a href="{{ url_for('upload_materia') }}"><span class="menu-text">ENVIAR MATÉRIA</span></a></li>
+                    <li><a href="{{ url_for('contagem_faltas') }}"><span class="menu-text">FAZER CHAMADA</span></a></li>
+                {% endif %}
+                <li><a href="{{ url_for('logout') }}"><span class="menu-text">LOGOUT</span></a></li>
             </ul>
         </div>
 

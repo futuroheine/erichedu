@@ -18,4 +18,62 @@
             "type": "image/png"
         }
     ]
+    "pages": [
+        {
+          "path": "/",
+          "title": "Bem-vindo",
+          "description": "Página inicial do aplicativo."
+        },
+        {
+          "path": "/login",
+          "title": "Login",
+          "description": "Página de login para usuários."
+        },
+        {
+          "path": "/home",
+          "title": "Página Inicial do Usuário",
+          "description": "Acesse sua conta e visualize as informações relevantes."
+        },
+        {
+          "path": "/materias",
+          "title": "Matérias",
+          "description": "Visualize as matérias associadas à sua turma."
+        },
+        {
+          "path": "/add_qh",
+          "title": "Adicionar Aula",
+          "description": "Formulário para adicionar uma nova aula."
+        },
+        {
+          "path": "/upload_materia",
+          "title": "Enviar Matéria",
+          "description": "Envie novas matérias para sua turma."
+        },
+        {
+          "path": "/quadro_almoco",
+          "title": "Quadro de Almoço",
+          "description": "Gerencie o quadro de almoço da turma."
+        },
+        {
+          "path": "/eu",
+          "title": "Meu Perfil",
+          "description": "Visualize e edite seu perfil."
+        },
+        {
+          "path": "/editar_perfil",
+          "title": "Editar Perfil",
+          "description": "Atualize suas informações e foto de perfil."
+        },
+        {
+          "path": "/chat/<int:turma_id>",
+          "title": "Chat",
+          "description": "Converse com membros da sua turma."
+        },
+        {
+          "path": "/logout",
+          "title": "Logout",
+          "description": "Saia da sua conta."
+        }
+      ]
+    
 }
