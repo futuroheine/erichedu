@@ -334,3 +334,128 @@ body {
 .action-button:hover {
     background-color: var(--primary-color); /* Cor ao passar o mouse */
 }
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #e5ddd5;
+    margin: 0;
+    padding: 0;
+}
+
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    max-width: 100%;
+    margin: auto;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    position: relative; /* Para conter as barras fixas */
+}
+
+.chat-header {
+    background-color: var(--primary-color); /* Cor verde do WhatsApp */
+    color: white;
+    display: flex;
+    align-items: center;
+    padding: 0;
+    position: fixed; /* Fixa a barra no topo */
+    top: 0; /* Posição no topo */
+    left: 0;
+    right: 0; /* Preenche toda a largura */
+    z-index: 1000; /* Para garantir que a barra fique acima do conteúdo */
+}
+
+.profile-pic {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.call-options {
+    margin-left: auto;
+}
+
+.chat-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 60px 10px 50px; /* Adiciona padding superior e inferior para compensar as barras fixas */
+    background-color: white;
+    margin-top: 50px; /* Distância do topo para o conteúdo começar abaixo do cabeçalho */
+}
+
+.message-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.message {
+    display: flex;
+    margin-bottom: 10px;
+}
+
+.message.sent {
+    justify-content: flex-end;
+}
+
+.message.received {
+    justify-content: flex-start;
+}
+
+.message-bubble {
+    max-width: 75%;
+    padding: 10px;
+    border-radius: 10px;
+    margin: 5px;
+    position: relative;
+}
+
+.message.sent .message-bubble {
+    background-color: #82aef0; /* Verde claro */
+}
+
+.message.received .message-bubble {
+    background-color: white;
+    border: 1px solid #e6e6e6;
+}
+
+.timestamp {
+    font-size: 0.8em;
+    color: #ffffff;
+}
+
+.chat-footer {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-top: 1px solid #ccc;
+    background-color: #f1f1f1;
+    position: fixed; /* Fixa a barra na parte inferior */
+    bottom: 0; /* Fixa a barra na parte inferior */
+    left: 0;
+    right: 0; /* Preenche toda a largura */
+    z-index: 1000; /* Para garantir que a barra fique acima do conteúdo */
+}
+
+#message-input {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 20px;
+    margin-right: 10px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+#send-button, .attach-button, .emoji-button {
+    background-color: var(--primary-color); /* Cor verde do WhatsApp */
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 10px;
+    cursor: pointer;
+}
+
+#send-button:hover, .attach-button:hover, .emoji-button:hover {
+    background-color: var(--primary-color); /* Cor verde mais escura */
+}
+

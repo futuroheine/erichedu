@@ -3,103 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat - {{ turma.nome }}</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,500,700&display=swap">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <script src="https://js.pusher.com/7.0/pusher.min.js"></script>
-    <style>
-        /* Estilos já existentes */
-    </style>
+    <title>Chat</title>
 </head>
 <body>
     <div class="chat-container">
-        <h1>Chat da Turma: {{ turma.nome }}</h1>
+        <header class="chat-header">
+            <h1>{{ turma.nome }}</h1>
+            <div class="call-options">
+                <button class="call-button">📞</button>
+            </div>
+        </header>
 
-        <!-- Área de mensagens -->
-        <div class="messages" id="messages">
-            {% for mensagem in mensagens %}
-                {% set user_nome, mensagem_texto, rotulos, foto_perfil, hora_envio = mensagem %}
-                <div class="message">
-                    <div class="message-content {% if user_nome == current_user.nome_completo %}meu{% else %}neutro{% endif %}">
-                        <strong>{{ user_nome }}</strong>
-                        {% for rotulo in rotulos %}
-                            <span class="label label-{{ rotulo | lower }}">{{ rotulo }}</span>
-                        {% endfor %}
-                        <p>{{ mensagem_texto }}</p>
-                        <span class="message-time">{{ hora_envio }}</span>
+        <div class="chat-body" id="chat-body">
+            <div class="message-list">
+                {% for nome, mensagem, rotulos, foto_perfil, timestamp in mensagens %}
+                    <div class="message {{ 'sent' if nome == current_user.nome_completo else 'received' }}">
+                        <img src="{{ foto_perfil or 'default-avatar.png' }}" alt="Foto de perfil" class="m-profile-pic">
+                        <div class="message-bubble">
+                            <div class="message-info">
+                                <strong>{{ nome }}</strong> <span class="timestamp">{{ timestamp }}</span>
+                            </div>
+                            <p>{{ mensagem }}</p>
+                        </div>
                     </div>
-                </div>
-            {% endfor %}
+                {% endfor %}
+            </div>
         </div>
 
-        <!-- Formulário de envio de mensagem -->
-        <form id="chat-form" class="message-form">
-            <input type="text" id="mensagem" required placeholder="Digite sua mensagem..." autocomplete="off">
-            <button type="submit">
-                <i class="send-icon">➤</i>
-            </button>
-        </form>
-
-        <!-- Som de notificação -->
-        <audio id="notification-sound" src="{{ url_for('static', filename='plim-sound.mp3') }}"></audio>
+        <div class="chat-footer">
+            <input type="text" id="message-input" placeholder="Digite sua mensagem...">
+            <button id="send-button">Enviar</button>
+            <button class="attach-button">📎</button>
+            <button class="emoji-button">😊</button>
+        </div>
     </div>
 
+    <script src="https://js.pusher.com/7.0/pusher.min.js"></script>
     <script>
-            var turma = {
-            id: "{{ turma.id }}"
-            };
-           console.log(turma.id);  // Deve mostrar o ID da turma no console
         // Configuração do Pusher
         const pusher = new Pusher('4df4366db18a7f9ff11e', {
             cluster: 'sa1'
         });
+        const channel = pusher.subscribe('turma-{{ turma.id }}');
 
-        // Subscribing to the channel
-        const channel = pusher.subscribe(`turma-${turma.id}`);
-        console.log(turma.id);
-
-
-        // Receber nova mensagem
         channel.bind('new-message', function(data) {
-            const messageContainer = document.getElementById('messages');
-            const messageElement = document.createElement('div');
-            const classBalon = (data.user_nome === "{{ current_user.nome_completo }}") ? 'meu' : 'neutro';
-
-            messageElement.innerHTML = `
-                <div class="message-content ${classBalon}">
-                    <strong>${data.user_nome}</strong>
-                    ${data.rotulos.map(rotulo => `<span class="label label-${rotulo.toLowerCase()}">${rotulo}</span>`).join('')}
+            const messageList = document.querySelector('.message-list');
+            const newMessage = document.createElement('div');
+            newMessage.className = `message ${data.user_nome === "{{ current_user.nome_completo }}" ? 'sent' : 'received'}`;
+            newMessage.innerHTML = `
+                <img src="${data.foto_perfil || 'default-avatar.png'}" alt="Foto de perfil" class="message-profile-pic">
+                <div class="message-bubble">
+                    <div class="message-info">
+                        <strong>${data.user_nome}</strong> <span class="timestamp">${data.time}</span>
+                    </div>
                     <p>${data.message}</p>
-                    <span class="message-time">${data.time}</span>
                 </div>
             `;
-            messageContainer.appendChild(messageElement);
-            messageContainer.scrollTop = messageContainer.scrollHeight; // Rolar para a última mensagem
-
-            // Tocar som de notificação
-            const notificationSound = document.getElementById('notification-sound');
-            notificationSound.play();
+            messageList.appendChild(newMessage);
+            messageList.scrollTop = messageList.scrollHeight; // Rolagem automática
         });
 
-        // Enviar mensagem
-        document.getElementById('chat-form').addEventListener('submit', function(event) {
-            event.preventDefault();
-            const mensagem = document.getElementById('mensagem').value;
-            const horaAtual = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        document.getElementById('send-button').addEventListener('click', function() {
+            const input = document.getElementById('message-input');
+            const message = input.value;
+            if (message.trim() === '') return;
 
-            // Aqui você precisa enviar a mensagem para o seu servidor
+            const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+            const turmaId = {{ turma.id }};
             fetch('/send_message', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    turma_id: turma.id,
-                    message: mensagem,
-                    time: horaAtual
-                })
+                body: JSON.stringify({ turma_id: turmaId, message: message, time: time })
+            }).then(response => {
+                if (response.ok) {
+                    input.value = '';
+                }
             });
+        });
 
-            document.getElementById('mensagem').value = ''; // Limpa o campo
+        // Rolagem automática na inicialização
+        document.addEventListener("DOMContentLoaded", function() {
+            const messageList = document.querySelector('.message-list');
+            messageList.scrollTop = messageList.scrollHeight;
         });
     </script>
 </body>

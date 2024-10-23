@@ -330,7 +330,7 @@ def home():
     # Criar um dicionário para mapear dias da semana
     dias_da_semana = {
         'monday': 'segunda',
-        'tuesday': 'terça',
+        'tuesday': 'terca',
         'wednesday': 'quarta',
         'thursday': 'quinta',
         'friday': 'sexta',
@@ -346,6 +346,11 @@ def home():
 
     # Buscar a próxima aula
     proxima_aula = QH.query.filter_by(turma_id=turma_id, dia_da_semana=dia_atual).filter(QH.horario > horario_atual).order_by(QH.horario).first()
+    print(f'Dia atual: {dia_atual}')  # Adicione esta linha para debug
+    print(f'Turma ID: {turma_id}')  # Verifica o ID da turma
+    print(f'Horário Atual: {horario_atual}')  # Verifica o horário atual
+    print(f'Próxima Aula: {proxima_aula}')  # Verifica a próxima aula encontrada
+
 
     # Buscar avisos recentes da turma do usuário
     avisos = Aviso.query.filter_by(turma_id=turma_id).order_by(Aviso.timestamp.desc()).limit(5).all()
