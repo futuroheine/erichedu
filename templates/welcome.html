@@ -6,23 +6,23 @@
     <meta name="description" content="ErichEDU - Conectando Alunos e Professores de uma forma nunca antes vista. Acompanhe suas aulas, mensagens e desempenho em um só lugar!">
     <meta name="keywords" content="educação, plataforma educacional, escola, professores, alunos, comunicação, desempenho, agenda">
     <meta name="author" content="ErichEDU">
-    <meta name="theme-color" content="#4CAF50"> <!-- Cor da barra de endereço no Android -->
-    <meta name="mobile-web-app-capable" content="yes"> <!-- Android -->
-    <meta name="apple-mobile-web-app-capable" content="yes"> <!-- iOS -->
-    <meta name="apple-mobile-web-app-status-bar-style" content="default"> <!-- Cor da barra de status no iOS -->
-    <meta name="apple-mobile-web-app-title" content="ErichEDU"> <!-- Título da PWA no iOS -->
-    
+    <meta name="theme-color" content="#4CAF50">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="ErichEDU">
+
     <!-- Apple Touch Icon -->
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='erichedu-icon.png') }}">
-    
+
     <!-- Manifest File -->
     <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-    
-    <!-- Favicon e Ícones -->
+
+    <!-- Favicon -->
     <link rel="icon" type="image/png" sizes="192x192" href="{{ url_for('static', filename='erichedu-icon.png') }}">
     <link rel="icon" type="image/png" sizes="512x512" href="{{ url_for('static', filename='erichedu-icon.png') }}">
-    
-    <title>ErichEDU - Conectando Educação</title>
+
+    <title>ErichEDU - Bem-vindo</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;

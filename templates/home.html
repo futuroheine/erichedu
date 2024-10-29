@@ -10,7 +10,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="EricEdu">
+    <meta name="apple-mobile-web-app-title" content="ErichEdu">
 
     <!-- Ícones -->
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='erichedu-icon.png') }}">
@@ -44,7 +44,8 @@
 
         /* Sidebar */
         .sidebar {
-            width: 90%;
+            width: 250px; /* Largura padrão */
+            min-width: 250px; /* Definindo largura mínima */
             background-color: var(--primary-color);
             color: var(--white);
             padding: 20px;
@@ -54,10 +55,13 @@
             height: 100vh;
             overflow-y: auto;
             z-index: 2;
-        }
+            transition: width 0.3s;
 
+        }
+        
         .sidebar.collapsed {
-            width: 60px;
+            width: 60px; /* Largura ao colapsar */
+            min-width: 60px; /* Ajuste para largura mínima ao colapsar */
         }
 
         .sidebar-menu {
@@ -105,18 +109,23 @@
         .content {
             flex-grow: 1;
             padding: 20px;
-            margin-left: 50px;
+            margin-left: 02%; /* Ajuste inicial correspondente à largura da sidebar */
             transition: margin-left 0.3s;
             background-color: var(--white);
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             z-index: 1;
             min-width: 0;
-        }
+        }   
 
         .sidebar.collapsed + .content {
-            margin-left: 60px;
+            margin-left: 02%; /* A largura da sidebar colapsada */
         }
+
+        .content.collapsed {
+            margin-left: 02%; /* A largura da sidebar não colapsada */
+        }
+
 
         .content h1 {
             color: var(--primary-color);
