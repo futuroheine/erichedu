@@ -224,6 +224,23 @@ def upload_foto_perfil(foto):
     
     return None
 
+def get_primary_collor():
+    turma_id = current_user.turma_id  # Obtenha a turma do usuário atual
+
+    # Defina a cor baseada na turma do usuário
+    if 1 <= turma_id <= 4:
+        primary_color = '#083888'  # Azul
+    elif 6 <= turma_id <= 9:
+        primary_color = '#fde100'  # Amarelo pastel
+    elif 11 <= turma_id <= 14:
+        primary_color = '#f22e2e'  # Vermelho pastel
+    elif turma_id in [5, 10, 15]:
+        primary_color = '#89d156'  # Verde pastel
+    else:
+        primary_color = '#083888'  # Cor padrão se nenhum caso acima se aplicar
+
+    return primary_color
+
 
 @app.route('/')
 def index():
@@ -235,6 +252,17 @@ def load_user(user_id):
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    if current_user.is_authenticated:
+        turma = current_user.turma
+        turma_id = turma.id if turma else None  # Verifica se turma existe
+    else:
+        turma = None
+        turma_id = None
+
+    if turma is None:
+        primary_color = "#004a87"
+    else:
+        primary_color = get_primary_collor()
     if request.method == 'POST':
         email = request.form['email']
         senha = request.form['senha']
@@ -247,14 +275,16 @@ def login():
             return redirect(url_for('home'))
         else:
             flash('Email ou senha inválidos.', 'danger')
+
     
-    return render_template('login.html')
+    return render_template('login.html', primary_color=primary_color)
 
 @app.route('/materias', methods=['GET'])
 @login_required
 def materias():
     # Verifica a turma do usuário atual
     turma = current_user.turma
+    turma_id = turma.id
 
     # Se a turma não for encontrada ou o usuário não tiver uma turma associada
     if not turma:
@@ -264,8 +294,12 @@ def materias():
     # Busca todas as matérias da turma do usuário, ordenadas da mais nova para a mais antiga
     materias = Materia.query.filter_by(turma_id=turma.id).order_by(Materia.id.desc()).all()
 
+    primary_color= get_primary_collor()
+    print(f'{turma}, {turma_id}, {primary_color}')
+
+
     # Renderiza a página com as matérias
-    return render_template('materias.html', materias=materias, user=current_user)
+    return render_template('materias.html', materias=materias, user=current_user, primary_color=primary_color)
 
 
 @app.route('/upload_materia', methods=['GET', 'POST'])
@@ -315,8 +349,10 @@ def upload_materia():
         flash('Matéria enviada com sucesso!', 'success')
         return redirect(url_for('home'))
 
+    primary_color= get_primary_collor()
+
     # Renderiza o formulário caso seja uma requisição GET
-    return render_template('enviar_materia.html')
+    return render_template('enviar_materia.html', primary_color=primary_color)
 
 
 
@@ -339,17 +375,10 @@ def home():
         'saturday': 'sábado',
         'sunday': 'domingo'
     }
-    if 1 <= turma_id <= 4:
-        primary_color = '#083888'  # Azul
-    elif 6 <= turma_id <= 9:
-        primary_color = '#ffe458'  # Amarelo pastel
-    elif 11 <= turma_id <= 14:
-        primary_color = '#ff6b6b'  # Vermelho pastel
-    elif turma_id in [5, 10, 15]:
-        primary_color = '#89d156'  # Verde pastel
-    else:
-        primary_color = '#083888'  # Cor padrão se nenhum caso acima se aplicar
 
+    primary_color= get_primary_collor()
+
+    print(f'{turma_id} {primary_color}')
     
     # Determinar o dia da semana atual em inglês e converter para português
     dia_atual_ingles = datetime.now().strftime('%A').lower()
@@ -378,14 +407,6 @@ def logout():
     flash('Logout bem-sucedido!', 'success')
     return redirect(url_for('login'))
 
-@app.route('/quadro_almoco')
-@login_required
-def quadro_almoco():
-    if not current_user.is_gremio:
-        flash('Apenas o grêmio estudantil pode gerenciar o quadro de almoço.', 'danger')
-        return redirect(url_for('index'))
-
-    return "Quadro de almoço atualizado com sucesso!"
 
 @app.route('/eu')
 @login_required
@@ -394,7 +415,12 @@ def profile():
     # Filtrando apenas as faltas que não são presentes e não são justificadas
     faltas = Falta.query.filter_by(user_id=current_user.id, presente=False, falta_justificada=False).all()
     total_faltas = len(faltas)
-    return render_template('eu.html', user=user, faltas_count=total_faltas)
+    turma = user.turma
+    turma_id = turma.id
+
+    primary_color= get_primary_collor()
+
+    return render_template('eu.html', user=user, faltas_count=total_faltas, primary_color=primary_color, turma=turma)
 
 
 # Inicializar o Firebase Admin SDK
@@ -491,11 +517,14 @@ from pusher import Pusher
 @login_required
 def chat(turma_id):
     turma = Turma.query.get_or_404(turma_id)
+    turma_id = turma.id
 
     # Garante que todas as turmas têm uma chave
     ensure_all_turmas_have_key()
 
     key = turma.key  
+    primary_color= get_primary_collor()
+
 
     mensagens = ChatMessage.query.filter_by(turma_id=turma.id).all()
     decrypted_messages = []
@@ -519,7 +548,7 @@ def chat(turma_id):
         'messages': decrypted_messages
     })
 
-    return render_template('chat.html', turma=turma, mensagens=decrypted_messages)
+    return render_template('chat.html', turma=turma, mensagens=decrypted_messages, primary_color=primary_color)
 
 
 # Configuração do Pusher
@@ -626,9 +655,17 @@ def cardapio():
         db.session.commit()
         flash('Cardápio atualizado com sucesso!', 'success')
         return redirect(url_for('cardapio'))
+    
+    turma = current_user.turma
+    turma_id = turma.id
+
+    primary_color= get_primary_collor()
+
+    print(f'{turma}, {turma_id}, {primary_color}')
+
 
     menu_items = Menu.query.all()
-    return render_template('cardapio.html', menu_items=menu_items, is_gremio=current_user.is_gremio, user=current_user)
+    return render_template('cardapio.html', menu_items=menu_items, is_gremio=current_user.is_gremio, user=current_user, primary_color=primary_color)
 
 @app.route('/admin', methods=['GET', 'POST'])
 @login_required
@@ -704,6 +741,9 @@ def marcar_faltas(turma_id):
 
     # Obtém a turma que está sendo acessada
     turma = Turma.query.get_or_404(turma_id)
+    turma_id = turma.id
+
+    primary_color= get_primary_collor()
 
     # Verifica se a turma do representante logado é a mesma que a turma acessada
     if turma.id != current_user.turma_id:
@@ -767,7 +807,7 @@ def marcar_faltas(turma_id):
         flash('Faltas atualizadas com sucesso!', 'success')
         return redirect(url_for('contagem_faltas'))
 
-    return render_template('marcar_faltas.html', turma=turma, alunos=alunos, dias_do_mes=dias_do_mes, faltas=faltas)
+    return render_template('marcar_faltas.html', turma=turma, alunos=alunos, dias_do_mes=dias_do_mes, faltas=faltas, primary_color=primary_color)
 
 @app.route('/favicon.ico')
 def fiv():
@@ -846,6 +886,26 @@ def minhas_faltas():
     dias_do_mes = [datetime(ano_atual, mes_atual, dia) for dia in range(1, calendar.monthrange(ano_atual, mes_atual)[1] + 1)]
 
     return render_template('minhas_faltas.html', faltas=faltas, turma=turma, dias_do_mes=dias_do_mes)
+
+@app.route('/criadores')
+def criadores():
+    # Verifica se o usuário está logado
+    if current_user.is_authenticated:
+        turma = current_user.turma
+        turma_id = turma.id if turma else None  # Verifica se turma existe
+    else:
+        turma = None
+        turma_id = None
+
+    if turma is None:
+        primary_color = "#004a87"
+    else:
+        primary_color = get_primary_collor()
+
+    # Renderiza a página, passando os valores
+    return render_template('criadores.html', primary_color=primary_color, turma=turma, turma_id=turma_id)
+
+
 
 if __name__ == '__main__':
     with app.app_context():

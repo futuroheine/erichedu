@@ -1,5 +1,5 @@
 :root {
-    --primary-color: #083888; /* Azul escuro ErichEdu */
+    --primary-color: {{ primary_color }}; /* Azul escuro ErichEdu */
     --secondary-color: #89d156; /* Verde vibrante */
     --accent-color: #ffe458; /* Amarelo */
     --white: #FFFFFF;
@@ -10,7 +10,7 @@
 body {
     margin: 0;
     font-family: Arial, sans-serif;
-    background-color: var(--gray-light);
+    background-color: var(--primary-color);
 }
 
 /* Container Principal */
@@ -20,7 +20,7 @@ body {
 }
 
 .sidebar {
-    width: 250px;
+    width: 90%;
     background-color: var(--primary-color);
     color: var(--white);
     padding: 20px;
@@ -314,12 +314,7 @@ body {
 .action-button:hover {
     background-color: var(--primary-color); /* Cor ao passar o mouse */
 }
-body {
-    font-family: 'Roboto', sans-serif;
-    background-color: var(--primary-color);
-    margin: 0;
-    padding: 0;
-}
+
 
 .chat-container {
     display: flex;

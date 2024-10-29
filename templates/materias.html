@@ -5,7 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Matérias</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
+    <style>
+        :root {
+            --primary-color: {{ primary_color }}; /* Azul escuro ErichEdu */
+        }
+    </style>
     
     <!-- Adicione o seguinte bloco de estilo na seção <head> do seu HTML -->
 <style>
@@ -150,7 +154,6 @@
     transition: opacity 0.3s; /* Transição suave */
 }
 :root {
-    --primary-color: #083888; /* Azul escuro ErichEdu */
     --secondary-color: #89d156; /* Verde vibrante */
     --accent-color: #ffe458; /* Amarelo */
     --white: #FFFFFF;

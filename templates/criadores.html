@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Criadores - Erich Edu</title>
+    <style>
+        :root {
+            --primary-color: {{ primary_color }};
+            --secondary-color: #89d156;
+            --highlight-color: #4CAF50;
+            --white: #FFFFFF;
+            --gray-light: #f2f2f2;
+            --gray-dark: #444444;
+        }
+        body {
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f0f0;
+        }
+
+        .banner {
+            background: url('{{ url_for('static', filename='banner.png') }}') no-repeat center center;
+            background-size: cover;
+            color: white;
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        .content {
+            background-color: rgba(255, 255, 255, 0.9); /* Fundo leve */
+            color: #333;
+            text-align: left;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 800px;
+            margin: auto;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 2.2em;
+            margin-bottom: 15px;
+        }
+
+        h2 {
+            font-size: 1.8em;
+            margin-top: 30px;
+            color: var(--primary-color); /* Azul claro */
+        }
+
+        p {
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin: 10px 0;
+        }
+
+        .creators {
+            margin-top: 20px;
+        }
+
+        .creator {
+            margin: 8px 0;
+            font-weight: bold;
+            border-bottom: 1px solid #e0e0e0; /* Linha de separação leve */
+            padding-bottom: 8px;
+        }
+
+        .creator:last-child {
+            border: none; /* Remove a linha do último criador */
+        }
+        .btn {
+            background-color: var(--primary-color);
+            color: var(--white);
+            padding: 10px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+            display: inline-block;
+            margin: 10px 10px 0 0;
+            transition: background-color 0.3s;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="banner">
+        <div class="content">
+            <h2>Os Criadores do ErichEDU</h2>
+            <p>O ErichEDU nasceu com uma missão: trazer mudanças positivas para a nossa escola! Um grupo de seis alunos do 1º ano teve a coragem de se juntar e montar essa chapa. Encarando os medos e as críticas, eles decidiram que era hora de agir e transformar.</p>
+            <p>Cada um trouxe seu talento e estilo, e a amizade que construímos nessa jornada é o que realmente faz tudo valer a pena. Mostramos que, juntos, somos mais fortes e podemos fazer coisas incríveis! Quem diria que um time formado por cinco meninas e um menino poderia criar algo tão especial?</p>
+            <p>O ErichEDU não é só um aplicativo, é uma representação do que somos: criativos, unidos e cheios de potencial! Queremos que a nossa energia e a nossa essência fiquem marcadas na escola, mostrando que a colaboração e o amor fazem toda a diferença.</p>
+            <p>Que nossa amizade e união sejam eternas! </p>
+
+            
+            <div class="creators">
+                <h2>Criadores:</h2>
+                <div class="creator">Andrew Souza | Idealizador, Desenvolvedor e Presidente do Erich EDU</div>
+                <div class="creator">Anna Leticia De Farias | Idealizadora, Produtora e co-Presidente do Erich EDU</div>
+                <div class="creator">Victoria Mattos | Idealizadora, Design e Vice-Presidente do Erich EDU</div>
+                <div class="creator">Ana Vitoria Valentim | Idealizadora</div>
+                <div class="creator">Stella Gomes | Idealizadora</div>
+                <div class="creator">Julia Bitencourt | Idealizadora</div>
+            </div>
+            <a href="{{ url_for('home') }}" class="btn">Voltar</a>
+
+        </div>
+    </div>
+
+</body>
+</html>
