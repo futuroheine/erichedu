@@ -1,5 +1,6 @@
 from flask import Flask, render_template, redirect, url_for, flash, session, request, send_from_directory
-from flask_sqlalchemy import SQLAlchemy
+from flask_sqlalchemy import SQLAlchemy 
+from sqlalchemy import or_
 from flask_login import LoginManager, UserMixin, login_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 import requests
@@ -338,6 +339,17 @@ def home():
         'saturday': 'sábado',
         'sunday': 'domingo'
     }
+    if 1 <= turma_id <= 4:
+        primary_color = '#083888'  # Azul
+    elif 6 <= turma_id <= 9:
+        primary_color = '#ffe458'  # Amarelo pastel
+    elif 11 <= turma_id <= 14:
+        primary_color = '#ff6b6b'  # Vermelho pastel
+    elif turma_id in [5, 10, 15]:
+        primary_color = '#89d156'  # Verde pastel
+    else:
+        primary_color = '#083888'  # Cor padrão se nenhum caso acima se aplicar
+
     
     # Determinar o dia da semana atual em inglês e converter para português
     dia_atual_ingles = datetime.now().strftime('%A').lower()
@@ -354,9 +366,9 @@ def home():
 
 
     # Buscar avisos recentes da turma do usuário
-    avisos = Aviso.query.filter_by(turma_id=turma_id).order_by(Aviso.timestamp.desc()).limit(5).all()
+    avisos = Aviso.query.filter(or_(Aviso.turma_id == turma_id, Aviso.geral == True)).order_by(Aviso.timestamp.desc()).limit(5).all()
 
-    return render_template('home.html', user=user, proxima_aula=proxima_aula, avisos=avisos)
+    return render_template('home.html', user=user, proxima_aula=proxima_aula, avisos=avisos, primary_color=primary_color)
 
 login_manager.login_view = 'login'
 

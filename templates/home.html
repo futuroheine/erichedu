@@ -4,64 +4,56 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EricEdu - Home</title>
-    
-    <!-- PWA Meta Tags -->
+
+    <!-- Meta tags para PWA -->
     <meta name="theme-color" content="#4CAF50">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="ErichEDU">
-    
-    <!-- Apple Touch Icon -->
+    <meta name="apple-mobile-web-app-title" content="EricEdu">
+
+    <!-- Ícones -->
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='erichedu-icon.png') }}">
-    
-    <!-- Favicon e Ícones -->
     <link rel="icon" type="image/png" sizes="192x192" href="{{ url_for('static', filename='erichedu-icon.png') }}">
     <link rel="icon" type="image/png" sizes="512x512" href="{{ url_for('static', filename='erichedu-icon.png') }}">
 
-    <!-- JQuery -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <!-- Slick CSS -->
-    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css"/>
-    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick-theme.css"/>
-
-    <!-- Slick JS -->
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
-
+    <!-- Estilos e Scripts -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick-theme.css"/>
     <style>
         :root {
-            --primary-color: #083888;
+            --primary-color: {{ primary_color }};
             --secondary-color: #89d156;
-            --accent-color: #ffe458;
+            --highlight-color: #4CAF50;
             --white: #FFFFFF;
             --gray-light: #f2f2f2;
             --gray-dark: #444444;
-            --highlight-color: #4CAF50;
         }
 
         body {
             margin: 0;
             font-family: Arial, sans-serif;
             background-color: var(--gray-light);
+            overflow-x: hidden;
         }
 
-        /* Container Principal */
         .container {
             display: flex;
-            height: 100vh;
+            min-height: 100vh;
         }
 
-        /* Barra Lateral */
+        /* Sidebar */
         .sidebar {
-            width: 250px;
+            width: 90%;
             background-color: var(--primary-color);
             color: var(--white);
             padding: 20px;
             transition: width 0.3s;
-            overflow: hidden;
+            position: sticky;
+            top: 0;
             height: 100vh;
-            position: fixed;
-            box-sizing: border-box;
+            overflow-y: auto;
+            z-index: 2;
         }
 
         .sidebar.collapsed {
@@ -71,6 +63,7 @@
         .sidebar-menu {
             list-style-type: none;
             padding: 0;
+            margin: 20px 0;
         }
 
         .sidebar-menu li {
@@ -83,7 +76,7 @@
             font-size: 18px;
             display: flex;
             align-items: center;
-            padding: 2px 15px;
+            padding: 10px 15px;
             transition: background-color 0.3s;
         }
 
@@ -91,7 +84,6 @@
             margin-left: 10px;
         }
 
-        /* Ocultar o texto ao recolher a barra lateral */
         .sidebar.collapsed .menu-text {
             display: none;
         }
@@ -109,54 +101,37 @@
             margin-bottom: 20px;
         }
 
-        /* Conteúdo Principal */
+        /* Conteúdo */
         .content {
-            padding: 20px;
-            margin-left: 250px;
-            transition: margin-left 0.3s;
             flex-grow: 1;
+            padding: 20px;
+            margin-left: 50px;
+            transition: margin-left 0.3s;
             background-color: var(--white);
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1;
+            min-width: 0;
         }
 
         .sidebar.collapsed + .content {
             margin-left: 60px;
         }
 
-        /* Títulos */
         .content h1 {
             color: var(--primary-color);
         }
 
-        .content h2 {
-            color: var(--primary-color);
-        }
-
-        /* Atalhos Rápidos */
-        .atalhos {
-            margin-top: 20px;
-        }
-
-        .atalhos .btn {
-            background-color: var(--primary-color);
-            color: var(--white);
-            padding: 10px 15px;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-            display: inline-block;
-            margin-right: 10px;
-        }
-
-        .atalhos .btn:hover {
-            background-color: var(--secondary-color);
+        .avisos {
+            max-width: 100%;
+            overflow: hidden;
         }
 
         .avisos-carousel {
             margin: 20px 0;
-            max-height: 50%;
-            max-width: 10%;
+            overflow: hidden;
+            width: 100%;
+            max-height: 200px;
         }
 
         .aviso-item {
@@ -164,125 +139,99 @@
             padding: 15px;
             border-radius: 5px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            text-align: left;
+            margin-bottom: 10px;
+            max-height: 100%;
+            overflow: hidden;
         }
 
-        /* Estilo das bolinhas do carrossel */
-        .slick-dots {
-            bottom: -25px; /* Ajuste a posição vertical das bolinhas */
-        }
-        .slick-next {
-          right: -518px;
-          color: #083888;
-        }
-        .slick-prev {
-          left: -13px;
-          color: #083888;
-        }
-
-        .slick-dots li button:before {
-            font-size: 12px; /* Tamanho das bolinhas */
-            color: var(--primary-color); /* Cor das bolinhas */
+        /* Botões de Ação */
+        .atalhos .btn {
+            background-color: var(--primary-color);
+            color: var(--white);
+            padding: 10px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+            display: inline-block;
+            margin: 10px 10px 0 0;
+            transition: background-color 0.3s;
         }
 
-        .slick-dots li.slick-active button:before {
-            color: var(--secondary-color); /* Cor da bolinha ativa */
+        .atalhos .btn:hover {
+            background-color: var(--secondary-color);
         }
-        .slick-slider .slick-list {
-          -webkit-transform: translate3d(0, 0, 0);
-          -moz-transform: translate3d(0, 0, 0);
-          -ms-transform: translate3d(0, 0, 0);
-          -o-transform: translate3d(0, 0, 0);
-          transform: translate3d(0, 0, 0);
-          width: 600px;
-        }
-        
     </style>
-    
 </head>
 <body>
     <div class="container">
-        <!-- Barra lateral -->
-        <div class="sidebar" id="sidebar">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
             <button class="toggle-btn" id="toggle-btn">☰</button>
-            <h2 class="sidebar-title"><span class="menu-text">Menu</span></h2>
             <ul class="sidebar-menu">
-                <li><a href="{{ url_for('home') }}"><span class="menu-text">INÍCIO</span></a></li>
-                <li><a href="{{ url_for('profile') }}"><span class="menu-text">EU</span></a></li>
-                <li><a href="{{ url_for('materias') }}"><span class="menu-text">MATÉRIAS</span></a></li>
-                <li><a href="{{ url_for('chat', turma_id=user.turma_id) }}"><span class="menu-text">CHAT</span></a></li>
-                <li><a href="{{ url_for('cardapio') }}"><span class="menu-text">CARDÁPIO</span></a></li>
+                <li><a href="{{ url_for('home') }}"><span class="menu-text">Início</span></a></li>
+                <li><a href="{{ url_for('profile') }}"><span class="menu-text">Eu</span></a></li>
+                <li><a href="{{ url_for('materias') }}"><span class="menu-text">Matérias</span></a></li>
+                <li><a href="{{ url_for('chat', turma_id=user.turma_id) }}"><span class="menu-text">Chat</span></a></li>
+                <li><a href="{{ url_for('cardapio') }}"><span class="menu-text">Cardápio</span></a></li>
                 {% if current_user.is_admin %}
-                    <li><a href="{{ url_for('admin') }}"><span class="menu-text">ÁREA DO ADMINISTRADOR</span></a></li>
+                    <li><a href="{{ url_for('admin') }}"><span class="menu-text">Área do Administrador</span></a></li>
                 {% endif %}
                 {% if current_user.is_representante %}
-                    <li><a href="{{ url_for('upload_materia') }}"><span class="menu-text">ENVIAR MATÉRIA</span></a></li>
-                    <li><a href="{{ url_for('contagem_faltas') }}"><span class="menu-text">FAZER CHAMADA</span></a></li>
+                    <li><a href="{{ url_for('upload_materia') }}"><span class="menu-text">Enviar Matéria</span></a></li>
+                    <li><a href="{{ url_for('contagem_faltas') }}"><span class="menu-text">Fazer Chamada</span></a></li>
                 {% endif %}
-                <li><a href="{{ url_for('logout') }}"><span class="menu-text">LOGOUT</span></a></li>
+                <li><a href="{{ url_for('logout') }}"><span class="menu-text">Logout</span></a></li>
             </ul>
-        </div>
-        
-        <!-- Conteúdo principal -->
-        <div class="content">
+        </aside>
+
+        <!-- Conteúdo Principal -->
+        <main class="content">
             <h1>Bem-vindo, {{ user.nome_completo }}!</h1>
-            <h2>Avisos Recentes</h2>
-            <div class="avisos-carousel">
-                {% if avisos %}
-                    {% for aviso in avisos %}
-                        <div class="aviso-item">
-                            <strong>{{ aviso.titulo }}</strong> - {{ aviso.mensagem }} 
-                            <br><small>Publicado em: {{ aviso.timestamp.strftime('%d/%m/%Y %H:%M') }}</small>
-                        </div>
-                    {% endfor %}
-                {% else %}
-                    <div>Nenhum aviso recente.</div>
-                {% endif %}
-            </div>
+            <section class="avisos">
+                <h2>Avisos Recentes</h2>
+                <div class="avisos-carousel">
+                    {% if avisos %}
+                        {% for aviso in avisos %}
+                            <div class="aviso-item">
+                                <strong>{{ aviso.titulo }}</strong> - {{ aviso.mensagem }}
+                                <br><small>Publicado em: {{ aviso.timestamp.strftime('%d/%m/%Y %H:%M') }}</small>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p>Nenhum aviso recente.</p>
+                    {% endif %}
+                </div>
+            </section>
 
-            <div class="atalhos">
+            <section class="atalhos">
                 {% if current_user.is_representante %}
-                <a href="{{ url_for('upload_materia') }}" class="btn">Enviar Matéria</a>
-                <a href="{{ url_for('contagem_faltas') }}" class="btn">Fazer Chamada</a>
+                    <a href="{{ url_for('upload_materia') }}" class="btn">Enviar Matéria</a>
+                    <a href="{{ url_for('contagem_faltas') }}" class="btn">Fazer Chamada</a>
                 {% endif %}
-
                 <a href="{{ url_for('cardapio') }}" class="btn">Ver Cardápio</a>
                 <a href="{{ url_for('materias') }}" class="btn">Ver Matérias</a>
-            </div>
-            {% if proxima_aula %}
-            <div class="proxima-aula">
-                <h3>Próxima Aula:</h3>
-                <p><strong>Matéria:</strong> {{ proxima_aula.materia }}</p>
-                <p><strong>Professor:</strong> {{ proxima_aula.professor }}</p>
-                <p><strong>Horário:</strong> {{ proxima_aula.horario.strftime('%H:%M') }}</p>
-                <p><strong>Dia da Semana:</strong> {{ proxima_aula.dia_da_semana|capitalize }}</p>
-            </div>
-            {% else %}
-            <div class="proxima-aula">
-                <h3>Próxima Aula:</h3>
-                <p>Nenhuma aula agendada para hoje.</p>
-            </div>
-            {% endif %}
-        </div>
+            </section>
+        </main>
     </div>
 
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
     <script>
         $(document).ready(function() {
             $('.avisos-carousel').slick({
-                dots: true, // Habilita bolinhas de navegação
+                dots: true,
                 infinite: true,
                 speed: 500,
                 slidesToShow: 1,
                 slidesToScroll: 1,
-                autoplay: true, // Ativa autoplay
-                autoplaySpeed: 3000, // Velocidade do autoplay
+                autoplay: true,
+                autoplaySpeed: 3000,
             });
         });
 
-        // Funcionalidade de ocultar/exibir a barra lateral
         document.getElementById('toggle-btn').addEventListener('click', function() {
-            var sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('collapsed');
+            document.getElementById('sidebar').classList.toggle('collapsed');
+            document.querySelector('.content').classList.toggle('collapsed');
         });
     </script>
 </body>

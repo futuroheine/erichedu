@@ -316,7 +316,7 @@ body {
 }
 body {
     font-family: 'Roboto', sans-serif;
-    background-color: #e5ddd5;
+    background-color: var(--primary-color);
     margin: 0;
     padding: 0;
 }
