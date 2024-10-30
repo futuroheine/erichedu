@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, flash, session, request, send_from_directory
+from flask import Flask, render_template, redirect, url_for, flash, session, request, send_from_directory, jsonify
 from flask_sqlalchemy import SQLAlchemy 
 from sqlalchemy import or_
 from flask_login import LoginManager, UserMixin, login_user, login_required, current_user
@@ -550,7 +550,7 @@ def chat(turma_id):
 
     return render_template('chat.html', turma=turma, mensagens=decrypted_messages, primary_color=primary_color)
 
-
+import pusher_push_notifications
 # Configuração do Pusher
 app_id = "1882919"
 key = "4df4366db18a7f9ff11e"
@@ -565,9 +565,14 @@ pusher_client = Pusher(
     ssl=True
 )
 
+beams_client = pusher_push_notifications.PushNotifications(
+    instance_id='ffa01f89-8fde-445e-afa6-2614f666e036',  # Substitua pelo seu Instance ID
+    secret_key='912895CB7D950BBB6A5EA3F647856758FF5AA6FA659262A8173A4C9538CFAA40'  # Substitua pelo seu Secret Key
+)
+
 @app.route('/send_message', methods=['POST'])
 def handle_send_message():
-    data = request.json  # Use a estrutura JSON conforme o necessário
+    data = request.json  # Use a estrutura JSON conforme necessário
     turma_id = data['turma_id']
     mensagem = data['message']
     time = data['time']
@@ -604,12 +609,59 @@ def handle_send_message():
     # Emitindo a mensagem para o canal Pusher
     pusher_client.trigger(f'turma-{turma_id}', 'new-message', message_data)
 
-    return "Mensagem enviada com sucesso!"  # Retornando uma resposta simples
+    # Enviando uma notificação para todos os inscritos no interesse "turma-{turma_id}"
+    notification_title = "Você tem uma nova mensagem!"
+    notification_body = f"{current_user.nome_completo}: {mensagem}"
+    
+    try:
+        beams_client.publish_to_interests(
+            interests=[f'turma-{turma_id}'],
+            publish_body={
+                'apns': {
+                    'aps': {
+                        'alert': {
+                            'title': notification_title,
+                            'body': notification_body
+                        }
+                    }
+                },
+                'fcm': {
+                    'notification': {
+                        'title': notification_title,
+                        'body': notification_body,
+                        'icon': 'https://erichedu.onrender.com/static/erichedu-icon.png',  # URL para a logo do ErichEdu
+                        'click_action': 'https://erichedu.onrender.com/chat/{turma_id}'  # URL que será aberta ao clicar na notificação
+                    }
+                },
+                'web': {
+                    'notification': {
+                        'title': notification_title,
+                        'body': notification_body,
+                        'icon': 'https://erichedu.onrender.com/static/erichedu-icon.png',  # URL para a logo do ErichEdu
+                        'deep_link': 'https://erichedu.onrender.com/chat/{turma_id}'  # URL da página do chat
+                    }
+                }
+            }
+        )
+        print("Notificação enviada com sucesso!")
+    except Exception as e:
+        print(f"Erro ao enviar notificação: {e}")
 
- 
+    return jsonify({"message": "Mensagem enviada com sucesso!"})
+
 @app.route('/manifest.json')
 def manifest():
     return send_from_directory('static', 'manifest.json')
+
+@app.route('/sw.js')
+def serviceworker():
+    return send_from_directory('static', 'sw.js')
+
+@app.route('/service-worker.js')
+def service_worker():
+    return send_from_directory('static', 'service-worker.js')
+
+
 
 
 @socketio.on('join')

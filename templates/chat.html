@@ -6,11 +6,12 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,500,700&display=swap">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <title>Chat</title>
+    <script src="https://js.pusher.com/beams/1.0/push-notifications-cdn.js"></script>
 </head>
 
 <style>
     :root {
-        --primary-color: {{ primary_color }}; /* Azul escuro ErichEdu */
+        --primary-color: {{ primary_color }};
     }
 </style>
 <body>
@@ -59,7 +60,7 @@
             const newMessage = document.createElement('div');
             newMessage.className = `message ${data.user_nome === "{{ current_user.nome_completo }}" ? 'sent' : 'received'}`;
             newMessage.innerHTML = `
-                <img src="${data.foto_perfil || 'default-avatar.png'}" alt="Foto de perfil" class="message-profile-pic">
+                <img src="${data.foto_perfil || 'default-avatar.png'}" alt="Foto de perfil" class="m-profile-pic">
                 <div class="message-bubble">
                     <div class="message-info">
                         <strong>${data.user_nome}</strong> <span class="timestamp">${data.time}</span>
@@ -73,11 +74,12 @@
 
         document.getElementById('send-button').addEventListener('click', function() {
             const input = document.getElementById('message-input');
-            const message = input.value;
-            if (message.trim() === '') return;
+            const message = input.value.trim();
+            if (message === '') return;
 
             const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
             const turmaId = {{ turma.id }};
+            
             fetch('/send_message', {
                 method: 'POST',
                 headers: {
@@ -87,7 +89,10 @@
             }).then(response => {
                 if (response.ok) {
                     input.value = '';
+                    input.focus();
                 }
+            }).catch(error => {
+                console.error("Erro ao enviar a mensagem:", error);
             });
         });
 
@@ -96,6 +101,25 @@
             const messageList = document.querySelector('.message-list');
             messageList.scrollTop = messageList.scrollHeight;
         });
+
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(function(registration) {
+                    console.log('Service Worker registrado com sucesso:', registration);
+
+                    const beamsClient = new PusherPushNotifications.Client({
+                        instanceId: 'ffa01f89-8fde-445e-afa6-2614f666e036',
+                        serviceWorkerRegistration: registration
+                    });
+
+                    beamsClient.start()
+                        .then(() => beamsClient.addDeviceInterest('turma-{{ turma.id }}'))
+                        .then(() => console.log('Registrado e inscrito com sucesso!'))
+                        .catch(console.error);
+                }).catch(function(error) {
+                    console.error('Falha no registro do Service Worker:', error);
+                });
+        }
     </script>
 </body>
 </html>
