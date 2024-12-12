@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ErichEDU - Conectando Alunos e Professores de uma forma nunca antes vista. Acompanhe suas aulas, mensagens e desempenho em um só lugar!">
+    <meta name="keywords" content="educação, plataforma educacional, escola, professores, alunos, comunicação, desempenho, agenda">
+    <meta name="author" content="ErichEDU">
+    <meta name="theme-color" content="#4CAF50"> <!-- Cor da barra de endereço no Android -->
+    <meta name="mobile-web-app-capable" content="yes"> <!-- Android -->
+    <meta name="apple-mobile-web-app-capable" content="yes"> <!-- iOS -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="default"> <!-- Cor da barra de status no iOS -->
+    <meta name="apple-mobile-web-app-title" content="ErichEDU"> <!-- Título da PWA no iOS -->
+    
+    <!-- Apple Touch Icon -->
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='erichedu-icon.png') }}">
+    
+    <!-- Manifest File -->
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    
+    <!-- Favicon e Ícones -->
+    <link rel="icon" type="image/png" sizes="192x192" href="{{ url_for('static', filename='erichedu-icon.png') }}">
+    <link rel="icon" type="image/png" sizes="512x512" href="{{ url_for('static', filename='erichedu-icon.png') }}">
+    
+    <title>ErichEDU - Conectando Educação</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f8ff; /* Fundo azul claro */
+        }
+
+        header {
+            background-color: #004a87;
+            color: white;
+            padding: 10px 0;
+            text-align: center;
+        }
+
+        nav {
+            position: relative;
+        }
+
+        .menu-toggle {
+            display: none;
+            cursor: pointer;
+            font-size: 24px;
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        nav ul li {
+            margin: 0 15px;
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.3s;
+        }
+
+        nav ul li a:hover {
+            color: #ff6f61; /* Cor de destaque ao passar o mouse */
+        }
+
+        .banner {
+            background: url('{{ url_for('static', filename='banner.png') }}') no-repeat center center;
+            background-size: cover;
+            color: white;
+            text-align: center;
+            padding: 100px 0;
+        }
+
+        .banner h1 {
+            font-size: 50px;
+            margin: 0;
+        }
+
+        .banner p {
+            font-size: 24px;
+            margin: 10px 0 20px;
+        }
+
+        .btn {
+            background-color: #ff6f61;
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 18px;
+            transition: background-color 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #ff4c3b;
+        }
+
+        .funcionalidades {
+            padding: 50px 0;
+            text-align: center;
+            background-color: #fff;
+        }
+
+        .funcionalidades h2 {
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+
+        .funcionalidades p {
+            font-size: 18px;
+            margin-bottom: 30px;
+        }
+
+        .cards {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+
+        .card {
+            background-color: #f4f4f4;
+            padding: 20px;
+            margin: 15px;
+            border-radius: 10px;
+            width: 300px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+        }
+
+        .card h3 {
+            font-size: 24px;
+            color: #004a87;
+            margin-bottom: 10px;
+        }
+
+        /* Estilo da seção de login */
+        .login-section {
+            background-color: #004a87;
+            padding: 50px 0;
+            color: white;
+            text-align: center;
+        }
+
+        .login-section h2 {
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+
+        .login-form {
+            background-color: #fff;
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .login-form input {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .login-form button {
+            background-color: #004a87;
+            color: white;
+            padding: 15px;
+            width: 100%;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .login-form button:hover {
+            background-color: #00325f;
+        }
+
+        footer {
+            background-color: #004a87;
+            color: white;
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        footer p {
+            margin: 0;
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            nav ul {
+                display: none; /* Oculta os itens do menu em telas pequenas */
+                flex-direction: column;
+                width: 100%;
+                background-color: #004a87; /* Cor do fundo do menu */
+                position: absolute;
+                top: 50px; /* Distância do topo */
+                left: 0;
+                z-index: 1000;
+            }
+
+            nav ul.show {
+                display: flex; /* Mostra o menu quando ativado */
+            }
+
+            .menu-toggle {
+                display: block; /* Exibe o botão de menu */
+            }
+
+            .banner h1 {
+                font-size: 36px; /* Ajusta o tamanho do título */
+            }
+
+            .banner p {
+                font-size: 18px; /* Ajusta o tamanho do texto */
+            }
+
+            .card {
+                width: 90%; /* Ajusta a largura do cartão em telas pequenas */
+                margin: 10px auto; /* Margem automática para centralizar */
+            }
+            .system-logo {
+            width: 50vw;  /* 50% da largura da tela */
+            max-width: 100%;  /* Impede que a imagem ultrapasse o tamanho máximo */
+            height: auto;  /* Mantém a proporção da imagem */
+           }
+
+        }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const menuToggle = document.querySelector('.menu-toggle');
+            const navLinks = document.querySelector('nav ul');
+
+            menuToggle.addEventListener('click', function () {
+                navLinks.classList.toggle('show');
+            });
+        });
+    </script>
+</head>
+<body>
+
+    <header>
+        <nav>
+            <div class="menu-toggle">&#9776;</div> <!-- Ícone de menu -->
+            <ul>
+                <li><a href="#">Início</a></li>
+                <li><a href="#">Funcionalidades</a></li>
+                <li><a href="{{ url_for('signup') }}">Cadastre-se aqui</a></li>
+                <li><a href="{{ url_for('login') }}">Faça Login</a></li>
+                <li><a href="#">Contato</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="banner">
+        <h1>Bem-vindo ao ErichEDU</h1>
+        <p>Conectando Alunos e Professores de uma forma NUNCA ANTES VISTA!</p>
+        <a href="{{ url_for('login') }}" class="btn">Faça Login</a>
+    </section>
+
+    <section class="funcionalidades">
+        <h2>Funcionalidades do ErichEDU</h2>
+        <p>Descubra como o ErichEDU facilita a vida escolar para todos.</p>
+
+        <div class="cards">
+            <div class="card">
+                <h3>Agenda Escolar</h3>
+                <p>Acompanhe as aulas e prazos de tarefas de forma fácil.</p>
+            </div>
+            <div class="card">
+                <h3>Mensagens</h3>
+                <p>Comunique-se diretamente com professores e colegas.</p>
+            </div>
+            <div class="card">
+                <h3>Desempenho</h3>
+                <p>Veja suas faltas e acompanhe o progresso escolar.</p>
+            </div>
+        </div>
+        <section class="install-section">
+            <h2>Instale o ErichEDU no seu dispositivo</h2>
+            <p>Siga os passos abaixo para instalar o ErichEDU como um aplicativo no seu iOS ou Android.</p>
+    
+            <div class="install-steps">
+                <div class="step">
+                    <img src="{{ url_for('static', filename='ios-icon.png') }}" class="system-logo alt="iOS">
+                    <h3>iOS (Safari)</h3>
+                    <p>1. Abra o Safari e acesse o nosso site.<br>
+                       2. Toque no ícone de compartilhar na parte inferior da tela.<br>
+                       3. Selecione "Adicionar à Tela de Início".<br>
+                       4. Pronto! O ErichEDU será instalado como um aplicativo.</p>
+                </div>
+    
+                <div class="step">
+                    <img src="{{ url_for('static', filename='android-icon.png') }}" class="system-logo" alt="Android">
+                    <h3>Android (Chrome)</h3>
+                    <p>1. Abra o Google Chrome e acesse o nosso site.<br>
+                       2. Toque no menu de três pontos no canto superior direito.<br>
+                       3. Selecione "Adicionar à Tela de Início".<br>
+                       4. Pronto! O ErichEDU será instalado como um aplicativo.</p>
+                </div>
+            </div>
+        </section>
+    </section>
+
+    <footer>
+        <p>©️ 2024 ErichEDU - Todos os direitos reservados.</p>
+    </footer>
+
+</body>
+</html>

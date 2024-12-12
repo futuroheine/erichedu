@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matérias</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    
+    <!-- Adicione o seguinte bloco de estilo na seção <head> do seu HTML -->
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f4f4f4;
+        color: #333;
+    }
+
+    header {
+        background: #007BFF;
+        color: white;
+        padding: 10px 0;
+        text-align: center;
+    }
+
+    .container {
+        width: 80%;
+        margin: auto;
+        overflow: hidden;
+    }
+
+    .materia-card {
+        background: white;
+        margin: 20px 0;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+    }
+
+    h2 {
+        color: #007BFF;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    input[type="text"],
+    input[type="file"],
+    textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+
+    input[type="submit"] {
+        background: #007BFF;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    input[type="submit"]:hover {
+        background: #0056b3;
+    }
+
+    .alert {
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 4px;
+    }
+
+    .alert.success {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .alert.danger {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    .sidebar {
+    width: 250px; /* Largura da barra lateral */
+    background-color: var(--primary-color); /* Azul ErichEdu */
+    color: var(--white);
+    padding: 20px;
+    transition: width 0.3s; /* Transição suave */
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); /* Sombra */
+    overflow: hidden; /* Evita overflow quando recolhida */
+    height: 100vh; /* Ocupa a altura total da janela */
+    padding: 20px;
+    box-sizing: border-box; /* Para incluir o padding dentro da largura */
+    position: fixed; /* Fixa a barra lateral na tela */
+}
+
+
+.sidebar.collapsed {
+    width: 60px; /* Largura quando recolhida */
+}
+
+/* Menu da Barra Lateral */
+.sidebar-menu {
+    list-style-type: none;
+    padding: 0;
+}
+
+.sidebar-menu li {
+    margin: 15px 0;
+}
+
+.sidebar-menu a {
+    color: var(--white);
+    text-decoration: none;
+    font-size: 18px;
+    display: flex; /* Para alinhar ícone e texto */
+    align-items: center; /* Centraliza verticalmente */
+    transition: background-color 0.3s; /* Transição suave */
+    padding: 10px 15px; /* Espaçamento interno */
+}
+
+/* Novo estilo para esconder o texto */
+.sidebar.collapsed .sidebar-menu a  {
+    opacity: 0; /* Torna o texto invisível */
+    visibility: hidden; /* Oculta o texto */
+    transition: opacity 0.3s, visibility 0.3s; /* Transição suave */
+}
+.sidebar.collapsed .menu-text {
+    opacity: 0; /* Torna o texto invisível */
+    visibility: hidden; /* Oculta o texto */
+    transition: opacity 0.3s, visibility 0.3s; /* Transição suave */
+}
+
+.menu-text {
+    margin-left: 10px; /* Espaçamento entre o botão e o texto */
+    transition: opacity 0.3s; /* Transição suave */
+}
+:root {
+    --primary-color: #083888; /* Azul escuro ErichEdu */
+    --secondary-color: #89d156; /* Verde vibrante */
+    --accent-color: #ffe458; /* Amarelo */
+    --white: #FFFFFF;
+    --gray-light: #f2f2f2; /* Cinza claro */
+    --gray-dark: #444444; /* Cinza escuro para textos */
+}
+/* Quando a sidebar não está recolhida, o texto deve ser visível */
+.sidebar .sidebar-menu a {
+    opacity: 1; /* Torna o texto visível */
+    visibility: visible; /* Mostra o texto */
+}
+.sidebar {
+    width: 250px; /* Largura da barra lateral */
+    background-color: var(--primary-color); /* Azul ErichEdu */
+    color: var(--white);
+    padding: 20px;
+    transition: width 0.3s; /* Transição suave */
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); /* Sombra */
+    overflow: hidden; /* Evita overflow quando recolhida */
+    height: 100vh; /* Ocupa a altura total da janela */
+    padding: 20px;
+    box-sizing: border-box; /* Para incluir o padding dentro da largura */
+    position: fixed; /* Fixa a barra lateral na tela */
+}
+
+
+.sidebar.collapsed {
+    width: 60px; /* Largura quando recolhida */
+}
+
+/* Menu da Barra Lateral */
+.sidebar-menu {
+    list-style-type: none;
+    padding: 0;
+}
+
+.sidebar-menu li {
+    margin: 15px 0;
+}
+
+.sidebar-menu a {
+    color: var(--white);
+    text-decoration: none;
+    font-size: 18px;
+    display: flex; /* Para alinhar ícone e texto */
+    align-items: center; /* Centraliza verticalmente */
+    transition: background-color 0.3s; /* Transição suave */
+    padding: 10px 15px; /* Espaçamento interno */
+}
+
+/* Novo estilo para esconder o texto */
+.sidebar.collapsed .sidebar-menu a  {
+    opacity: 0; /* Torna o texto invisível */
+    visibility: hidden; /* Oculta o texto */
+    transition: opacity 0.3s, visibility 0.3s; /* Transição suave */
+}
+.sidebar.collapsed .menu-text {
+    opacity: 0; /* Torna o texto invisível */
+    visibility: hidden; /* Oculta o texto */
+    transition: opacity 0.3s, visibility 0.3s; /* Transição suave */
+}
+
+.menu-text {
+    margin-left: 10px; /* Espaçamento entre o botão e o texto */
+    transition: opacity 0.3s; /* Transição suave */
+}
+
+/* Quando a sidebar não está recolhida, o texto deve ser visível */
+.sidebar .sidebar-menu a {
+    opacity: 1; /* Torna o texto visível */
+    visibility: visible; /* Mostra o texto */
+}
+
+.sidebar-menu a:hover {
+    background-color: var(--secondary-color); /* Verde ao passar o mouse */
+}
+
+
+.sidebar-menu a:hover {
+    background-color: var(--secondary-color); /* Verde ao passar o mouse */
+}
+
+</style>
+
+</head>
+<body>
+    <body>
+        <div class="sidebar" id="sidebar">
+            <button class="toggle-btn" id="toggle-btn">☰</button>
+            <h2 class="sidebar-title"><span class="menu-text">Menu</span></h2>
+            <ul class="sidebar-menu">
+                <li><a href="{{ url_for('home') }}">INÍCIO</a></li>
+                <li><a href="{{ url_for('profile') }}">EU</a></li>
+                <li><a href="{{ url_for('materias') }}">MATÉRIAS</a></li>
+                <li><a href="{{ url_for('chat', turma_id=current_user.turma_id) }}">CHAT</a></li>
+                <li><a href="{{ url_for('cardapio') }}">CARDÁPIO</a></li>
+                {% if current_user.is_admin %}
+                    <li><a href="{{ url_for('admin') }}">ÁREA DO ADMINISTRADOR</a></li>
+                {% endif %}
+                <li><a href="{{ url_for('logout') }}">LOGOUT</a></li>
+            </ul>
+        </div>
+        
+    
+        <div class="container">
+            <h1>Matérias da Turma {{ current_user.turma.nome }}</h1>
+    
+            {% if materias %}
+                <ul class="materia-list">
+                {% for materia in materias %}
+                    <div class="materia-card">
+                        <h2>{{ materia.nome }}</h2>
+                        <p>Professor: {{ materia.professor }}</p>
+                        <p>Dia da Semana: {{ materia.dia_da_semana }}</p>
+                        {% if materia.imagem_url %}
+                            <img src="{{ materia.imagem_url }}" alt="{{ materia.nome }}">
+                        {% else %}
+                            <p>Imagem não disponível.</p>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+                </ul>
+            {% else %}
+                <p>Não há matérias cadastradas para sua turma.</p>
+            {% endif %}
+        </div>
+        ...
+    </body>
+    
+    <script>
+                $(document).ready(function() {
+            $('#toggle-btn').click(function() {
+                $('#sidebar').toggleClass('collapsed');
+                $('#menu-text').toggleClass('collapsed');
+            });
+        });
+    </script>
+</body>
+</html>
