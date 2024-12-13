@@ -14,6 +14,7 @@ from flask_socketio import SocketIO, emit, join_room, leave_room
 import eventlet
 from pytz import timezone  
 from datetime import datetime, timedelta
+import pytz
 
 
 
@@ -325,13 +326,17 @@ def home():
     dia_atual_ingles = datetime.now().strftime('%A').lower()
     dia_atual = dias_da_semana.get(dia_atual_ingles, dia_atual_ingles)  # Pega o dia em pt-BR
 
-    horario_atual = datetime.now().time()
+    # Defina o fuso horário de Brasília
+    fuso_brasilia = pytz.timezone('America/Sao_Paulo')
+
+    # Obtenha o horário atual no fuso de Brasília
+    horario_atual = datetime.now(fuso_brasilia).time()
 
     # Buscar a próxima aula
     proxima_aula = QH.query.filter_by(turma_id=turma_id, dia_da_semana=dia_atual).filter(QH.horario > horario_atual).order_by(QH.horario).first()
     # Adicione na sua rota /home
     avisos = Aviso.query.filter_by(turma_id=turma_id).all()
-    return render_template('home.html', user=user, proxima_aula=proxima_aula, avisos=avisos, primary_collor=cor_primaria)
+    return render_template('home.html', user=user, proxima_aula=proxima_aula, avisos=avisos, primary_collor=cor_primaria, hour=horario_atual)
 
 @app.route('/logout')
 def logout():
@@ -352,10 +357,13 @@ def quadro_almoco():
 @login_required
 def profile():
     user = User.query.get(session['user_id'])
+    turma_id = user.turma_id
+    cor_primaria = determinar_cor_primaria(turma_id)
+
     # Filtrando apenas as faltas que não são presentes e não são justificadas
     faltas = Falta.query.filter_by(user_id=current_user.id, presente=False, falta_justificada=False).all()
     total_faltas = len(faltas)
-    return render_template('eu.html', user=user, faltas_count=total_faltas)
+    return render_template('eu.html', user=user, faltas_count=total_faltas, primary_collor=cor_primaria)
 
 
 # Inicializar o Firebase Admin SDK

@@ -1,123 +1,118 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cadastro - ErichEdu</title>
+    <title>ErichEdu - Cadastro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        /* Paleta de cores ErichEdu */
         :root {
             --primary-color: #083888;   /* Azul escuro */
             --secondary-color: #89d156; /* Verde vibrante */
             --accent-color: #ffe458;    /* Amarelo */
             --error-color: #ff3131;     /* Vermelho de alerta */
-            --background-color: #083888; /* Fundo azul escuro */
-            --white: #FFFFFF;
-        }
-
-        body, html {
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-            background-color: var(--background-color);
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .container {
-            width: 350px;
-            background-color: var(--white);
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
-
-        .logo {
-            display: block;
-            margin: 0 auto;
-            width: 50px;
-            height: 50px;
-        }
-
-        h1 {
-            font-size: 24px;
-            margin-bottom: 20px;
-            color: var(--primary-color);
-        }
-
-        input, select {
-            width: 100%;
-            padding: 15px;
-            margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            font-size: 16px;
-            outline: none;
-            box-sizing: border-box;
-        }
-
-        input:focus, select:focus {
-            border-color: var(--secondary-color); /* Verde no foco */
-        }
-
-        button {
-            width: 100%;
-            padding: 15px;
-            background-color: var(--secondary-color); /* Verde */
-            color: var(--white);
-            font-size: 18px;
-            border: none;
-            border-radius: 10px; /* Redução no arredondamento */
-            cursor: pointer;
-            margin-top: 20px;
-            transition: background-color 0.3s;
-        }
-
-        button:hover {
-            background-color: var(--primary-color); /* Azul escuro no hover */
         }
     </style>
 </head>
-<body>
-
-    <div class="container">
-        <!-- Logo -->
-        <img src="{{ url_for('static', filename='erichedu-icon.png') }}" alt="ErichEdu Logo" class="logo">
-
-        <!-- Título da página -->
-        <h1>Cadastro</h1>
+<body class="bg-[#083888] flex items-center justify-center min-h-screen">
+    <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-md">
+        <!-- Logo do cadastro -->
+        <div class="flex justify-center mb-6">
+            <img src="{{ url_for('static', filename='erichedu-icon.png') }}" alt="ErichEdu Logo" class="w-32 h-32 object-contain rounded-full">
+        </div>
+        
+        <h1 class="text-3xl font-bold text-center text-[#083888] mb-6">Cadastro</h1>
 
         <!-- Formulário de cadastro -->
-        <form action="{{ url_for('signup') }}" method="POST">
-            <input type="text" name="nome_completo" placeholder="Nome Completo" required>
-            <select name="turma" required>
-                <option value="" disabled selected>Selecione sua Turma</option>
-                <option value="1001">1001</option>
-                <option value="1002">1002</option>
-                <option value="1003">1003</option>
-                <option value="1004">1004</option>
-                <option value="1005">1005</option>
-                <option value="2001">2001</option>
-                <option value="2002">2002</option>
-                <option value="2003">2003</option>
-                <option value="2004">2004</option>
-                <option value="2005">2005</option>
-                <option value="3001">3001</option>
-                <option value="3002">3002</option>
-                <option value="3003">3003</option>
-                <option value="3004">3004</option>
-                <option value="3005">3005</option>
-            </select>
-            <input type="date" name="data_nascimento" required>
-            <input type="email" name="email" placeholder="E-mail" required>
-            <input type="password" name="senha" placeholder="Senha" required>
-            <input type="password" name="confirmar_senha" placeholder="Confirmar Senha" required>
-            <button type="submit">Confirmar</button>
+        <form action="{{ url_for('signup') }}" method="POST" class="space-y-4">
+            <div>
+                <label for="nome_completo" class="block text-sm font-medium text-gray-700 mb-2">Nome Completo</label>
+                <input 
+                    type="text" 
+                    name="nome_completo" 
+                    required 
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#89d156]"
+                    placeholder="Digite seu nome completo"
+                >
+            </div>
+
+            <div>
+                <label for="turma" class="block text-sm font-medium text-gray-700 mb-2">Turma</label>
+                <select 
+                    name="turma" 
+                    required 
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#89d156]"
+                >
+                    <option value="" disabled selected>Selecione sua Turma</option>
+                    <option value="1001">1001</option>
+                    <option value="1002">1002</option>
+                    <option value="1003">1003</option>
+                    <option value="1004">1004</option>
+                    <option value="1005">1005</option>
+                    <option value="2001">2001</option>
+                    <option value="2002">2002</option>
+                    <option value="2003">2003</option>
+                    <option value="2004">2004</option>
+                    <option value="2005">2005</option>
+                    <option value="3001">3001</option>
+                    <option value="3002">3002</option>
+                    <option value="3003">3003</option>
+                    <option value="3004">3004</option>
+                    <option value="3005">3005</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="data_nascimento" class="block text-sm font-medium text-gray-700 mb-2">Data de Nascimento</label>
+                <input 
+                    type="date" 
+                    name="data_nascimento" 
+                    required 
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#89d156]"
+                >
+            </div>
+
+            <div>
+                <label for="email" class="block text-sm font-medium text-gray-700 mb-2">E-mail</label>
+                <input 
+                    type="email" 
+                    name="email" 
+                    required 
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#89d156]"
+                    placeholder="Digite seu e-mail"
+                >
+            </div>
+
+            <div>
+                <label for="senha" class="block text-sm font-medium text-gray-700 mb-2">Senha</label>
+                <input 
+                    type="password" 
+                    name="senha" 
+                    required 
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#89d156]"
+                    placeholder="Digite sua senha"
+                >
+            </div>
+
+            <div>
+                <label for="confirmar_senha" class="block text-sm font-medium text-gray-700 mb-2">Confirmar Senha</label>
+                <input 
+                    type="password" 
+                    name="confirmar_senha" 
+                    required 
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#89d156]"
+                    placeholder="Confirme sua senha"
+                >
+            </div>
+
+            <button 
+                type="submit" 
+                class="w-full bg-[#89d156] text-white py-2 rounded-md hover:bg-[#083888] transition duration-300"
+            >
+                Confirmar
+            </button>
         </form>
     </div>
-
 </body>
 </html>

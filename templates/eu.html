@@ -2,46 +2,128 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meu Perfil</title>
+    <title>ErichEdu - Perfil</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: {{ primary_collor }};
+            --primary-color-hover: {{ primary_collor }}dd;
+            --primary-color-light: {{ primary_collor }}22;
+        }
+        
+        body {
+            --tw-bg-opacity: 1;
+            background-color: rgb(243 244 246 / var(--tw-bg-opacity));
+        }
+        
+        #sidebar {
+            background-color: var(--primary-color);
+            z-index: 50;
+        }
+        
+        .sidebar-link:hover {
+            background-color: var(--primary-color-hover);
+        }
+        
+        .section-title {
+            color: var(--primary-color);
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Barra Lateral -->
-        <div class="sidebar" id="sidebar">
-            <button class="toggle-btn" id="toggle-btn">☰</button>
-            <h2 class="sidebar-title"><span class="menu-text">Menu</span></h2>
-            <ul class="sidebar-menu">
-                <li><a href="{{ url_for('home') }}">INÍCIO</a></li>
-                <li><a href="{{ url_for('profile') }}">EU</a></li>
-                <li><a href="{{ url_for('materias') }}">MATÉRIAS</a></li>
-                <li><a href="{{ url_for('chat', turma_id=user.turma_id) }}">CHAT</a></li>
-                <li><a href="{{ url_for('cardapio') }}">CARDÁPIO</a></li>
-                {% if current_user.is_admin %}
-                    <li><a href="{{ url_for('admin') }}">ÁREA DO ADMINISTRADOR</a></li>
-                {% endif %}
-                <li><a href="{{ url_for('logout') }}">LOGOUT</a></li>
-            </ul>
-        </div>
-        <!-- Conteúdo Principal -->
-        <div class="content">
-            <div class="profile-container">
-                <h1>Meu Perfil</h1>
-                <img class="m-profile-pic" src="{{ user.foto_perfil }}" alt="Foto de Perfil" />
-                <p><strong>Nome:</strong> {{ user.nome_completo }}</p>
-                <p><strong>Email:</strong> {{ user.email }}</p>
-                <p><strong>Faltas deste mês:</strong> <span class="label">{{ faltas_count }}</span></p>
-                <a class="btn" href="{{ url_for('editar_perfil') }}">Editar Perfil</a>
+    <div class="flex min-h-screen relative">
+        <!-- Sidebar Mobile-Friendly -->
+        <div id="sidebar" class="fixed top-0 left-0 bottom-0 z-50 w-64 h-full text-white transform -translate-x-full transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:block overflow-y-auto">
+            <div class="p-5">
+                <h2 class="text-2xl font-bold mb-6">ErichEdu</h2>
+                <nav>
+                    <ul class="space-y-3">
+                        <li><a href="{{ url_for('home') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-home mr-3"></i>Início</a></li>
+                        <li><a href="{{ url_for('profile') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-user mr-3"></i>Perfil</a></li>
+                        <li><a href="{{ url_for('materias') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-book mr-3"></i>Matérias</a></li>
+                        <li><a href="{{ url_for('chat', turma_id=user.turma_id) }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-comments mr-3"></i>Chat</a></li>
+                        <li><a href="{{ url_for('cardapio') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-utensils mr-3"></i>Cardápio</a></li>
+                        {% if current_user.is_admin %}
+                        <li><a href="{{ url_for('admin') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-cogs mr-3"></i>Admin</a></li>
+                        {% endif %}
+                        <li><a href="{{ url_for('logout') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-sign-out-alt mr-3"></i>Logout</a></li>
+                    </ul>
+                </nav>
             </div>
-
         </div>
+
+        <!-- Conteúdo Principal -->
+        <main class="flex-1 pt-16 p-4 md:p-8 transition-all duration-300 ease-in-out">
+            <!-- Botão Mobile Toggle Sidebar -->
+            <button id="sidebarToggle" class="md:hidden fixed top-4 left-4 z-60 text-white p-2 rounded-full shadow-lg">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <!-- Perfil -->
+            <div class="max-w-md mx-auto bg-white p-8 rounded-lg shadow-md">
+                <div class="text-center mb-6">
+                    <img src="{{ user.foto_perfil }}" alt="Foto de Perfil" class="w-32 h-32 rounded-full mx-auto mb-4 object-cover">
+                    <h1 class="text-2xl font-bold text-gray-800">{{ user.nome_completo }}</h1>
+                    <p class="text-gray-600">{{ user.email }}</p>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="bg-gray-100 p-4 rounded-lg">
+                        <h2 class="text-xl font-semibold mb-3 section-title">
+                            <i class="fas fa-user-tag mr-2"></i>Informações Pessoais
+                        </h2>
+                        <p><strong>Email:</strong> {{ user.email }}</p>
+                        <p><strong>Matrícula:</strong> {{ user.matricula }}</p>
+                        <p><strong>Turma:</strong> {{ user.turma }}</p>
+                    </div>
+
+                    <div class="bg-gray-100 p-4 rounded-lg">
+                        <h2 class="text-xl font-semibold mb-3 section-title">
+                            <i class="fas fa-calendar-alt mr-2"></i>Faltas
+                        </h2>
+                        <p><strong>Faltas deste mês:</strong> 
+                            <span class="bg-red-100 text-red-800 px-2 py-1 rounded-full text-sm">
+                                {{ faltas_count }}
+                            </span>
+                        </p>
+                    </div>
+
+                    <div class="flex justify-center space-x-4 mt-6">
+                        <a href="{{ url_for('editar_perfil') }}" class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition">
+                            <i class="fas fa-edit mr-2"></i>Editar Perfil
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </main>
     </div>
 
     <script>
-        function toggleSidebar() {
-            document.querySelector('.sidebar').classList.toggle('collapsed');
-        }
+        document.getElementById('sidebarToggle').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('-translate-x-full');
+        });
+
+        // Adicionar overlay para fechar sidebar ao clicar fora
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const isClickInsideSidebar = sidebar.contains(event.target);
+            const isClickOnToggle = sidebarToggle.contains(event.target);
+
+            if (!isClickInsideSidebar && !isClickOnToggle && !sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.add('-translate-x-full');
+            }
+        });
     </script>
 </body>
 </html>
