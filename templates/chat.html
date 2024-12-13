@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EricEdu - Chat {{ turma.nome }}</title>
+    <title>ErichEdu - Chat {{ turma.nome }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -11,207 +11,276 @@
         :root {
             --primary-color: #083888;
             --primary-color-hover: #083888dd;
-            --primary-color-light: #083888;
+            --secondary-color: #e8f0fe;
+            --text-primary: #2d3748;
+            --text-secondary: #718096;
         }
-        
+
         body {
-            --tw-bg-opacity: 1;
-            background-color: rgb(243 244 246 / var(--tw-bg-opacity));
+            background-color: #f7f9fc;
         }
-        
+
         #sidebar {
             background-color: var(--primary-color);
             z-index: 50;
-        }
-        
-        .sidebar-link:hover {
-            background-color: var(--primary-color-hover);
-        }
-        
-        .section-title {
-            color: var(--primary-color);
+            width: 256px;
+            min-width: 256px;
+            height: 100vh;
+            position: sticky;
+            top: 0;
         }
 
-        /* Custom chat styles */
-        .chat-scrollbar::-webkit-scrollbar {
-            width: 6px;
+        .chat-container {
+            height: calc(100vh - 120px);
+            display: flex;
+            flex-direction: column;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
         }
-        .chat-scrollbar::-webkit-scrollbar-thumb {
+
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message {
+            max-width: 80%;
+            margin: 0.5rem 0;
+            padding: 0.75rem 1rem;
+            border-radius: 1rem;
+            position: relative;
+        }
+
+        .message.sent {
             background-color: var(--primary-color);
-            border-radius: 10px;
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 0.25rem;
+        }
+
+        .message.received {
+            background-color: var(--secondary-color);
+            color: var(--text-primary);
+            align-self: flex-start;
+            border-bottom-left-radius: 0.25rem;
+        }
+
+        .input-container {
+            padding: 1rem;
+            background: white;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 0.5rem;
+            background: #f8fafc;
+            padding: 0.5rem;
+            border-radius: 9999px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .chat-input {
+            flex: 1;
+            border: none;
+            outline: none;
+            background: transparent;
+            padding: 0.5rem;
+        }
+
+        .send-button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 9999px;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .send-button:hover {
+            background-color: var(--primary-color-hover);
+        }
+
+        @media (max-width: 768px) {
+            #sidebar {
+                position: fixed;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease-in-out;
+            }
+
+            #sidebar.active {
+                transform: translateX(0);
+            }
+
+            body {
+                position: relative;
+            }
+
+            .chat-container {
+                height: calc(100vh - 80px);
+            }
+            
+            .message {
+                max-width: 90%;
+            }
         }
     </style>
 </head>
-<body class="flex min-h-screen relative">
-    <!-- Sidebar Mobile-Friendly -->
-    <div id="sidebar" class="fixed top-0 left-0 bottom-0 z-50 w-64 h-full text-white transform -translate-x-full transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:block overflow-y-auto">
+<body class="flex min-h-screen">
+    <div id="sidebar">
         <div class="p-5">
-            <h2 class="text-2xl font-bold mb-6">EricEdu</h2>
+            <h2 class="text-2xl font-bold mb-6 text-white">ErichEdu</h2>
             <nav>
                 <ul class="space-y-3">
-                    <li><a href="{{ url_for('home') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                    <li><a href="{{ url_for('home') }}" class="text-white flex items-center p-2 hover:bg-opacity-80 rounded transition">
                         <i class="fas fa-home mr-3"></i>Início</a></li>
-                    <li><a href="{{ url_for('profile') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                    <li><a href="{{ url_for('profile') }}" class="text-white flex items-center p-2 hover:bg-opacity-80 rounded transition">
                         <i class="fas fa-user mr-3"></i>Perfil</a></li>
-                    <li><a href="{{ url_for('materias') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                    <li><a href="{{ url_for('materias') }}" class="text-white flex items-center p-2 hover:bg-opacity-80 rounded transition">
                         <i class="fas fa-book mr-3"></i>Matérias</a></li>
-                    <li><a href="{{ url_for('chat', turma_id=user.turma_id) }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                    <li><a href="{{ url_for('chat', turma_id=user.turma_id) }}" class="text-white flex items-center p-2 hover:bg-opacity-80 rounded transition">
                         <i class="fas fa-comments mr-3"></i>Chat</a></li>
-                    <li><a href="{{ url_for('cardapio') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                    <li><a href="{{ url_for('cardapio') }}" class="text-white flex items-center p-2 hover:bg-opacity-80 rounded transition">
                         <i class="fas fa-utensils mr-3"></i>Cardápio</a></li>
                     {% if current_user.is_admin %}
-                    <li><a href="{{ url_for('admin') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                    <li><a href="{{ url_for('admin') }}" class="text-white flex items-center p-2 hover:bg-opacity-80 rounded transition">
                         <i class="fas fa-cogs mr-3"></i>Admin</a></li>
                     {% endif %}
-                    <li><a href="{{ url_for('logout') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                    <li><a href="{{ url_for('logout') }}" class="text-white flex items-center p-2 hover:bg-opacity-80 rounded transition">
                         <i class="fas fa-sign-out-alt mr-3"></i>Logout</a></li>
                 </ul>
             </nav>
         </div>
     </div>
 
-    <!-- Conteúdo Principal -->
-    <main class="flex-1 pt-16 p-4 md:p-8 transition-all duration-300 ease-in-out flex flex-col">
-        <!-- Botão Mobile Toggle Sidebar -->
-        <button id="sidebarToggle" class="md:hidden fixed top-4 left-4 z-60 text-white p-2 rounded-full shadow-lg" style="background-color: var(--primary-color)">
-            <i class="fas fa-bars"></i>
+    <main class="flex-1 p-4 md:p-6">
+        <button id="sidebarToggle" class="md:hidden fixed top-4 left-4 z-60 bg-primary p-2 rounded-full shadow-lg">
+            <i class="fas fa-bars text-white"></i>
         </button>
 
-        <!-- Cabeçalho -->
-        <header class="mb-4">
-            <h1 class="text-3xl font-bold text-gray-800 flex items-center">
-                <i class="fas fa-comments mr-3 text-primary" style="color: var(--primary-color)"></i>
-                Chat da Turma: {{ turma.nome }}
-            </h1>
-        </header>
+        <div class="chat-container">
+            <header class="p-4 border-b">
+                <h1 class="text-xl font-semibold text-gray-800">
+                    <i class="fas fa-comments mr-2 text-primary"></i>
+                    Chat da Turma: {{ turma.nome }}
+                </h1>
+            </header>
 
-        <!-- Container de Chat -->
-        <div class="flex-grow bg-white rounded-lg shadow-md flex flex-col overflow-hidden">
-            <!-- Área de mensagens -->
-            <div 
-                id="messages" 
-                class="flex-grow overflow-y-auto p-4 space-y-3 chat-scrollbar"
-            >
+            <div id="messages" class="messages-container">
                 {% for mensagem in mensagens %}
                     {% set user_nome, mensagem_texto, rotulos, foto_perfil, hora_envio = mensagem %}
-                    <div class="flex flex-col {% if user_nome == current_user.nome_completo %}items-end{% else %}items-start{% endif %}">
-                        <div class="max-w-[80%] rounded-lg p-3 shadow-sm 
-                            {% if user_nome == current_user.nome_completo %}
-                                bg-green-100
-                            {% else %}
-                                bg-gray-100
-                            {% endif %}
-                        ">
-                            <div class="flex justify-between items-center mb-1">
-                                <strong class="text-green-600 mr-2">{{ user_nome }}</strong>
-                                {% for rotulo in rotulos %}
-                                    <span class="bg-blue-100 text-blue-800 text-xs font-medium mr-1 px-2.5 py-0.5 rounded">
-                                        {{ rotulo }}
-                                    </span>
-                                {% endfor %}
-                            </div>
-                            <p class="text-gray-800">{{ mensagem_texto }}</p>
-                            <div class="text-xs text-gray-500 text-right mt-1">{{ hora_envio }}</div>
+                    <div class="message {{ 'sent' if user_nome == current_user.nome_completo else 'received' }}">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="font-medium">{{ user_nome }}</span>
+                            {% for rotulo in rotulos %}
+                                <span class="text-xs px-2 py-0.5 rounded bg-blue-100 text-blue-800">
+                                    {{ rotulo }}
+                                </span>
+                            {% endfor %}
                         </div>
+                        <p>{{ mensagem_texto }}</p>
+                        <span class="text-xs opacity-75 block text-right mt-1">{{ hora_envio }}</span>
                     </div>
                 {% endfor %}
             </div>
 
-            <!-- Formulário de envio de mensagem -->
-            <form id="chat-form" class="p-4 border-t flex items-center space-x-3">
-                <input 
-                    type="text" 
-                    id="mensagem" 
-                    required 
-                    placeholder="Digite sua mensagem..." 
-                    autocomplete="off"
-                    class="flex-grow p-3 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                <button 
-                    type="submit" 
-                    class="p-3 rounded-full text-white transition hover:opacity-80"
-                    style="background-color: var(--primary-color)"
-                >
-                    <i class="fas fa-paper-plane"></i>
-                </button>
+            <form id="chat-form" class="input-container">
+                <div class="input-wrapper">
+                    <input 
+                        type="text" 
+                        id="mensagem" 
+                        class="chat-input"
+                        placeholder="Digite sua mensagem..." 
+                        required 
+                        autocomplete="off"
+                    >
+                    <button type="submit" class="send-button">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
             </form>
         </div>
-
-        <!-- Som de notificação -->
-        <audio id="notification-sound" src="{{ url_for('static', filename='plim-sound.mp3') }}"></audio>
     </main>
 
-    <script>
-        // Conexão com o Socket.io
-        const socket = io(window.location.origin);
+    <audio id="notification-sound" src="{{ url_for('static', filename='plim-sound.mp3') }}"></audio>
 
-        // Entra na sala
+    <script>
+        const socket = io(window.location.origin);
         const turmaId = "{{ turma.id }}";
+        
         socket.emit('join', { room: turmaId });
 
-        // Enviar mensagem
-        document.getElementById('chat-form').addEventListener('submit', function(event) {
-            event.preventDefault();
-            const mensagem = document.getElementById('mensagem').value;
-            const horaAtual = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        document.getElementById('chat-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const input = document.getElementById('mensagem');
+            const message = input.value;
+            
+            if (!message.trim()) return;
 
-            // Emitir mensagem
-            socket.emit('send_message', {
-                turma_id: turmaId,
-                message: mensagem,
-                time: horaAtual
+            const time = new Date().toLocaleTimeString([], { 
+                hour: '2-digit', 
+                minute: '2-digit' 
             });
 
-            document.getElementById('mensagem').value = ''; // Limpa o campo
-        });
+            socket.emit('send_message', {
+                turma_id: turmaId,
+                message: message,
+                sender: "{{ current_user.nome_completo }}",
+                time: time
+            });
 
-        // Receber nova mensagem
-        socket.on('receive_message', function(data) {
-            const messageContainer = document.getElementById('messages');
-            const messageElement = document.createElement('div');
-            
-            const isMyMessage = data.user_nome === "{{ current_user.nome_completo }}";
-            messageElement.classList.add('flex', 'flex-col', isMyMessage ? 'items-end' : 'items-start');
-
-            messageElement.innerHTML = `
-                <div class="max-w-[80%] rounded-lg p-3 shadow-sm ${isMyMessage ? 'bg-green-100' : 'bg-gray-100'}">
-                    <div class="flex justify-between items-center mb-1">
-                        <strong class="text-green-600 mr-2">${data.user_nome}</strong>
-                        ${data.rotulos.map(rotulo => `
-                            <span class="bg-blue-100 text-blue-800 text-xs font-medium mr-1 px-2.5 py-0.5 rounded">
-                                ${rotulo}
-                            </span>
-                        `).join('')}
-                    </div>
-                    <p class="text-gray-800">${data.message}</p>
-                    <div class="text-xs text-gray-500 text-right mt-1">${data.time}</div>
+            // Adiciona a mensagem localmente
+            const messagesContainer = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message sent';
+            messageDiv.innerHTML = `
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="font-medium">{{ current_user.nome_completo }}</span>
                 </div>
+                <p>${message}</p>
+                <span class="text-xs opacity-75 block text-right mt-1">${time}</span>
             `;
-            
-            messageContainer.appendChild(messageElement);
-            messageContainer.scrollTop = messageContainer.scrollHeight; // Rolar para a última mensagem
 
-            // Tocar som de notificação
-            const notificationSound = document.getElementById('notification-sound');
-            notificationSound.play();
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            input.value = '';
         });
 
-        // Sidebar toggle
+        socket.on('receive_message', function(data) {
+            const messagesContainer = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            const isCurrentUser = data.sender === "{{ current_user.nome_completo }}";
+            
+            messageDiv.className = `message ${isCurrentUser ? 'sent' : 'received'}`;
+            messageDiv.innerHTML = `
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="font-medium">${data.sender}</span>
+                </div>
+                <p>${data.message}</p>
+                <span class="text-xs opacity-75 block text-right mt-1">${data.time}</span>
+            `;
+
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        });
+
+        // Inicializar scroll na última mensagem
+        const messagesContainer = document.getElementById('messages');
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+        // Toggle Sidebar no Mobile
         document.getElementById('sidebarToggle').addEventListener('click', function() {
             const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('-translate-x-full');
-        });
-
-        // Adicionar overlay para fechar sidebar ao clicar fora
-        document.addEventListener('click', function(event) {
-            const sidebar = document.getElementById('sidebar');
-            const sidebarToggle = document.getElementById('sidebarToggle');
-            const isClickInsideSidebar = sidebar.contains(event.target);
-            const isClickOnToggle = sidebarToggle.contains(event.target);
-
-            if (!isClickInsideSidebar && !isClickOnToggle && !sidebar.classList.contains('-translate-x-full')) {
-                sidebar.classList.add('-translate-x-full');
-            }
+            sidebar.classList.toggle('active');
         });
     </script>
 </body>
