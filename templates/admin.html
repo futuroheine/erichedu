@@ -1,148 +1,192 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel do Administrador</title>
+    <title>Painel do Administrador - ErichEdu</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-:root {
-    --primary-color: #083888; /* Azul escuro ErichEdu */
-    --secondary-color: #89d156; /* Verde vibrante */
-    --accent-color: #ffe458; /* Amarelo */
-    --white: #FFFFFF;
-    --gray-light: #f2f2f2; /* Cinza claro */
-    --gray-dark: #444444; /* Cinza escuro para textos */
-}
-
+        :root {
+            --primary-color: #083888;
+            --primary-color-hover: #083888dd;
+            --primary-color-light: #083888;
+        }
+        
         body {
-            font-family: var(--font-family);
-            background-color: var(--light-gray);
-            color: var(--dark-gray);
-            margin: 0;
-            padding: 0;
+            --tw-bg-opacity: 1;
+            background-color: rgb(243 244 246 / var(--tw-bg-opacity));
         }
-
-        h1 {
-            text-align: center;
+        
+        #sidebar {
+            background-color: var(--primary-color);
+            z-index: 50;
+        }
+        
+        .sidebar-link:hover {
+            background-color: var(--primary-color-hover);
+        }
+        
+        .section-title {
             color: var(--primary-color);
-            margin-top: 20px;
         }
-
-        h2 {
-            color: var(--primary-color);
-            margin-top: 30px;
-        }
-
-        table {
-            width: 80%;
-            margin: 20px auto;
-            border-collapse: collapse;
-            background-color: var(--white);
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        th, td {
-            padding: 15px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-
-        th {
+        
+        #sidebarToggle {
             background-color: var(--primary-color);
-            color: var(--white);
-        }
-
-        tr:hover {
-            background-color: #f1f1f1; /* Destaque ao passar o mouse */
-        }
-
-        a {
-            display: inline-block;
-            margin: 20px auto;
-            padding: 10px 15px;
-            color: var(--white);
-            background-color: var(--primary-color);
-            text-decoration: none;
-            border-radius: 5px;
-            text-align: center;
-        }
-
-        a:hover {
-            background-color: #0056b3; /* Cor ao passar o mouse */
-        }
-
-        button {
-            background-color: var(--primary-color);
-            color: var(--white);
-            border: none;
-            padding: 8px 12px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background-color: #0056b3; /* Cor ao passar o mouse */
+            z-index: 60;
         }
     </style>
 </head>
 <body>
-    <h1>Painel do Administrador</h1>
+    <div class="flex min-h-screen relative">
+        <!-- Sidebar Mobile-Friendly -->
+        <div id="sidebar" class="fixed top-0 left-0 bottom-0 z-50 w-64 h-full text-white transform -translate-x-full transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:block overflow-y-auto">
+            <div class="p-5">
+                <h2 class="text-2xl font-bold mb-6">ErichEdu</h2>
+                <nav>
+                    <ul class="space-y-3">
+                        <li><a href="{{ url_for('home') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-home mr-3"></i>Início</a></li>
+                        <li><a href="{{ url_for('profile') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-user mr-3"></i>Perfil</a></li>
+                        <li><a href="{{ url_for('materias') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-book mr-3"></i>Matérias</a></li>
+                        <li><a href="{{ url_for('chat', turma_id=current_user.turma_id) }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-comments mr-3"></i>Chat</a></li>
+                        <li><a href="{{ url_for('cardapio') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-utensils mr-3"></i>Cardápio</a></li>
+                        {% if current_user.is_admin %}
+                        <li><a href="{{ url_for('admin') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-cogs mr-3"></i>Admin</a></li>
+                        {% endif %}
+                        <li><a href="{{ url_for('logout') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-sign-out-alt mr-3"></i>Logout</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
 
-    <h2>Gerenciamento de QHs</h2>
-    <a href="{{ url_for('add_qh') }}">Adicionar QH</a>
+        <!-- Conteúdo Principal -->
+        <main class="flex-1 pt-16 p-4 md:p-8 transition-all duration-300 ease-in-out">
+            <!-- Botão Mobile Toggle Sidebar -->
+            <button id="sidebarToggle" class="md:hidden fixed top-4 left-4 z-60 text-white p-2 rounded-full shadow-lg">
+                <i class="fas fa-bars"></i>
+            </button>
 
-    <h2>Faltas por Turma</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Turma</th>
-                <th>Alunos</th>
-                <th>Faltas</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for turma in turmas %}
-                <tr>
-                    <td>{{ turma.nome }}</td>
-                    <td>
-                        <ul>
-                            {% for aluno in turma.alunos %}
-                                <li>{{ aluno.nome_completo }} - Faltas: {{ aluno.faltas|length }}</li>
-                            {% endfor %}
-                        </ul>
-                    </td>
-                    <td>{{ turma.faltas|length }}</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            <!-- Cabeçalho -->
+            <header class="mb-6">
+                <h1 class="text-3xl font-bold text-gray-800">Painel do Administrador</h1>
+            </header>
 
-    <h2>Cardápio Atual</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Dia</th>
-                <th>Almoço</th>
-                <th>Café</th>
-                <th>Ação</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for menu in menus %}
-                <tr>
-                    <td>{{ menu.day }}</td>
-                    <td>{{ menu.lunch }}</td>
-                    <td>{{ menu.coffee }}</td>
-                    <td>
-                        <form action="{{ url_for('delete_menu', menu_id=menu.id) }}" method="POST">
-                            <button type="submit">Excluir</button>
-                        </form>
-                    </td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            <!-- Seções do Painel -->
+            <div class="space-y-6">
+                <!-- Gerenciamento de QHs -->
+                <div class="bg-white p-5 rounded-lg shadow-md">
+                    <h2 class="text-xl font-semibold mb-3 section-title">
+                        <i class="fas fa-calendar-plus mr-2"></i>Gerenciamento de QHs
+                    </h2>
+                    <div class="flex justify-start">
+                        <a href="{{ url_for('add_qh') }}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+                            <i class="fas fa-plus mr-2"></i>Adicionar QH
+                        </a>
+                    </div>
+                </div>
 
-    <a href="{{ url_for('home') }}">Voltar ao início</a>
+                <!-- Faltas por Turma -->
+                <div class="bg-white p-5 rounded-lg shadow-md">
+                    <h2 class="text-xl font-semibold mb-3 section-title">
+                        <i class="fas fa-users-slash mr-2"></i>Faltas por Turma
+                    </h2>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="bg-blue-600 text-white">
+                                    <th class="p-3 text-left">Turma</th>
+                                    <th class="p-3 text-left">Alunos</th>
+                                    <th class="p-3 text-left">Total de Faltas</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for turma in turmas %}
+                                    <tr class="border-b hover:bg-gray-100 transition">
+                                        <td class="p-3">{{ turma.nome }}</td>
+                                        <td class="p-3">
+                                            <ul class="space-y-1">
+                                                {% for aluno in turma.alunos %}
+                                                    <li>{{ aluno.nome_completo }} - Faltas: {{ aluno.faltas|length }}</li>
+                                                {% endfor %}
+                                            </ul>
+                                        </td>
+                                        <td class="p-3">{{ turma.faltas|length }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Cardápio Atual -->
+                <div class="bg-white p-5 rounded-lg shadow-md">
+                    <h2 class="text-xl font-semibold mb-3 section-title">
+                        <i class="fas fa-utensils mr-2"></i>Cardápio Atual
+                    </h2>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="bg-blue-600 text-white">
+                                    <th class="p-3 text-left">Dia</th>
+                                    <th class="p-3 text-left">Almoço</th>
+                                    <th class="p-3 text-left">Café</th>
+                                    <th class="p-3 text-left">Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for menu in menus %}
+                                    <tr class="border-b hover:bg-gray-100 transition">
+                                        <td class="p-3">{{ menu.day }}</td>
+                                        <td class="p-3">{{ menu.lunch }}</td>
+                                        <td class="p-3">{{ menu.coffee }}</td>
+                                        <td class="p-3">
+                                            <form action="{{ url_for('delete_menu', menu_id=menu.id) }}" method="POST">
+                                                <button type="submit" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition">
+                                                    <i class="fas fa-trash mr-2"></i>Excluir
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Botão de Volta -->
+                <div class="flex justify-center mt-6">
+                    <a href="{{ url_for('home') }}" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition">
+                        <i class="fas fa-arrow-left mr-2"></i>Voltar ao Início
+                    </a>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.getElementById('sidebarToggle').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('-translate-x-full');
+        });
+
+        // Adicionar overlay para fechar sidebar ao clicar fora
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const isClickInsideSidebar = sidebar.contains(event.target);
+            const isClickOnToggle = sidebarToggle.contains(event.target);
+
+            if (!isClickInsideSidebar && !isClickOnToggle && !sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.add('-translate-x-full');
+            }
+        });
+    </script>
 </body>
 </html>
