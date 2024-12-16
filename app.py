@@ -300,12 +300,18 @@ def upload_materia():
     return render_template('enviar_materia.html')
 
 
-
+@app.context_processor
+def inject_user():
+    user_id = session.get('user_id')
+    if user_id:
+        user = db.session.get(User, user_id)  # Método atualizado
+        return {'user': user}  # Variável user disponível em todos os templates
+    return {'user': None}  # Caso o usuário não esteja logado
 
 @app.route('/home')
 @login_required
 def home():
-    user = User.query.get(session['user_id'])
+    user = db.session.get(User, session.get('user_id'))
     # Obter a turma do usuário
     turma_id = user.turma_id
 
@@ -480,6 +486,25 @@ def chat(turma_id):
 @app.route('/manifest.json')
 def manifest():
     return send_from_directory('static', 'manifest.json')
+
+@app.route('/projetos')
+@login_required
+def projetos():
+    
+    user = db.session.get(User, session.get('user_id'))
+    # Obter a turma do usuário
+    turma_id = user.turma_id
+
+    cor_primaria = determinar_cor_primaria(turma_id)
+    """
+    Rota para a página de Projetos Socioambientais
+    Requer login do usuário
+    """
+    # Você pode adicionar lógica adicional aqui se necessário, 
+    # como buscar detalhes específicos dos projetos de um banco de dados
+    
+    # Renderiza o template de projetos
+    return render_template('projetos.html', user=current_user, primary_collor=cor_primaria)
 
 @socketio.on('send_message')
 def handle_send_message_event(data):
@@ -695,6 +720,30 @@ def marcar_faltas(turma_id):
         return redirect(url_for('contagem_faltas'))
 
     return render_template('marcar_faltas.html', turma=turma, alunos=alunos, dias_do_mes=dias_do_mes, faltas=faltas)
+
+@app.route('/criadores')
+def criadores():
+    
+    user = User.query.get(session['user_id'])
+
+    # Verifica se o usuário está logado
+    if current_user.is_authenticated:
+        turma = current_user.turma
+        turma_id = turma.id if turma else None  # Verifica se turma existe
+    else:
+        turma = None
+        turma_id = None
+
+    if turma is None:
+        primary_color = "#004a87"
+    else:
+        primary_color = determinar_cor_primaria(turma_id)
+
+    print(primary_color)
+
+    # Renderiza a página, passando os valores
+    return render_template('criadores.html', primary_collor=primary_color, user=user, turma=turma, turma_id=turma_id)
+
 
 @app.route('/favicon.ico')
 def fiv():

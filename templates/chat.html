@@ -9,11 +9,11 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #2b5278;
+            --primary-color: {{ primary_collor }};
             --background-light: #f0f2f5;
             --message-sent: #e1f5fe;
             --message-received: #ffffff;
-            --text-primary: #1a1a1a;
+            --text-primary: white;
             --text-secondary: #667781;
         }
 
@@ -37,7 +37,7 @@
         }
 
         #sidebar {
-            background-color: #2c3e50;
+            background-color: var(--primary-color);
             width: 320px;
             height: 100vh;
             position: fixed;
@@ -47,7 +47,7 @@
             box-shadow: 2px 0 10px rgba(0,0,0,0.1);
             z-index: 50;
         }
-
+        
         .chat-container {
             max-width: 800px;
             margin: 0 auto;
@@ -178,21 +178,25 @@
             <h2 class="text-2xl font-bold mb-6 text-white">ErichEdu</h2>
             <nav>
                 <ul class="space-y-3">
-                    <li><a href="{{ url_for('home') }}" class="text-white flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                    <li><a href="{{ url_for('home') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
                         <i class="fas fa-home mr-3"></i>Início</a></li>
-                    <li><a href="{{ url_for('profile') }}" class="text-white flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                    <li><a href="{{ url_for('profile') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
                         <i class="fas fa-user mr-3"></i>Perfil</a></li>
-                    <li><a href="{{ url_for('materias') }}" class="text-white flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                    <li><a href="{{ url_for('materias') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
                         <i class="fas fa-book mr-3"></i>Matérias</a></li>
-                    <li><a href="{{ url_for('chat', turma_id=user.turma_id) }}" class="text-white flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                    <li><a href="{{ url_for('chat', turma_id=user.turma_id) }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
                         <i class="fas fa-comments mr-3"></i>Chat</a></li>
-                    <li><a href="{{ url_for('cardapio') }}" class="text-white flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                    <li><a href="{{ url_for('cardapio') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
                         <i class="fas fa-utensils mr-3"></i>Cardápio</a></li>
+                    <li><a href="{{ url_for('criadores') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                        <i class="fas fa-users mr-3"></i>Criadores</a></li>
+                    <li><a href="{{ url_for('projetos') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                        <i class="fas fa-project-diagram mr-3"></i>Projetos</a></li>
                     {% if current_user.is_admin %}
-                    <li><a href="{{ url_for('admin') }}" class="text-white flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                    <li><a href="{{ url_for('admin') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
                         <i class="fas fa-cogs mr-3"></i>Admin</a></li>
                     {% endif %}
-                    <li><a href="{{ url_for('logout') }}" class="text-white flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                    <li><a href="{{ url_for('logout') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
                         <i class="fas fa-sign-out-alt mr-3"></i>Logout</a></li>
                 </ul>
             </nav>

@@ -1,24 +1,111 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editar Perfil</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        .edit-profile {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: var(--bg-white);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .edit-profile h1 {
+            color: var(--text-dark);
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .edit-profile form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .form-group label {
+            color: var(--text-dark);
+            font-weight: 500;
+        }
+
+        .form-group input {
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .form-group input[type="file"] {
+            border: none;
+            padding: 0;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+    </style>
 </head>
 <body>
-    <h1>Editar Perfil</h1>
-    <form method="POST" enctype="multipart/form-data">
-        <label for="nome">Nome:</label>
-        <input type="text" name="nome" value="{{ user.nome }}" required><br>
+    <div class="edit-profile">
+        <h1>Editar Perfil</h1>
+        <form method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="nome">Nome:</label>
+                <input type="text" id="nome" name="nome" value="{{ user.nome }}" required>
+            </div>
 
-        <label for="senha">Nova Senha:</label>
-        <input type="password" name="senha" placeholder="Nova senha"><br>
+            <div class="form-group">
+                <label for="senha">Nova Senha:</label>
+                <input type="password" id="senha" name="senha" placeholder="Nova senha">
+            </div>
 
-        <label for="foto_perfil">Foto de Perfil:</label>
-        <input type="file" name="foto_perfil" accept="image/*"><br>
+            <div class="form-group">
+                <label for="foto_perfil">Foto de Perfil:</label>
+                <input type="file" id="foto_perfil" name="foto_perfil" accept="image/*">
+            </div>
 
-        <input type="submit" value="Atualizar">
-    </form>
-    <a href="{{ url_for('profile') }}">Voltar</a>
+            <div class="buttons">
+                <input type="submit" value="Atualizar" class="btn btn-primary">
+                <a href="{{ url_for('profile') }}" class="btn btn-secondary">Voltar</a>
+            </div>
+        </form>
+    </div>
 </body>
 </html>

@@ -50,6 +50,10 @@
                             <i class="fas fa-comments mr-3"></i>Chat</a></li>
                         <li><a href="{{ url_for('cardapio') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
                             <i class="fas fa-utensils mr-3"></i>Cardápio</a></li>
+                        <li><a href="{{ url_for('criadores') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-users mr-3"></i>Criadores</a></li>
+                        <li><a href="{{ url_for('projetos') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-project-diagram mr-3"></i>Projetos</a></li>
                         {% if current_user.is_admin %}
                         <li><a href="{{ url_for('admin') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
                             <i class="fas fa-cogs mr-3"></i>Admin</a></li>

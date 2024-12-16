@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ErichEdu - Projetos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: {{ primary_collor }};
+            --primary-color-hover: {{ primary_collor }}dd;
+            --primary-color-light: {{ primary_collor }}22;
+        }
+        
+        body {
+            --tw-bg-opacity: 1;
+            background-color: rgb(243 244 246 / var(--tw-bg-opacity));
+        }
+        
+        #sidebar {
+            background-color: var(--primary-color);
+            z-index: 50;
+        }
+        
+        .sidebar-link:hover {
+            background-color: var(--primary-color-hover);
+        }
+        
+        .section-title {
+            color: var(--primary-color);
+        }
+        
+        #sidebarToggle {
+            background-color: var(--primary-color);
+            z-index: 60;
+        }
+    </style>
+</head>
+<body>
+    <div class="flex min-h-screen relative">
+        <!-- Sidebar (Same as home page) -->
+        <div id="sidebar" class="fixed top-0 left-0 bottom-0 z-50 w-64 h-full text-white transform -translate-x-full transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:block overflow-y-auto">
+            <div class="p-5">
+                <h2 class="text-2xl font-bold mb-6">ErichEdu</h2>
+                <ul class="space-y-3">
+                    <li><a href="{{ url_for('home') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                        <i class="fas fa-home mr-3"></i>Início</a></li>
+                    <li><a href="{{ url_for('profile') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                        <i class="fas fa-user mr-3"></i>Perfil</a></li>
+                    <li><a href="{{ url_for('materias') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                        <i class="fas fa-book mr-3"></i>Matérias</a></li>
+                    <li><a href="{{ url_for('chat', turma_id=user.turma_id) }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                        <i class="fas fa-comments mr-3"></i>Chat</a></li>
+                    <li><a href="{{ url_for('cardapio') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                        <i class="fas fa-utensils mr-3"></i>Cardápio</a></li>
+                    <li><a href="{{ url_for('criadores') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                        <i class="fas fa-users mr-3"></i>Criadores</a></li>
+                    <li><a href="{{ url_for('projetos') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                        <i class="fas fa-project-diagram mr-3"></i>Projetos</a></li>
+                    {% if current_user.is_admin %}
+                    <li><a href="{{ url_for('admin') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                        <i class="fas fa-cogs mr-3"></i>Admin</a></li>
+                    {% endif %}
+                    <li><a href="{{ url_for('logout') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                        <i class="fas fa-sign-out-alt mr-3"></i>Logout</a></li>
+                </ul>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Conteúdo Principal -->
+        <main class="flex-1 pt-16 p-4 md:p-8 transition-all duration-300 ease-in-out">
+            <!-- Botão Mobile Toggle Sidebar -->
+            <button id="sidebarToggle" class="md:hidden fixed top-4 left-4 z-60 text-white p-2 rounded-full shadow-lg">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <!-- Cabeçalho -->
+            <header class="mb-6">
+                <h1 class="text-3xl font-bold text-gray-800">Projetos Socioambientais</h1>
+                <p class="text-gray-600">Conheça nossas iniciativas de sustentabilidade e inclusão</p>
+            </header>
+
+            <!-- Projetos Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Projeto Comunicação -->
+                <div class="bg-white p-5 rounded-lg shadow-md hover:shadow-lg transition">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-bullhorn section-title text-3xl mr-4"></i>
+                        <h2 class="text-xl font-semibold section-title">Comunicação</h2>
+                    </div>
+                    <p class="text-gray-700">A área de comunicação se encarrega de informar e engajar a comunidade escolar e externa sobre as ações sustentáveis e eventos do colégio, promovendo conscientização ambiental e incentivo à participação.</p>
+                    <div class="mt-4">
+                        <span class="text-sm text-gray-500">Coordenadora: Aline</span>
+                    </div>
+                </div>
+
+                <!-- Projeto Telhado Verde -->
+                <div class="bg-white p-5 rounded-lg shadow-md hover:shadow-lg transition">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-leaf section-title text-3xl mr-4"></i>
+                        <h2 class="text-xl font-semibold section-title">Telhado Verde</h2>
+                    </div>
+                    <p class="text-gray-700">Este projeto tem um telhado coberto de vegetação, que ajuda a diminuir a temperatura interna e a economizar energia. É também um espaço pedagógico onde os alunos podem aprender sobre sustentabilidade e meio ambiente.</p>
+                    <div class="mt-4">
+                        <span class="text-sm text-gray-500">Coordenador: Marquinhos</span>
+                    </div>
+                </div>
+
+                <!-- Projeto Núcleo Odu Ypykuéra -->
+                <div class="bg-white p-5 rounded-lg shadow-md hover:shadow-lg transition">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-users section-title text-3xl mr-4"></i>
+                        <h2 class="text-xl font-semibold section-title">Núcleo Odu Ypykuéra</h2>
+                    </div>
+                    <p class="text-gray-700">Um núcleo cultural que promove a valorização da cultura afro-brasileira e indígena, incentivando o respeito à diversidade e o estudo de práticas tradicionais, proporcionando um ambiente inclusivo e educativo.</p>
+                    <div class="mt-4">
+                        <span class="text-sm text-gray-500">Coordenadoras: Sylvia e Rosangela</span>
+                    </div>
+                </div>
+
+                <!-- Projeto Hortamor -->
+                <div class="bg-white p-5 rounded-lg shadow-md hover:shadow-lg transition">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-seedling section-title text-3xl mr-4"></i>
+                        <h2 class="text-xl font-semibold section-title">Hortamor</h2>
+                    </div>
+                    <p class="text-gray-700">Um projeto de horta comunitária que ensina os alunos sobre agricultura sustentável e alimentação saudável, oferecendo produtos frescos e naturais para a comunidade escolar e promovendo práticas de compostagem.</p>
+                    <div class="mt-4">
+                        <span class="text-sm text-gray-500">Coordenador: Marquinhos</span>
+                    </div>
+                </div>
+
+                <!-- Projeto Brechóque -->
+                <div class="bg-white p-5 rounded-lg shadow-md hover:shadow-lg transition">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-recycle section-title text-3xl mr-4"></i>
+                        <h2 class="text-xl font-semibold section-title">Brechóque</h2>
+                    </div>
+                    <p class="text-gray-700">Uma iniciativa de brechó sustentável, que incentiva o reaproveitamento de roupas e objetos, promovendo a economia circular e reduzindo o desperdício.</p>
+                    <div class="mt-4">
+                        <span class="text-sm text-gray-500">Coordenadora: Sylvia</span>
+                    </div>
+                </div>
+
+                <!-- Projeto Ab.ecos -->
+                <div class="bg-white p-5 rounded-lg shadow-md hover:shadow-lg transition">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-globe section-title text-3xl mr-4"></i>
+                        <h2 class="text-xl font-semibold section-title">Ab.ecos</h2>
+                    </div>
+                    <p class="text-gray-700">O projeto envolve práticas sustentáveis como reciclagem e reutilização de materiais, incentivando os alunos a pensar de forma ecológica e consciente quanto ao consumo de recursos naturais.</p>
+                    <div class="mt-4">
+                        <span class="text-sm text-gray-500">Coordenadora: Sylvia</span>
+                    </div>
+                </div>
+
+                <!-- Projeto PiscinhaAmor -->
+                <div class="bg-white p-5 rounded-lg shadow-md hover:shadow-lg transition">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-swimming-pool section-title text-3xl mr-4"></i>
+                        <h2 class="text-xl font-semibold section-title">PiscinhaAmor</h2>
+                    </div>
+                    <p class="text-gray-700">Esta iniciativa valoriza o uso sustentável da piscina semiolímpica do colégio, equipada com materiais de baixa absorção de calor e eco-pavimento ao redor, visando minimizar o consumo de água e energia.</p>
+                    <div class="mt-4">
+                        <span class="text-sm text-gray-500">Coordenador: Marquinhos</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Nota Adicional -->
+            <div class="mt-8 bg-gray-100 p-5 rounded-lg text-center">
+                <p class="text-gray-700 italic">
+                    Estes projetos refletem o compromisso do Colégio Estadual Erich Walter Heine com a sustentabilidade e a educação ambiental, ajudando a formar cidadãos mais conscientes e responsáveis com o meio ambiente.
+                </p>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.getElementById('sidebarToggle').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('-translate-x-full');
+        });
+
+        // Adicionar overlay para fechar sidebar ao clicar fora
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const isClickInsideSidebar = sidebar.contains(event.target);
+            const isClickOnToggle = sidebarToggle.contains(event.target);
+
+            if (!isClickInsideSidebar && !isClickOnToggle && !sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.add('-translate-x-full');
+            }
+        });
+    </script>
+</body>
+</html>

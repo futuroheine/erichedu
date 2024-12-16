@@ -4,6 +4,7 @@ Flask-Login
 psycopg2-binary
 requests
 google-cloud-storage
+google-cloud-vision
 firebase-admin
 cryptography
 Flask-SocketIO

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ErichEdu - Criadores</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: {{ primary_collor }};
+            --primary-color-hover: {{ primary_collor }}dd;
+            --primary-color-light: {{ primary_collor }}22;
+        }
+        
+        body {
+            --tw-bg-opacity: 1;
+            background-color: rgb(243 244 246 / var(--tw-bg-opacity));
+        }
+        
+        #sidebar {
+            background-color: var(--primary-color);
+            z-index: 50;
+        }
+        
+        .sidebar-link:hover {
+            background-color: var(--primary-color-hover);
+        }
+        
+        .section-title {
+            color: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="flex min-h-screen relative">
+        <!-- Sidebar Mobile-Friendly -->
+        <div id="sidebar" class="fixed top-0 left-0 bottom-0 z-50 w-64 h-full text-white transform -translate-x-full transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:block overflow-y-auto">
+            <div class="p-5">
+                <h2 class="text-2xl font-bold mb-6">ErichEdu</h2>
+                <nav>
+                    <ul class="space-y-3">
+                        <li><a href="{{ url_for('home') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-home mr-3"></i>Início</a></li>
+                        <li><a href="{{ url_for('profile') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-user mr-3"></i>Perfil</a></li>
+                        <li><a href="{{ url_for('materias') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-book mr-3"></i>Matérias</a></li>
+                        <li><a href="{{ url_for('chat', turma_id=user.turma_id) }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-comments mr-3"></i>Chat</a></li>
+                        <li><a href="{{ url_for('cardapio') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-utensils mr-3"></i>Cardápio</a></li>
+                        <li><a href="{{ url_for('criadores') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-users mr-3"></i>Criadores</a></li>
+                        <li><a href="{{ url_for('projetos') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-project-diagram mr-3"></i>Projetos</a></li>
+                        {% if current_user.is_admin %}
+                        <li><a href="{{ url_for('admin') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-cogs mr-3"></i>Admin</a></li>
+                        {% endif %}
+                        <li><a href="{{ url_for('logout') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-sign-out-alt mr-3"></i>Logout</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Conteúdo Principal -->
+        <main class="flex-1 pt-16 p-4 md:p-8 transition-all duration-300 ease-in-out">
+            <!-- Botão Mobile Toggle Sidebar -->
+            <button id="sidebarToggle" class="md:hidden fixed top-4 left-4 z-60 text-white p-2 rounded-full shadow-lg" style="background-color: var(--primary-color);">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <div class="grid grid-cols-1 gap-4">
+                <!-- Criadores Container -->
+                <div class="bg-white p-5 rounded-lg shadow-md hover:shadow-lg transition">
+                    <h2 class="text-2xl font-semibold mb-4 section-title">
+                        <i class="fas fa-users mr-2"></i>Os Criadores do ErichEDU
+                    </h2>
+                    
+                    <div class="text-gray-700 space-y-4">
+                        <p>O ErichEDU nasceu com uma missão: trazer mudanças positivas para a nossa escola! Um grupo de seis alunos do 1º ano teve a coragem de se juntar e montar essa chapa. Encarando os medos e as críticas, eles decidiram que era hora de agir e transformar.</p>
+                        
+                        <p>Cada um trouxe seu talento e estilo, e a amizade que construímos nessa jornada é o que realmente faz tudo valer a pena. Mostramos que, juntos, somos mais fortes e podemos fazer coisas incríveis! Quem diria que um time formado por cinco meninas e um menino poderia criar algo tão especial?</p>
+                        
+                        <p>O ErichEDU não é só um aplicativo, é uma representação do que somos: criativos, unidos e cheios de potencial! Queremos que a nossa energia e a nossa essência fiquem marcadas na escola, mostrando que a colaboração e o amor fazem toda a diferença.</p>
+                        
+                        <p>Que nossa amizade e união sejam eternas!</p>
+                    </div>
+
+                    <div class="mt-6">
+                        <h3 class="text-xl font-semibold mb-3 section-title">
+                            <i class="fas fa-user-friends mr-2"></i>Criadores
+                        </h3>
+                        
+                        <ul class="space-y-2">
+                            <li class="bg-gray-100 p-2 rounded">
+                                <strong>Andrew Souza</strong> | Idealizador, Desenvolvedor e Presidente do Erich EDU
+                            </li>
+                            <li class="bg-gray-100 p-2 rounded">
+                                <strong>Anna Leticia De Farias</strong> | Idealizadora, Produtora e co-Presidente do Erich EDU
+                            </li>
+                            <li class="bg-gray-100 p-2 rounded">
+                                <strong>Victoria Mattos</strong> | Idealizadora, Design e Vice-Presidente do Erich EDU
+                            </li>
+                            <li class="bg-gray-100 p-2 rounded">
+                                <strong>Ana Vitoria Valentim</strong> | Idealizadora
+                            </li>
+                            <li class="bg-gray-100 p-2 rounded">
+                                <strong>Stella Gomes</strong> | Idealizadora
+                            </li>
+                            <li class="bg-gray-100 p-2 rounded">
+                                <strong>Julia Bitencourt</strong> | Idealizadora
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="mt-4">
+                        <a href="{{ url_for('home') }}" class="bg-[var(--primary-color)] text-white px-4 py-2 rounded hover:opacity-80 transition">
+                            <i class="fas fa-arrow-left mr-2"></i>Voltar
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.getElementById('sidebarToggle').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('-translate-x-full');
+        });
+
+        // Adicionar overlay para fechar sidebar ao clicar fora
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const isClickInsideSidebar = sidebar.contains(event.target);
+            const isClickOnToggle = sidebarToggle.contains(event.target);
+
+            if (!isClickInsideSidebar && !isClickOnToggle && !sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.add('-translate-x-full');
+            }
+        });
+    </script>
+</body>
+</html>
