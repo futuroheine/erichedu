@@ -2,7 +2,7 @@
 :root {
     --primary-color: {{ primary_color }};
     --secondary-color: #78ac54;
-    --accent-color: #ffd000;
+    --accent-color: #ffdb3df1;
     --white: #FFFFFF;
     --gray-light: #f2f2f2; /* Cinza claro */
     --gray-dark: #444444; /* Cinza escuro para textos */

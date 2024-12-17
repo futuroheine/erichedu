@@ -196,7 +196,7 @@ def determinar_cor_primaria(turma_id):
     if 1 <= turma_id <= 4:
         return "#083888"  # Azul escuro
     elif 6 <= turma_id <= 9:
-        return "#ffd000"  # Amarelo
+        return "#FFEF00"  # Amarelo
     elif 11 <= turma_id <= 14:
         return "#d40000"  # Vermelho (escolhido como um vermelho forte e marcante)
     elif turma_id in [5, 10, 15]:
