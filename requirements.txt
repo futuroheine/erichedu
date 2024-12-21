@@ -13,3 +13,5 @@ Werkzeug
 gunicorn
 pytz
 flask_wtf
+stream_chat
+cairosvg

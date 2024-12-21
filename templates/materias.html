@@ -35,11 +35,83 @@
             background-color: var(--primary-color);
             z-index: 60;
         }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            cursor: pointer;
+        }
+
+        .modal.active {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            max-width: 90vw;
+            max-height: 90vh;
+            margin: auto;
+            position: relative;
+        }
+
+        .modal-image {
+            max-width: 100%;
+            max-height: 70vh;
+            object-fit: contain;
+        }
+
+        .modal-info {
+            background-color: white;
+            padding: 1rem;
+            width: 100%;
+            margin-top: 1rem;
+            border-radius: 0.5rem;
+        }
+
+        .close-modal {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            z-index: 1001;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            justify-content: flex-end;
+        }
+
+        .action-button {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background-color 0.3s;
+        }
+
+        .action-button:hover {
+            background-color: var(--primary-color-hover);
+        }
     </style>
 </head>
 <body>
+    <!-- Sidebar -->
     <div class="flex min-h-screen relative">
-        <!-- Sidebar Mobile-Friendly -->
         <div id="sidebar" class="fixed top-0 left-0 bottom-0 z-50 w-64 h-full text-white transform -translate-x-full transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:block overflow-y-auto">
             <div class="p-5">
                 <h2 class="text-2xl font-bold mb-6">ErichEdu</h2>
@@ -70,19 +142,16 @@
             </div>
         </div>
 
-        <!-- Conteúdo Principal -->
+        <!-- Main content -->
         <main class="flex-1 pt-16 p-4 md:p-8 transition-all duration-300 ease-in-out">
-            <!-- Botão Mobile Toggle Sidebar -->
             <button id="sidebarToggle" class="md:hidden fixed top-4 left-4 z-60 text-white p-2 rounded-full shadow-lg">
                 <i class="fas fa-bars"></i>
             </button>
 
-            <!-- Cabeçalho -->
             <header class="mb-6">
                 <h1 class="text-3xl font-bold text-gray-800">Matérias da Turma {{ current_user.turma.nome }}</h1>
             </header>
 
-            <!-- Grade de Matérias -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {% if materias %}
                     {% for materia in materias %}
@@ -95,7 +164,13 @@
                             <p><strong>Dia da Semana:</strong> {{ materia.dia_da_semana }}</p>
                             
                             {% if materia.imagem_url %}
-                                <img src="{{ materia.imagem_url }}" alt="{{ materia.nome }}" class="mt-3 rounded-lg w-full h-48 object-cover">
+                                <img src="{{ materia.imagem_url }}" 
+                                     alt="{{ materia.nome }}" 
+                                     class="mt-3 rounded-lg w-full h-48 object-cover cursor-pointer subject-image"
+                                     data-subject="{{ materia.nome }}"
+                                     data-professor="{{ materia.professor }}"
+                                     data-day="{{ materia.dia_da_semana }}"
+                                     onclick="openModal(this)">
                             {% else %}
                                 <p class="mt-3 text-gray-500">Imagem não disponível.</p>
                             {% endif %}
@@ -112,13 +187,37 @@
         </main>
     </div>
 
+    <!-- Modal -->
+    <div id="imageModal" class="modal" onclick="closeModal()">
+        <span class="close-modal" onclick="closeModal()">&times;</span>
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <img id="modalImage" src="" alt="" class="modal-image">
+            <div class="modal-info">
+                <h2 id="modalTitle" class="text-2xl font-bold mb-2"></h2>
+                <p id="modalProfessor" class="text-gray-700"></p>
+                <p id="modalDay" class="text-gray-700"></p>
+                <div class="action-buttons">
+                    <button onclick="downloadImage()" class="action-button">
+                        <i class="fas fa-download"></i>
+                        Baixar
+                    </button>
+                    <button onclick="shareImage()" class="action-button">
+                        <i class="fas fa-share-alt"></i>
+                        Compartilhar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // Sidebar toggle
         document.getElementById('sidebarToggle').addEventListener('click', function() {
             const sidebar = document.getElementById('sidebar');
             sidebar.classList.toggle('-translate-x-full');
         });
 
-        // Adicionar overlay para fechar sidebar ao clicar fora
+        // Close sidebar when clicking outside
         document.addEventListener('click', function(event) {
             const sidebar = document.getElementById('sidebar');
             const sidebarToggle = document.getElementById('sidebarToggle');
@@ -127,6 +226,110 @@
 
             if (!isClickInsideSidebar && !isClickOnToggle && !sidebar.classList.contains('-translate-x-full')) {
                 sidebar.classList.add('-translate-x-full');
+            }
+        });
+
+        // Modal functionality
+        function openModal(imageElement) {
+            const modal = document.getElementById('imageModal');
+            const modalImage = document.getElementById('modalImage');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalProfessor = document.getElementById('modalProfessor');
+            const modalDay = document.getElementById('modalDay');
+
+            modalImage.src = imageElement.src;
+            modalImage.alt = imageElement.alt;
+            modalTitle.textContent = imageElement.dataset.subject;
+            modalProfessor.textContent = `Professor: ${imageElement.dataset.professor}`;
+            modalDay.textContent = `Dia da Semana: ${imageElement.dataset.day}`;
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('imageModal');
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Download image function
+        async function downloadImage() {
+            const image = document.getElementById('modalImage');
+            const imageUrl = image.src;
+            const fileName = `materia-${document.getElementById('modalTitle').textContent.toLowerCase().replace(/\s+/g, '-')}.jpg`;
+
+            try {
+                const response = await fetch(imageUrl);
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            } catch (error) {
+                console.error('Erro ao baixar a imagem:', error);
+                alert('Não foi possível baixar a imagem. Por favor, tente novamente.');
+            }
+        }
+
+        // Share image function
+     // Updated Share image function
+     async function shareImage() {
+            const image = document.getElementById('modalImage');
+            const title = document.getElementById('modalTitle').textContent;
+            
+            try {
+                if (navigator.share) {
+                    // Fetch the image
+                    const response = await fetch(image.src);
+                    const blob = await response.blob();
+                    
+                    // Create a File object with proper name and type
+                    const file = new File([blob], 'subject-image.jpg', { type: blob.type });
+                    
+                    // Create array with the file
+                    const filesArray = [file];
+                    
+                    // Share data object
+                    const shareData = {
+                        title: title,
+                        text: `Matéria: ${title}`,
+                    };
+
+                    // Check if we can share files (try-catch because iOS might throw)
+                    try {
+                        shareData.files = filesArray;
+                        await navigator.share(shareData);
+                    } catch (error) {
+                        // If sharing with files fails, try without files (fallback for iOS)
+                        delete shareData.files;
+                        shareData.url = image.src; // Add the image URL instead
+                        await navigator.share(shareData);
+                    }
+                } else {
+                    // Fallback for browsers that don't support Web Share API
+                    const fallbackUrl = image.src;
+                    const textArea = document.createElement('textarea');
+                    textArea.value = fallbackUrl;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    alert('Link da imagem copiado para a área de transferência!');
+                }
+            } catch (error) {
+                console.error('Erro ao compartilhar:', error);
+                alert('Não foi possível compartilhar a imagem. Por favor, tente novamente.');
+            }
+        }
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeModal();
             }
         });
     </script>

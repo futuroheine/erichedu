@@ -3,109 +3,305 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editar Perfil</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>ErichEdu - Editar Avatar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        .edit-profile {
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 20px;
-            background-color: var(--bg-white);
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        :root {
+            --primary-color: {{ primary_collor }};
+            --primary-color-hover: {{ primary_collor }}dd;
+            --primary-color-light: {{ primary_collor }}22;
         }
-
-        .edit-profile h1 {
-            color: var(--text-dark);
-            font-size: 24px;
-            margin-bottom: 20px;
-            text-align: center;
+        
+        body {
+            --tw-bg-opacity: 1;
+            background-color: rgb(243 244 246 / var(--tw-bg-opacity));
         }
-
-        .edit-profile form {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .form-group label {
-            color: var(--text-dark);
-            font-weight: 500;
-        }
-
-        .form-group input {
-            padding: 8px;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            font-size: 14px;
-        }
-
-        .form-group input[type="file"] {
-            border: none;
-            padding: 0;
-        }
-
-        .buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 500;
-            text-decoration: none;
-            text-align: center;
-        }
-
-        .btn-primary {
+        
+        #sidebar {
             background-color: var(--primary-color);
-            color: white;
+            z-index: 50;
+        }
+        
+        .sidebar-link:hover {
+            background-color: var(--primary-color-hover);
+        }
+        
+        .section-title {
+            color: var(--primary-color);
         }
 
-        .btn-secondary {
-            background-color: var(--secondary-color);
-            color: white;
+        select {
+            width: 100%;
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            border: 1px solid rgb(209 213 219);
+            background-color: white;
         }
 
-        .btn:hover {
-            opacity: 0.9;
+        select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            ring: 2px solid var(--primary-color-light);
         }
     </style>
 </head>
 <body>
-    <div class="edit-profile">
-        <h1>Editar Perfil</h1>
-        <form method="POST" enctype="multipart/form-data">
-            <div class="form-group">
-                <label for="nome">Nome:</label>
-                <input type="text" id="nome" name="nome" value="{{ user.nome }}" required>
+    <div class="flex min-h-screen relative">
+        <!-- Sidebar Mobile-Friendly -->
+        <div id="sidebar" class="fixed top-0 left-0 bottom-0 z-50 w-64 h-full text-white transform -translate-x-full transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:block overflow-y-auto">
+            <div class="p-5">
+                <h2 class="text-2xl font-bold mb-6">ErichEdu</h2>
+                <nav>
+                    <ul class="space-y-3">
+                        <li><a href="{{ url_for('home') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-home mr-3"></i>Início</a></li>
+                        <li><a href="{{ url_for('profile') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-user mr-3"></i>Perfil</a></li>
+                        <li><a href="{{ url_for('materias') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-book mr-3"></i>Matérias</a></li>
+                        <li><a href="{{ url_for('chat', turma_id=user.turma_id) }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-comments mr-3"></i>Chat</a></li>
+                        <li><a href="{{ url_for('cardapio') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-utensils mr-3"></i>Cardápio</a></li>
+                        <li><a href="{{ url_for('criadores') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-users mr-3"></i>Criadores</a></li>
+                        <li><a href="{{ url_for('projetos') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-project-diagram mr-3"></i>Projetos</a></li>
+                        {% if current_user.is_admin %}
+                        <li><a href="{{ url_for('admin') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-cogs mr-3"></i>Admin</a></li>
+                        {% endif %}
+                        <li><a href="{{ url_for('logout') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-sign-out-alt mr-3"></i>Logout</a></li>
+                    </ul>
+                </nav>
             </div>
+        </div>
 
-            <div class="form-group">
-                <label for="senha">Nova Senha:</label>
-                <input type="password" id="senha" name="senha" placeholder="Nova senha">
-            </div>
+        <!-- Conteúdo Principal -->
+        <main class="flex-1 pt-16 p-4 md:p-8 transition-all duration-300 ease-in-out">
+            <!-- Botão Mobile Toggle Sidebar -->
+            <button id="sidebarToggle" class="md:hidden fixed top-4 left-4 z-60 text-white p-2 rounded-full shadow-lg" style="background-color: var(--primary-color);">
+                <i class="fas fa-bars"></i>
+            </button>
 
-            <div class="form-group">
-                <label for="foto_perfil">Foto de Perfil:</label>
-                <input type="file" id="foto_perfil" name="foto_perfil" accept="image/*">
-            </div>
+            <!-- Editor de Avatar -->
+            <div class="max-w-3xl mx-auto">
+                <div class="bg-white p-8 rounded-lg shadow-md">
+                    <h1 class="text-2xl font-bold text-gray-800 mb-6 text-center">
+                        <i class="fas fa-user-edit mr-2"></i>Editar Avatar
+                    </h1>
 
-            <div class="buttons">
-                <input type="submit" value="Atualizar" class="btn btn-primary">
-                <a href="{{ url_for('profile') }}" class="btn btn-secondary">Voltar</a>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <!-- Preview do Avatar -->
+                        <div class="text-center">
+                            <div class="bg-gray-100 p-6 rounded-lg mb-4">
+                                <img id="avatar" src="https://avataaars.io/?avatarStyle=Circle" 
+                                     alt="Avatar Personalizado"
+                                     class="w-48 h-48 mx-auto rounded-full border-4 border-gray-200"/>
+                            </div>
+                            <button id="save-avatar" 
+                                    class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition w-full">
+                                <i class="fas fa-save mr-2"></i>Salvar Avatar
+                            </button>
+                            <div id="loading" class="hidden mt-2 text-gray-600">
+                                <i class="fas fa-spinner fa-spin mr-2"></i>Salvando...
+                            </div>
+                        </div>
+
+                        <!-- Controles -->
+                        <div class="space-y-4">
+                            <form id="avatar-form" class="space-y-4">
+                                <div>
+                                    <label class="block text-gray-700 font-medium mb-2" for="topType">
+                                        <i class="fas fa-cut mr-2"></i>Estilo de Cabelo
+                                    </label>
+                                    <select id="topType">
+                                        <option value="ShortHairShortFlat">Curto</option>
+                                        <option value="LongHairStraight">Longo</option>
+                                        <option value="NoHair">Sem Cabelo</option>
+                                        <option value="ShortHairDreads01">Dreads Curtos</option>
+                                        <option value="ShortHairDreads02">Dreads Curtos 2</option>
+                                        <option value="ShortHairFrizzle">Cabelo Encaracolado</option>
+                                        <option value="ShortHairShaggyMullet">Mullet</option>
+                                        <option value="ShortHairTheCaesar">Caesar</option>
+                                        <option value="LongHairBigHair">Cabelo Longo e Cheio</option>
+                                        <option value="LongHairBun">Coque</option>
+                                        <option value="LongHairCurly">Cabelo Longo Cacheado</option>
+                                        <option value="LongHairStraight2">Cabelo Longo liso 2</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-gray-700 font-medium mb-2" for="hairColor">
+                                        <i class="fas fa-paint-brush mr-2"></i>Cor do Cabelo
+                                    </label>
+                                    <select id="hairColor">
+                                        <option value="BrownDark">Castanho Escuro</option>
+                                        <option value="Black">Preto</option>
+                                        <option value="Blonde">Loiro</option>
+                                        <option value="Brown">Castanho Claro</option>
+                                        <option value="PastelPink">Rosa Pastel</option>
+                                        <option value="PastelPurple">Roxo Pastel</option>
+                                        <option value="Red">Vermelho</option>
+                                        <option value="SilverGray">Cinza</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-gray-700 font-medium mb-2" for="facialHairType">
+                                        <i class="fas fa-user-alt mr-2"></i>Barba
+                                    </label>
+                                    <select id="facialHairType">
+                                        <option value="None">Nenhuma</option>
+                                        <option value="BeardMedium">Barba Média</option>
+                                        <option value="BeardLight">Barba Leve</option>
+                                        <option value="BeardMajestic">Barba Majestosa</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-gray-700 font-medium mb-2" for="clotheType">
+                                        <i class="fas fa-tshirt mr-2"></i>Roupas
+                                    </label>
+                                    <select id="clotheType">
+                                        <option value="BlazerShirt">Blazer com Camisa</option>
+                                        <option value="Hoodie">Moletom</option>
+                                        <option value="ShirtCrewNeck">Camisa</option>
+                                        <option value="Overall">Macacão</option>
+                                        <option value="ShirtScoopNeck">Camiseta Gola U</option>
+                                        <option value="ShirtVNeck">Camiseta Gola V</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-gray-700 font-medium mb-2" for="clotheColor">
+                                        <i class="fas fa-palette mr-2"></i>Cor da Roupa
+                                    </label>
+                                    <select id="clotheColor">
+                                        <option value="Blue01">Azul Claro</option>
+                                        <option value="Blue02">Azul Escuro</option>
+                                        <option value="Blue03">Azul Claro 2</option>
+                                        <option value="Gray01">Cinza Claro</option>
+                                        <option value="Gray02">Cinza Escuro</option>
+                                        <option value="Red">Vermelho</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-gray-700 font-medium mb-2" for="eyeType">
+                                        <i class="fas fa-eye mr-2"></i>Olhos
+                                    </label>
+                                    <select id="eyeType">
+                                        <option value="Default">Normal</option>
+                                        <option value="Squint">Olho Fechado</option>
+                                        <option value="Wink">Olho Piscando</option>
+                                        <option value="Surprised">Surpreso</option>
+                                        <option value="Happy">Feliz</option>
+                                        <option value="Sad">Triste</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-gray-700 font-medium mb-2" for="mouthType">
+                                        <i class="fas fa-smile mr-2"></i>Boca
+                                    </label>
+                                    <select id="mouthType">
+                                        <option value="Smile">Sorriso</option>
+                                        <option value="SmileOpen">Sorriso Aberto</option>
+                                        <option value="Sad">Triste</option>
+                                        <option value="Eating">Comendo</option>
+                                        <option value="Kiss">Beijo</option>
+                                        <option value="Grimace">Careta</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-gray-700 font-medium mb-2" for="accessoriesType">
+                                        <i class="fas fa-glasses mr-2"></i>Acessórios
+                                    </label>
+                                    <select id="accessoriesType">
+                                        <option value="None">Nenhum</option>
+                                        <option value="Wayfarers">Óculos Estilo Wayfarer</option>
+                                        <option value="Round">Óculos Redondo</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-gray-700 font-medium mb-2" for="backgroundColor">
+                                        <i class="fas fa-fill-drip mr-2"></i>Cor de Fundo
+                                    </label>
+                                    <select id="backgroundColor">
+                                        <option value="Transparent">Transparente</option>
+                                        <option value="Blue01">Azul Claro</option>
+                                        <option value="Pink">Rosa</option>
+                                        <option value="Purple">Roxo</option>
+                                        <option value="Yellow">Amarelo</option>
+                                    </select>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </form>
+        </main>
     </div>
+
+    <script>
+        // Sidebar Toggle
+        document.getElementById('sidebarToggle').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('-translate-x-full');
+        });
+        const avatar = document.getElementById('avatar');
+        const form = document.getElementById('avatar-form');
+        const saveButton = document.getElementById('save-avatar');
+        const loading = document.getElementById('loading');
+
+        function updateAvatar() {
+            const topType = document.getElementById('topType').value;
+            const hairColor = document.getElementById('hairColor').value;
+            const clotheType = document.getElementById('clotheType').value;
+            const eyeType = document.getElementById('eyeType').value;
+            const mouthType = document.getElementById('mouthType').value;
+            const facialHairType = document.getElementById('facialHairType').value;
+            const clotheColor = document.getElementById('clotheColor').value;
+            const accessoriesType = document.getElementById('accessoriesType').value;
+            const backgroundColor = document.getElementById('backgroundColor').value;
+
+            const url = `https://avataaars.io/?avatarStyle=Circle&topType=${topType}&hairColor=${hairColor}&clotheType=${clotheType}&eyeType=${eyeType}&mouthType=${mouthType}&facialHairType=${facialHairType}&clotheColor=${clotheColor}&accessoriesType=${accessoriesType}&backgroundColor=${backgroundColor}`;
+            avatar.src = url;
+        }
+
+        form.addEventListener('change', updateAvatar);
+
+        saveButton.addEventListener('click', async () => {
+            try {
+                saveButton.disabled = true;
+                loading.style.display = 'block';
+
+                const response = await fetch('/save-avatar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ imgURL: avatar.src })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert('Avatar salvo com sucesso!');
+                } else {
+                    alert('Erro ao salvar avatar!');
+                }
+            } catch (error) {
+                alert('Erro ao salvar avatar!');
+            } finally {
+                saveButton.disabled = false;
+                loading.style.display = 'none';
+            }
+        });
+    </script>
+
 </body>
 </html>

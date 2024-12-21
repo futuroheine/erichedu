@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, flash, session, request, send_from_directory
+from flask import Flask, render_template, jsonify, redirect, url_for, flash, session, request, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -6,6 +6,8 @@ import requests
 from google.cloud import storage
 import hashlib
 import uuid
+import logging
+from cairosvg import svg2png 
 import firebase_admin
 from firebase_admin import credentials
 from cryptography.fernet import Fernet, InvalidToken
@@ -14,7 +16,9 @@ from flask_socketio import SocketIO, emit, join_room, leave_room
 import eventlet
 from pytz import timezone  
 from datetime import datetime, timedelta
-import pytz
+import pytz, os
+import mimetypes
+from io import BytesIO
 
 
 
@@ -28,8 +32,14 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://postgres.siihlnho
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 login_manager = LoginManager()
 login_manager.init_app(app)
-
+# Em app.py, certifique-se que o caminho está correto
 db = SQLAlchemy(app)
+
+# Configurações do Firebase Storage
+storage_client = storage.Client.from_service_account_json("serviceAccountKey.json")
+bucket = storage_client.bucket("app-erichedu.appspot.com")  # Substitua pelo nome do seu bucket do Firebase Storage
+
+
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
@@ -150,6 +160,91 @@ class QHForm(FlaskForm):
     turma_id = SelectField('Turma', coerce=int, validators=[DataRequired()])
     submit = SubmitField('Adicionar QH')
 
+# Configurações do Firebase Storage
+storage_client = storage.Client.from_service_account_json("serviceAccountKey.json")
+bucket_name = "app-erichedu.appspot.com"  # Nome do seu bucket do Firebase Storage
+
+# Backend (Flask)
+@app.route('/save-avatar', methods=['POST'])
+def save_avatar():
+    data = request.json
+    img_url = data.get('imgURL')
+    user_id = session.get('user_id')
+
+    if not img_url or not user_id:
+        logging.error('Erro: URL da imagem ou ID do usuário não fornecido')
+        return jsonify({'error': 'URL da imagem ou ID do usuário não fornecido'}), 400
+
+    logging.debug(f'Imagem URL: {img_url}')
+    logging.debug(f'User ID: {user_id}')
+
+    # Fazer o download da imagem do avataaars.io
+    try:
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+        response = requests.get(img_url, headers=headers)
+        if response.status_code != 200:
+            logging.error(f'Erro ao baixar a imagem, status code: {response.status_code}')
+            return jsonify({'error': 'Erro ao baixar a imagem'}), 400
+        
+        # O conteúdo já vem como SVG
+        svg_content = response.content
+    except Exception as e:
+        logging.error(f'Erro ao baixar a imagem: {e}')
+        return jsonify({'error': 'Erro ao baixar a imagem'}), 400
+
+    # Converter SVG para PNG usando cairosvg
+    try:
+        png_output = BytesIO()
+        svg2png(bytestring=svg_content, write_to=png_output, scale=2.0)  # Aumentando a escala para melhor qualidade
+        png_output.seek(0)
+        png_bytes = png_output.read()
+        logging.debug('Imagem convertida para PNG com sucesso!')
+    except Exception as e:
+        logging.error(f'Erro ao converter para PNG: {e}')
+        return jsonify({'error': 'Erro ao converter para PNG'}), 400
+
+    # Acessar o bucket Firebase
+    try:
+        storage_client = storage.Client.from_service_account_json("serviceAccountKey.json")
+        bucket = storage_client.bucket("app-erichedu.appspot.com")
+        
+        # Gerar um nome único para o arquivo
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        blob_name = f'avatars/avatar-{user_id}_{timestamp}.png'
+        
+        # Upload para o Firebase Storage
+        blob = bucket.blob(blob_name)
+        blob.upload_from_string(png_bytes, content_type='image/png')
+        blob.make_public()
+        download_url = blob.public_url
+        
+        logging.debug(f'Imagem enviada para o Firebase: {download_url}')
+    except Exception as e:
+        logging.error(f'Erro no upload para o Firebase: {e}')
+        return jsonify({'error': 'Erro no upload para o Firebase'}), 500
+
+    # Atualizar o banco de dados
+    try:
+        user = db.session.get(User, user_id)
+        if not user:
+            logging.error('Usuário não encontrado')
+            return jsonify({'error': 'Usuário não encontrado'}), 404
+
+        user.foto_perfil = download_url
+        db.session.commit()
+        logging.debug(f'Perfil atualizado para o usuário {user_id}')
+    except Exception as e:
+        logging.error(f'Erro ao atualizar o banco de dados: {e}')
+        return jsonify({'error': 'Erro ao atualizar o banco de dados'}), 500
+
+    return jsonify({
+        'message': 'Avatar salvo com sucesso!',
+        'downloadURL': download_url
+    })
+
+
 @app.route('/add_qh', methods=['GET', 'POST'])
 def add_qh():
     form = QHForm()
@@ -190,6 +285,11 @@ def upload_foto_perfil(foto):
     
     return None
 
+
+fuso_brasilia = pytz.timezone('America/Sao_Paulo')
+
+# Obtenha o horário atual no fuso de Brasília
+horario_atual = datetime.now(fuso_brasilia)
 
 def determinar_cor_primaria(turma_id):
     # Mapear os intervalos de turmas para as cores
@@ -378,9 +478,6 @@ firebase_admin.initialize_app(cred, {
     'storageBucket': 'gs://app-erichedu.appspot.com'  # Substitua pelo seu bucket do Firebase Storage
 })
 
-# Configurações do Firebase Storage
-storage_client = storage.Client.from_service_account_json("serviceAccountKey.json")
-bucket = storage_client.bucket("app-erichedu.appspot.com")  # Substitua pelo nome do seu bucket do Firebase Storage
 
 # Função de upload de imagem
 def allowed_file(filename):
@@ -401,6 +498,12 @@ def save_profile_picture(picture):
 @app.route('/editar_perfil', methods=['GET', 'POST'])
 @login_required
 def editar_perfil():
+
+    user = User.query.get(session['user_id'])
+    turma_id = user.turma_id
+    cor_primaria = determinar_cor_primaria(turma_id)
+
+    
     if request.method == 'POST':
         nome = request.form.get('nome')
         senha = request.form.get('senha')
@@ -421,10 +524,8 @@ def editar_perfil():
         flash('Perfil atualizado com sucesso!', 'success')
         return redirect(url_for('editar_perfil'))
 
-    return render_template('editar_perfil.html', user=current_user)
+    return render_template('editar_perfil.html', user=current_user, primary_collor=cor_primaria)
 
-
-# Função para gerar uma chave válida para Fernet
 def generate_key():
     return Fernet.generate_key()  # Retorna a chave como bytes
 
@@ -483,28 +584,6 @@ def chat(turma_id):
 
     return render_template('chat.html', turma=turma, mensagens=decrypted_messages, user=user, primary_collor=cor_primaria)
 
-@app.route('/manifest.json')
-def manifest():
-    return send_from_directory('static', 'manifest.json')
-
-@app.route('/projetos')
-@login_required
-def projetos():
-    
-    user = db.session.get(User, session.get('user_id'))
-    # Obter a turma do usuário
-    turma_id = user.turma_id
-
-    cor_primaria = determinar_cor_primaria(turma_id)
-    """
-    Rota para a página de Projetos Socioambientais
-    Requer login do usuário
-    """
-    # Você pode adicionar lógica adicional aqui se necessário, 
-    # como buscar detalhes específicos dos projetos de um banco de dados
-    
-    # Renderiza o template de projetos
-    return render_template('projetos.html', user=current_user, primary_collor=cor_primaria)
 
 @socketio.on('send_message')
 def handle_send_message_event(data):
@@ -543,6 +622,31 @@ def on_join(data):
 def on_leave(data):
     room = data['room']
     leave_room(room)
+
+
+@app.route('/manifest.json')
+def manifest():
+    return send_from_directory('static', 'manifest.json')
+
+@app.route('/projetos')
+@login_required
+def projetos():
+    
+    user = db.session.get(User, session.get('user_id'))
+    # Obter a turma do usuário
+    turma_id = user.turma_id
+
+    cor_primaria = determinar_cor_primaria(turma_id)
+    """
+    Rota para a página de Projetos Socioambientais
+    Requer login do usuário
+    """
+    # Você pode adicionar lógica adicional aqui se necessário, 
+    # como buscar detalhes específicos dos projetos de um banco de dados
+    
+    # Renderiza o template de projetos
+    return render_template('projetos.html', user=current_user, primary_collor=cor_primaria)
+
 
 
 @app.route('/cardapio', methods=['GET', 'POST'])

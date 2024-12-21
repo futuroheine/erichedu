@@ -3,57 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ErichEDU - Bem-vindo</title>
+    <title>ErichEDU - Plataforma Educacional</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
         body {
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f0f8ff;
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8fafc;
         }
 
-        header {
-            background-color: #004a87;
-            color: white;
-            padding: 10px 0;
-            text-align: center;
-            position: relative;
+        .gradient-bg {
+            background: linear-gradient(135deg, #004a87 0%, #0284c7 100%);
         }
 
-        .menu-toggle {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            cursor: pointer;
-            font-size: 24px;
-            display: block;
-        }
-
-        nav ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        nav ul li {
-            margin: 0 15px;
-        }
-
-        nav ul li a {
-            color: white;
-            text-decoration: none;
-            font-weight: bold;
-            transition: color 0.3s;
-        }
-
-        nav ul li a:hover {
-            color: #d40000;
+        .card-hover {
+            transition: all 0.3s ease;
         }
 
         .banner {
@@ -65,183 +31,189 @@
             padding: 50px 15px;
         }
 
-        .banner h1 {
-            font-size: 36px;
-            margin: 0 0 20px;
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
         }
 
-        .btn {
+        .nav-link {
+            position: relative;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -2px;
+            left: 0;
             background-color: #d40000;
-            color: white;
-            padding: 15px 30px;
-            text-decoration: none;
-            border-radius: 5px;
-            font-size: 18px;
-            transition: background-color 0.3s;
-            display: inline-block;
-            margin: 10px;
+            transition: width 0.3s ease;
         }
 
-        .btn:hover {
-            background-color: #da3838;
+        .nav-link:hover::after {
+            width: 100%;
         }
 
-        .funcionalidades {
-            padding: 30px 15px;
-            text-align: center;
-            background-color: white;
-        }
-
-        .cards {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 15px;
-        }
-
-        .card {
-            background-color: #f4f4f4;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            transition: transform 0.3s;
-        }
-
-        .card:hover {
-            transform: translateY(-10px);
-        }
-
-        .card h3 {
-            color: #004a87;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .card i {
-            margin-right: 10px;
-            color: #004a87;
-        }
-
-        @media (min-width: 768px) {
-            .cards {
-                grid-template-columns: repeat(3, 1fr);
-            }
-        }
-
-        footer {
-            background-color: #004a87;
-            color: white;
-            text-align: center;
-            padding: 20px 0;
-        }
-        .install-step {
-            background-color: #f4f4f4;
-            border-radius: 10px;
-            padding: 20px;
-            margin: 15px;
-            text-align: center;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            transition: transform 0.3s;
-        }
-
-        .install-step:hover {
-            transform: translateY(-10px);
-        }
-
-        .install-step img {
-            max-width: 150px;
-            margin: 0 auto 15px;
-        }
-
-        @media (min-width: 768px) {
-            .install-steps {
-                display: flex;
-                justify-content: center;
-            }
-            .install-step {
-                width: 40%;
-            }
+        .hero-pattern {
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M54.627 0l.83.828-1.415 1.415L51.8 0h2.827zM5.373 0l-.83.828L5.96 2.243 8.2 0H5.374zM48.97 0l3.657 3.657-1.414 1.414L46.143 0h2.828zM11.03 0L7.372 3.657 8.787 5.07 13.857 0H11.03zm32.284 0L49.8 6.485 48.384 7.9l-7.9-7.9h2.83zM16.686 0L10.2 6.485 11.616 7.9l7.9-7.9h-2.83zM22.344 0L13.858 8.485 15.272 9.9l7.9-7.9h-.828zm5.656 0L17.515 10.485 18.93 11.9l7.9-7.9h-2.83zM3.515 0L0 3.515 1.414 4.93 4.93 1.414 3.515 0zM56.485 0L60 3.515 58.586 4.93 55.07 1.414 56.485 0zM4.929 0L0 4.929l2.828 2.828.707-.707L7.07 3.515 4.929 0zM55.071 0L60 4.929l-2.828 2.828-.707-.707L52.93 3.515 55.071 0z' fill='%23ffffff' fill-opacity='0.05'/%3E%3C/svg%3E");
         }
     </style>
 </head>
 <body>
-    <header>
-        <div class="menu-toggle">&#9776;</div>
-        <nav>
-            <ul>
-                <li><a href="#">Início</a></li>
-                <li><a href="#">Funcionalidades</a></li>
-                <li><a href="{{ url_for('signup') }}">Cadastre-se</a></li>
-                <li><a href="{{ url_for('login') }}">Faça Login</a></li>
-            </ul>
+    <!-- Header -->
+    <header class="gradient-bg sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="text-white font-bold text-xl">ErichEDU</div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#" class="nav-link text-white hover:text-gray-200">Início</a>
+                    <a href="#" class="nav-link text-white hover:text-gray-200">Funcionalidades</a>
+                    <a href="{{ url_for('signup') }}" class="nav-link text-white hover:text-gray-200">Cadastre-se</a>
+                    <a href="{{ url_for('login') }}" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-full transition-colors">Login</a>
+                </div>
+                <button class="md:hidden text-white">
+                    <i class="fas fa-bars text-2xl"></i>
+                </button>
+            </div>
         </nav>
     </header>
 
+    <!-- Hero Section -->
     <section class="banner">
-        <h1>Bem-vindo ao ErichEDU</h1>
-        <p>Conectando Alunos e Professores de uma forma NUNCA ANTES VISTA!</p>
-        <a href="{{ url_for('login') }}" class="btn">Faça Login</a>
-    </section>
-
-    <section class="funcionalidades">
-        <h2 class="text-2xl font-bold mb-4">Funcionalidades do ErichEDU</h2>
-        <p class="mb-6">Descubra como o ErichEDU facilita a vida escolar para todos.</p>
-
-        <div class="cards">
-            <div class="card">
-                <h3><i class="fas fa-calendar-alt"></i>Agenda Escolar</h3>
-                <p>Acompanhe as aulas e prazos de tarefas de forma fácil.</p>
-            </div>
-            <div class="card">
-                <h3><i class="fas fa-comments"></i>Mensagens</h3>
-                <p>Comunique-se diretamente com professores e colegas.</p>
-            </div>
-            <div class="card">
-                <h3><i class="fas fa-chart-line"></i>Desempenho</h3>
-                <p>Veja suas faltas e acompanhe o progresso escolar.</p>
+        <div class="container mx-auto px-6 py-24 text-center">
+            <h1 class="text-4xl md:text-6xl font-bold text-white mb-6">
+                Transforme sua experiência educacional
+            </h1>
+            <p class="text-xl text-gray-200 mb-8 max-w-2xl mx-auto">
+                Uma plataforma moderna que conecta alunos e professores, tornando o aprendizado mais eficiente e envolvente.
+            </p>
+            <div class="flex flex-col md:flex-row gap-4 justify-center">
+                <a href="{{ url_for('signup') }}" class="bg-white text-blue-600 px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition-colors">
+                    Começar Agora
+                </a>
+                <a href="/login" class="border-2 border-white text-white px-8 py-3 rounded-full font-semibold hover:bg-white hover:text-blue-600 transition-colors">
+                    Já Tenho uma Conta
+                </a>
             </div>
         </div>
     </section>
-    <section class="mt-8">
-        <h2 class="text-2xl font-bold text-center mb-6">Instale o ErichEDU</h2>
 
-        <div class="install-steps flex flex-col md:flex-row justify-center">
-            <div class="install-step mb-4 md:mr-4">
-                <img src="{{ url_for('static', filename='ios-icon.png') }}" alt="iOS" class="system-logo mx-auto">
-                <h3 class="text-xl font-semibold text-center mb-4">iOS (Safari)</h3>
-                <ol class="list-decimal list-inside text-gray-600 text-left">
-                    <li>Abra o Safari e acesse o nosso site</li>
-                    <li>Toque no ícone de compartilhar</li>
-                    <li>Selecione "Adicionar à Tela de Início"</li>
-                    <li>Pronto! O ErichEDU será instalado</li>
-                </ol>
-            </div>
+    <!-- Features Section -->
+    <section id="features" class="py-20 bg-white">
+        <div class="container mx-auto px-6">
+            <h2 class="text-3xl font-bold text-center text-gray-800 mb-16">
+                Recursos que fazem a diferença
+            </h2>
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Feature Card 1 -->
+                <div class="card-hover bg-gray-50 rounded-xl p-8">
+                    <div class="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center mb-6">
+                        <i class="fas fa-calendar-alt text-2xl text-blue-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">Agenda Inteligente</h3>
+                    <p class="text-gray-600">
+                        Organize suas aulas, tarefas e prazos em um só lugar. Receba lembretes personalizados e nunca perca uma data importante.
+                    </p>
+                </div>
 
-            <div class="install-step">
-                <img src="{{ url_for('static', filename='android-icon.png') }}" alt="Android" class="system-logo mx-auto">
-                <h3 class="text-xl font-semibold text-center mb-4">Android (Chrome)</h3>
-                <ol class="list-decimal list-inside text-gray-600 text-left">
-                    <li>Abra o Google Chrome</li>
-                    <li>Acesse nosso site</li>
-                    <li>Toque no menu de três pontos</li>
-                    <li>Selecione "Adicionar à Tela de Início"</li>
-                    <li>Pronto! O ErichEDU será instalado</li>
-                </ol>
+                <!-- Feature Card 2 -->
+                <div class="card-hover bg-gray-50 rounded-xl p-8">
+                    <div class="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center mb-6">
+                        <i class="fas fa-comments text-2xl text-blue-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">Comunicação Direta</h3>
+                    <p class="text-gray-600">
+                        Chat em tempo real com colegas. Compartilhe arquivos e tire dúvidas instantaneamente.
+                    </p>
+                </div>
+
+                <!-- Feature Card 3 -->
+                <div class="card-hover bg-gray-50 rounded-xl p-8">
+                    <div class="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center mb-6">
+                        <i class="fas fa-chart-line text-2xl text-blue-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">Analytics Avançado</h3>
+                    <p class="text-gray-600">
+                        Acompanhe suas faltas com um relatório mensal. Identifique áreas de melhoria e celebre suas conquistas.
+                    </p>
+                </div>
             </div>
         </div>
     </section>
-</div>
 
+    <!-- Installation Section -->
+    <section class="py-20 bg-gray-50">
+        <div class="container mx-auto px-6">
+            <h2 class="text-3xl font-bold text-center text-gray-800 mb-16">
+                Instale o ErichEDU em seu dispositivo
+            </h2>
+            <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                <!-- iOS Installation -->
+                <div class="card-hover bg-white rounded-xl p-8 text-center">
+                    <img src="{{ url_for('static', filename='ios-icon.png') }}" alt="iOS" class="w-20 h-20 mx-auto mb-6">
+                    <h3 class="text-xl font-semibold mb-6">iOS (Safari)</h3>
+                    <ol class="text-left text-gray-600 space-y-3">
+                        <li class="flex items-center">
+                            <span class="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0">1</span>
+                            Abra o Safari e acesse o site
+                        </li>
+                        <li class="flex items-center">
+                            <span class="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0">2</span>
+                            Toque no ícone de compartilhar
+                        </li>
+                        <li class="flex items-center">
+                            <span class="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0">3</span>
+                            Selecione "Adicionar à Tela de Início"
+                        </li>
+                    </ol>
+                </div>
 
-    <footer>
-        <p>&copy; 2024 ErichEDU - Todos os direitos reservados. - DEUS SEJA LOUVADO</p>
+                <!-- Android Installation -->
+                <div class="card-hover bg-white rounded-xl p-8 text-center">
+                    <img src="{{ url_for('static', filename='android-icon.png') }}" alt="Android" class="w-20 h-20 mx-auto mb-6">
+                    <h3 class="text-xl font-semibold mb-6">Android (Chrome)</h3>
+                    <ol class="text-left text-gray-600 space-y-3">
+                        <li class="flex items-center">
+                            <span class="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0">1</span>
+                            Abra o Chrome e acesse o site
+                        </li>
+                        <li class="flex items-center">
+                            <span class="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0">2</span>
+                            Toque no menu de três pontos
+                        </li>
+                        <li class="flex items-center">
+                            <span class="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0">3</span>
+                            Selecione "Adicionar à Tela de Início"
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="gradient-bg text-white py-12">
+        <div class="container mx-auto px-6">
+            <div class="text-center">
+                <p class="text-sm">
+                    &copy; 2024 ErichEDU - Todos os direitos reservados.
+                </p>
+                <p class="text-sm mt-2">
+                    DEUS SEJA LOUVADO
+                </p>
+            </div>
+        </div>
     </footer>
 
     <script>
-        document.querySelector('.menu-toggle').addEventListener('click', function() {
-            const navLinks = document.querySelector('nav ul');
-            navLinks.classList.toggle('hidden');
+        // Mobile menu toggle
+        const menuButton = document.querySelector('button');
+        const nav = document.querySelector('.md\\:flex');
+        
+        menuButton.addEventListener('click', () => {
+            nav.classList.toggle('hidden');
         });
     </script>
 </body>
