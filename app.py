@@ -463,6 +463,7 @@ def home():
     
     return render_template('home.html', user=user, proxima_aula=proxima_aula, avisos=avisos, primary_collor=cor_primaria, hour=horario_atual)
 
+
 @app.route('/logout')
 def logout():
     session.pop('user_id', None)
