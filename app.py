@@ -52,6 +52,8 @@ class User(db.Model, UserMixin):
     is_gremio = db.Column(db.Boolean, default=False)
     is_representante = db.Column(db.Boolean, default=False)
     foto_perfil = db.Column(db.String(255), nullable=True)
+    matrix_access_token = db.Column(db.String(500), nullable=True)  # Ajuste o tamanho conforme necessário
+
 
     turma = db.relationship('Turma', back_populates='alunos')
     faltas = db.relationship('Falta', back_populates='aluno')
@@ -70,13 +72,23 @@ class Menu(db.Model):
 class Turma(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(10), nullable=False)
-    key = db.Column(db.String(255), nullable=True)  # Nova coluna para a chave
+    key = db.Column(db.String(255), nullable=True)  # Coluna existente
+
+    alunos = db.relationship('User', back_populates='turma')
+    faltas = db.relationship('Falta', back_populates='turma')
+
+    # Relacionamento muitos para muitos com avisos
+    avisos = db.relationship('Aviso', secondary='aviso_turma', back_populates='turmas')
 
     def __repr__(self):
         return f'<Turma {self.nome}>'
 
-    alunos = db.relationship('User', back_populates='turma')
-    faltas = db.relationship('Falta', back_populates='turma')
+
+aviso_turma = db.Table('aviso_turma',
+    db.Column('aviso_id', db.Integer, db.ForeignKey('aviso.id'), primary_key=True),
+    db.Column('turma_id', db.Integer, db.ForeignKey('turma.id'), primary_key=True)
+)
+
 
 class Falta(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -98,10 +110,15 @@ class Aviso(db.Model):
     titulo = db.Column(db.String(255), nullable=False)
     mensagem = db.Column(db.Text, nullable=False)
     tipo_aviso = db.Column(db.String(50), nullable=False)
-    turma_id = db.Column(db.Integer, nullable=True)
     serie = db.Column(db.Integer, nullable=True)
     geral = db.Column(db.Boolean, nullable=False)
     timestamp = db.Column(db.DateTime, nullable=False)
+
+    # Relacionamento muitos para muitos com turmas
+    turmas = db.relationship('Turma', secondary='aviso_turma', back_populates='avisos')
+
+    def __repr__(self):
+        return f'<Aviso {self.titulo}>'
 
 
 class ChatMessage(db.Model):
@@ -488,11 +505,22 @@ def save_profile_picture(picture):
         ext = picture.filename.rsplit('.', 1)[1].lower()
         new_filename = f"{uuid.uuid4().hex}.{ext}"
         
+        # Configuração do bucket
+        client = storage.Client.from_service_account_json("serviceAccountKey.json")
+        bucket = client.bucket("app-erichedu.appspot.com")
+        
         blob = bucket.blob(new_filename)
-        blob.upload_from_file(picture, content_type=picture.content_type)
-        blob.make_public()  # Tornar a imagem pública
+        
+        # Upload do arquivo
+        blob.upload_from_file(picture, content_type="image/png")  # Ajuste o content_type se necessário
+        blob.make_public()
+        
+        print(f"Upload bem-sucedido: {blob.public_url}")
         return blob.public_url
-    return None
+    else:
+        print("Arquivo inválido ou tipo não suportado.")
+        return None
+
 
 # Rota para edição de perfil
 @app.route('/editar_perfil', methods=['GET', 'POST'])
@@ -526,6 +554,7 @@ def editar_perfil():
 
     return render_template('editar_perfil.html', user=current_user, primary_collor=cor_primaria)
 
+# Função para gerar uma chave válida para Fernet
 def generate_key():
     return Fernet.generate_key()  # Retorna a chave como bytes
 
@@ -584,7 +613,6 @@ def chat(turma_id):
 
     return render_template('chat.html', turma=turma, mensagens=decrypted_messages, user=user, primary_collor=cor_primaria)
 
-
 @socketio.on('send_message')
 def handle_send_message_event(data):
     turma_id = data['turma_id']
@@ -623,7 +651,6 @@ def on_leave(data):
     room = data['room']
     leave_room(room)
 
-
 @app.route('/manifest.json')
 def manifest():
     return send_from_directory('static', 'manifest.json')
@@ -647,6 +674,33 @@ def projetos():
     # Renderiza o template de projetos
     return render_template('projetos.html', user=current_user, primary_collor=cor_primaria)
 
+@app.route('/add_aviso', methods=['POST'])
+def add_aviso():
+    titulo = request.form.get('titulo')
+    mensagem = request.form.get('mensagem')
+    tipo_aviso = request.form.get('tipo_aviso')
+    turma_id = request.form.get('turma_id')  # Isso já é o ID real no banco!
+    serie = request.form.get('serie')
+    geral = request.form.get('geral') == 'on'
+    
+    # Criar o novo aviso
+    aviso = Aviso(
+        titulo=titulo,
+        mensagem=mensagem,
+        tipo_aviso=tipo_aviso,
+        turma_id=turma_id if tipo_aviso == 'turma' else None,  # Apenas para avisos por turma
+        serie=serie if tipo_aviso == 'serie' else None,
+        geral=geral,
+        timestamp=datetime.now()
+    )
+
+    try:
+        db.session.add(aviso)
+        db.session.commit()
+        return "Aviso adicionado com sucesso!"
+    except Exception as e:
+        db.session.rollback()
+        return f"Erro ao adicionar aviso: {str(e)}", 400
 
 
 @app.route('/cardapio', methods=['GET', 'POST'])

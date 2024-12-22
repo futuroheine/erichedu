@@ -95,7 +95,82 @@
                         </a>
                     </div>
                 </div>
-
+                <div class="bg-white p-5 rounded-lg shadow-md">
+                    <h2 class="text-xl font-semibold mb-3 section-title">
+                        <i class="fas fa-bell mr-2"></i>Adicionar Aviso
+                    </h2>
+                    <form action="{{ url_for('add_aviso') }}" method="POST">
+                        <!-- Título -->
+                        <div class="mb-4">
+                            <label for="titulo" class="block text-gray-700">Título</label>
+                            <input type="text" id="titulo" name="titulo" class="w-full p-2 border border-gray-300 rounded" required>
+                        </div>
+                
+                        <!-- Mensagem -->
+                        <div class="mb-4">
+                            <label for="mensagem" class="block text-gray-700">Mensagem</label>
+                            <textarea id="mensagem" name="mensagem" class="w-full p-2 border border-gray-300 rounded" required></textarea>
+                        </div>
+                
+                        <!-- Tipo de Aviso -->
+                        <div class="mb-4">
+                            <label for="tipo_aviso" class="block text-gray-700">Tipo de Aviso</label>
+                            <select id="tipo_aviso" name="tipo_aviso" class="w-full p-2 border border-gray-300 rounded" onchange="toggleTipoAviso()">
+                                <option value="geral">Geral</option>
+                                <option value="serie">Por Série</option>
+                                <option value="turma">Por Turma</option>
+                            </select>
+                        </div>
+                
+                        <!-- Seleção de Série ou Turma -->
+                        <div id="serie" class="mb-4 hidden">
+                            <label for="serie_select" class="block text-gray-700">Selecione a Série</label>
+                            <select id="serie_select" name="serie" class="w-full p-2 border border-gray-300 rounded">
+                                <option value="1">1º Ano</option>
+                                <option value="2">2º Ano</option>
+                                <option value="3">3º Ano</option>
+                            </select>
+                        </div>
+                
+                        <div id="turma" class="mb-4 hidden">
+                            <label for="turma_select" class="block text-gray-700">Selecione a Turma</label>
+                            <select id="turma_select" name="turma_id" class="w-full p-2 border border-gray-300 rounded">
+                                <!-- Turmas de 1001 a 1005 -->
+                                <option value="1">1001</option>
+                                <option value="2">1002</option>
+                                <option value="3">1003</option>
+                                <option value="4">1004</option>
+                                <option value="5">1005</option>
+                                                
+                                <!-- Turmas de 2001 a 2005 -->
+                                <option value="6">2001</option>
+                                <option value="7">2002</option>
+                                <option value="8">2003</option>
+                                <option value="9">2004</option>
+                                <option value="10">2005</option>
+                
+                                <!-- Turmas de 3001 a 3005 -->
+                                <option value="11">3001</option>
+                                <option value="12">3002</option>
+                                <option value="13">3003</option>
+                                <option value="14">3004</option>
+                                <option value="15">3005</option>
+                            </select>
+                        </div>
+                
+                        <!-- Aviso Geral -->
+                        <div class="mb-4">
+                            <label for="geral" class="flex items-center">
+                                <input type="checkbox" id="geral" name="geral" class="mr-2"> Aviso Geral
+                            </label>
+                        </div>
+                
+                        <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition">
+                            <i class="fas fa-plus mr-2"></i>Adicionar Aviso
+                        </button>
+                    </form>
+                </div>
+                
                 <!-- Faltas por Turma -->
                 <div class="bg-white p-5 rounded-lg shadow-md">
                     <h2 class="text-xl font-semibold mb-3 section-title">
@@ -175,6 +250,24 @@
     </div>
 
     <script>
+                function toggleTipoAviso() {
+            const tipoAviso = document.getElementById('tipo_aviso').value;
+            const serieDiv = document.getElementById('serie');
+            const turmaDiv = document.getElementById('turma');
+            if (tipoAviso === 'serie') {
+                serieDiv.classList.remove('hidden');
+                turmaDiv.classList.add('hidden');
+            } else if (tipoAviso === 'turma') {
+                turmaDiv.classList.remove('hidden');
+                serieDiv.classList.add('hidden');
+            } else {
+                serieDiv.classList.add('hidden');
+                turmaDiv.classList.add('hidden');
+            }
+        }
+        
+        toggleTipoAviso();
+
         document.getElementById('sidebarToggle').addEventListener('click', function() {
             const sidebar = document.getElementById('sidebar');
             sidebar.classList.toggle('-translate-x-full');

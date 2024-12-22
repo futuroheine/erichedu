@@ -16,11 +16,10 @@
             --text-primary: white;
             --text-secondary: #667781;
         }
+        #sidebar{
+            color:white
 
-        #sidebar {
-            color: white;
         }
-
 
         * {
             scrollbar-width: thin;
@@ -218,12 +217,47 @@
                 <div class="flex-grow">
                     <h1 class="text-xl font-semibold text-gray-800">
                         <i class="fas fa-comments mr-2 text-primary"></i>
-                       O CHAT AINDA NÃO ESTÁ DISPONÍVEL, ESTAMOS TRABALHANDO NISSO!
+                        {{ turma.nome }}
                     </h1>
                 </div>
             </header>
 
-            
+            <div id="messages" class="messages-container flex flex-col-reverse">
+                {% for mensagem in mensagens %}
+                    {% set user_nome, mensagem_texto, rotulos, foto_perfil, hora_envio = mensagem %}
+                    <div class="message {{ 'sent' if user_nome == current_user.nome_completo else 'received' }}">
+                        <div class="message-header">
+                            <span class="message-sender">{{ user_nome }}</span>
+                            {% for rotulo in rotulos %}
+                                <span class="message-label">{{ rotulo }}</span>
+                            {% endfor %}
+                        </div>
+                        <p>{{ mensagem_texto }}</p>
+                        <span class="text-xs text-gray-500 block text-right mt-1">{{ hora_envio }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <form id="chat-form" class="input-container">
+                <div class="input-wrapper">
+                    <input 
+                        type="text" 
+                        id="mensagem" 
+                        class="chat-input"
+                        placeholder="Digite sua mensagem..." 
+                        required 
+                        autocomplete="off"
+                    >
+                    <button type="submit" class="send-button">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <audio id="notification-sound" src="{{ url_for('static', filename='plim-sound.mp3') }}"></audio>
+
     <script>
         // JavaScript remains the same as the previous implementation
         const socket = io(window.location.origin);
@@ -243,22 +277,13 @@
                 minute: '2-digit' 
             });
 
-        // Cria uma nova instância de Date com a hora atual
-        const dataAtual = new Date();
-                
-        // Define as opções para o fuso horário de São Paulo
-        const opcoes = { timeZone: 'America/Sao_Paulo' };
-                
-        // Formata a data e hora de acordo com o fuso horário especificado
-        const horaBrasilia = dataAtual.toLocaleString('pt-BR', opcoes);
-                
-        // Envia a mensagem com a hora formatada
-        socket.emit('send_message', {
-            turma_id: turmaId,
-            message: message,
-            sender: "{{ current_user.nome_completo }}",
-            time: horaBrasilia
-        });
+            socket.emit('send_message', {
+                turma_id: turmaId,
+                message: message,
+                sender: "{{ current_user.nome_completo }}",
+                time: time
+            });
+
             const messagesContainer = document.getElementById('messages');
             const messageDiv = document.createElement('div');
             messageDiv.className = 'message sent';
@@ -276,25 +301,21 @@
         });
 
         socket.on('receive_message', function(data) {
-    const messagesContainer = document.getElementById('messages');
-    const messageDiv = document.createElement('div');
-    const isCurrentUser = data.sender === "{{ current_user.nome_completo }}";
-    
-    messageDiv.className = `message ${isCurrentUser ? 'sent' : 'received'}`;
-    messageDiv.innerHTML = `
-        <div class="message-header">
-            <span class="message-sender">${data.sender}</span>
-        </div>
-        <p>${data.message}</p>
-        <span class="text-xs text-gray-500 block text-right mt-1">${data.time}</span>
-    `;
+            const messagesContainer = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            const isCurrentUser = data.sender === "{{ current_user.nome_completo }}";
+            
+            messageDiv.className = `message ${isCurrentUser ? 'sent' : 'received'}`;
+            messageDiv.innerHTML = `
+                <div class="message-header">
+                    <span class="message-sender">${data.sender}</span>
+                </div>
+                <p>${data.message}</p>
+                <span class="text-xs text-gray-500 block text-right mt-1">${data.time}</span>
+            `;
 
-    messagesContainer.insertBefore(messageDiv, messagesContainer.firstChild);
-
-    // Reproduzir som de notificação para novas mensagens
-    document.getElementById('notification-sound').play();
-});
-
+            messagesContainer.insertBefore(messageDiv, messagesContainer.firstChild);
+        });
 
         // Toggle Sidebar no Mobile
         document.getElementById('sidebarToggle').addEventListener('click', function() {

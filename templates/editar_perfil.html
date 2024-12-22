@@ -113,6 +113,21 @@
                         <!-- Controles -->
                         <div class="space-y-4">
                             <form id="avatar-form" class="space-y-4">
+                                <!-- Cor da Pele -->
+                                <div>
+                                    <label class="block text-gray-700 font-medium mb-2" for="skinColor">
+                                        <i class="fas fa-user mr-2"></i>Cor da Pele
+                                    </label>
+                                    <select id="skinColor">
+                                        <option value="Light">Clara</option>
+                                        <option value="DarkBrown">Escura</option>
+                                        <option value="Brown">Morena</option>
+                                        <option value="Tanned">Bronzeada</option>
+                                        <option value="Yellow">Amarela</option>
+                                        <option value="Pale">Pálida</option>
+                                    </select>
+                                </div>
+
                                 <div>
                                     <label class="block text-gray-700 font-medium mb-2" for="topType">
                                         <i class="fas fa-cut mr-2"></i>Estilo de Cabelo
@@ -154,7 +169,7 @@
                                         <i class="fas fa-user-alt mr-2"></i>Barba
                                     </label>
                                     <select id="facialHairType">
-                                        <option value="None">Nenhuma</option>
+                                        <option value="Blank">Nenhuma</option>
                                         <option value="BeardMedium">Barba Média</option>
                                         <option value="BeardLight">Barba Leve</option>
                                         <option value="BeardMajestic">Barba Majestosa</option>
@@ -209,11 +224,11 @@
                                     </label>
                                     <select id="mouthType">
                                         <option value="Smile">Sorriso</option>
-                                        <option value="SmileOpen">Sorriso Aberto</option>
+                                        <option value="Twinkle">Sorriso Aberto</option>
+                                        <option value="Serious">Sério</option>
                                         <option value="Sad">Triste</option>
                                         <option value="Eating">Comendo</option>
-                                        <option value="Kiss">Beijo</option>
-                                        <option value="Grimace">Careta</option>
+                                        <option value="Disbelief">Descrente</option>
                                     </select>
                                 </div>
 
@@ -222,9 +237,13 @@
                                         <i class="fas fa-glasses mr-2"></i>Acessórios
                                     </label>
                                     <select id="accessoriesType">
-                                        <option value="None">Nenhum</option>
-                                        <option value="Wayfarers">Óculos Estilo Wayfarer</option>
-                                        <option value="Round">Óculos Redondo</option>
+                                        <option value="Blank">Nenhum</option>
+                                        <option value="Kurt">Óculos Kurt</option>
+                                        <option value="Prescription01">Óculos Redondo</option>
+                                        <option value="Prescription02">Óculos Oval</option>
+                                        <option value="Round">Óculos Redondo 2</option>
+                                        <option value="Sunglasses">Óculos de Sol</option>
+                                        <option value="Wayfarers">Óculos Wayfarer</option>
                                     </select>
                                 </div>
 
@@ -235,8 +254,11 @@
                                     <select id="backgroundColor">
                                         <option value="Transparent">Transparente</option>
                                         <option value="Blue01">Azul Claro</option>
+                                        <option value="Blue02">Azul Escuro</option>
+                                        <option value="Blue03">Azul Claro 2</option>
                                         <option value="Pink">Rosa</option>
                                         <option value="Purple">Roxo</option>
+                                        <option value="Red">Vermelho</option>
                                         <option value="Yellow">Amarelo</option>
                                     </select>
                                 </div>
@@ -254,12 +276,14 @@
             const sidebar = document.getElementById('sidebar');
             sidebar.classList.toggle('-translate-x-full');
         });
+
         const avatar = document.getElementById('avatar');
         const form = document.getElementById('avatar-form');
         const saveButton = document.getElementById('save-avatar');
         const loading = document.getElementById('loading');
 
         function updateAvatar() {
+            const skinColor = document.getElementById('skinColor').value;
             const topType = document.getElementById('topType').value;
             const hairColor = document.getElementById('hairColor').value;
             const clotheType = document.getElementById('clotheType').value;
@@ -270,11 +294,15 @@
             const accessoriesType = document.getElementById('accessoriesType').value;
             const backgroundColor = document.getElementById('backgroundColor').value;
 
-            const url = `https://avataaars.io/?avatarStyle=Circle&topType=${topType}&hairColor=${hairColor}&clotheType=${clotheType}&eyeType=${eyeType}&mouthType=${mouthType}&facialHairType=${facialHairType}&clotheColor=${clotheColor}&accessoriesType=${accessoriesType}&backgroundColor=${backgroundColor}`;
+            const url = `https://avataaars.io/?avatarStyle=Circle&skinColor=${skinColor}&topType=${topType}&hairColor=${hairColor}&clotheType=${clotheType}&eyeType=${eyeType}&mouthType=${mouthType}&facialHairType=${facialHairType}&clotheColor=${clotheColor}&accessoriesType=${accessoriesType}&backgroundColor=${backgroundColor}`;
             avatar.src = url;
         }
 
+        // Atualiza o avatar quando qualquer campo é alterado
         form.addEventListener('change', updateAvatar);
+
+        // Atualiza o avatar inicialmente
+        updateAvatar();
 
         saveButton.addEventListener('click', async () => {
             try {
@@ -296,6 +324,7 @@
                 }
             } catch (error) {
                 alert('Erro ao salvar avatar!');
+                console.error('Erro:', error);
             } finally {
                 saveButton.disabled = false;
                 loading.style.display = 'none';
