@@ -458,7 +458,7 @@ def home():
     # Buscar a próxima aula
     proxima_aula = QH.query.filter_by(turma_id=turma_id, dia_da_semana=dia_atual).filter(QH.horario > horario_atual).order_by(QH.horario).first()
     # Adicione na sua rota /home
-    avisos = Aviso.query.filter_by(turma_id=turma_id).all()
+    avisos = Aviso.query.all()
     return render_template('home.html', user=user, proxima_aula=proxima_aula, avisos=avisos, primary_collor=cor_primaria, hour=horario_atual)
 
 @app.route('/logout')
