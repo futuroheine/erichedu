@@ -429,9 +429,9 @@ def inject_user():
 @login_required
 def home():
     user = db.session.get(User, session.get('user_id'))
+    
     # Obter a turma do usuário
     turma_id = user.turma_id
-
     cor_primaria = determinar_cor_primaria(turma_id)
     
     # Criar um dicionário para mapear dias da semana
@@ -457,8 +457,10 @@ def home():
 
     # Buscar a próxima aula
     proxima_aula = QH.query.filter_by(turma_id=turma_id, dia_da_semana=dia_atual).filter(QH.horario > horario_atual).order_by(QH.horario).first()
-    # Adicione na sua rota /home
-    avisos = Aviso.query.all()
+
+    # Buscar apenas os avisos relacionados à turma do usuário
+    avisos = Aviso.query.join(aviso_turma).filter(aviso_turma.c.turma_id == turma_id).order_by(Aviso.timestamp.desc()).all()
+    
     return render_template('home.html', user=user, proxima_aula=proxima_aula, avisos=avisos, primary_collor=cor_primaria, hour=horario_atual)
 
 @app.route('/logout')
@@ -678,30 +680,57 @@ def projetos():
 def add_aviso():
     titulo = request.form.get('titulo')
     mensagem = request.form.get('mensagem')
-    tipo_aviso = request.form.get('tipo_aviso')
-    turma_id = request.form.get('turma_id')  # Isso já é o ID real no banco!
-    serie = request.form.get('serie')
-    geral = request.form.get('geral') == 'on'
-    
+    tipo_aviso = request.form.get('tipo_aviso')  # Pode ser 'geral', 'turma' ou 'serie'
+    turmas_ids = request.form.getlist('turmas_ids')  # Lista de IDs das turmas selecionadas
+    serie = request.form.get('serie')  # Série selecionada (1, 2 ou 3)
+    geral = request.form.get('geral') == 'on'  # Checkbox para aviso geral
+
+    # Mapeamento de séries para IDs de turmas
+    series_para_turmas = {
+        '1': [1, 2, 3, 4, 5],   # 1ª série
+        '2': [6, 7, 8, 9, 10],  # 2ª série
+        '3': [11, 12, 13, 14, 15]  # 3ª série
+    }
+
     # Criar o novo aviso
     aviso = Aviso(
         titulo=titulo,
         mensagem=mensagem,
         tipo_aviso=tipo_aviso,
-        turma_id=turma_id if tipo_aviso == 'turma' else None,  # Apenas para avisos por turma
-        serie=serie if tipo_aviso == 'serie' else None,
+        serie=serie if tipo_aviso == 'serie' else None,  # Apenas para avisos por série
         geral=geral,
         timestamp=datetime.now()
     )
 
     try:
-        db.session.add(aviso)
+        db.session.add(aviso)  # Adicionar o aviso à sessão
+        db.session.flush()  # Forçar a criação do aviso para obter o ID
+
+        if geral:
+            # Associar o aviso a todas as turmas
+            todas_turmas = Turma.query.all()
+            for turma in todas_turmas:
+                aviso.turmas.append(turma)
+
+        elif tipo_aviso == 'turma' and turmas_ids:
+            # Garantir que `turmas_ids` é uma lista de inteiros
+            turmas_ids = [int(turma_id) for turma_id in turmas_ids]
+            turmas = Turma.query.filter(Turma.id.in_(turmas_ids)).all()
+            for turma in turmas:
+                aviso.turmas.append(turma)
+
+        elif tipo_aviso == 'serie' and serie in series_para_turmas:
+            # Selecionar os IDs das turmas correspondentes à série
+            serie_turmas_ids = series_para_turmas[serie]
+            turmas = Turma.query.filter(Turma.id.in_(serie_turmas_ids)).all()
+            for turma in turmas:
+                aviso.turmas.append(turma)
+
         db.session.commit()
         return "Aviso adicionado com sucesso!"
     except Exception as e:
         db.session.rollback()
         return f"Erro ao adicionar aviso: {str(e)}", 400
-
 
 @app.route('/cardapio', methods=['GET', 'POST'])
 @login_required
