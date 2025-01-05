@@ -4,97 +4,151 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Marcar Faltas</title>
-</head>
-<body style="font-family: Arial, sans-serif; background-color: var(--background-color); margin: 0; padding: 20px;">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #083888;   /* Azul escuro */
-            --secondary-color: #89d156; /* Verde vibrante */
-            --accent-color: #ffe458;    /* Amarelo */
-            --error-color: #ff3131;     /* Vermelho de alerta */
-            --background-color: #083888; /* Fundo azul escuro */
-            --white: #FFFFFF;
+            --primary-color: {{ primary_collor }};
+            --primary-color-hover: {{ primary_collor }}dd;
+            --primary-color-light: {{ primary_collor }}22;
         }
-
+        
         body {
-            color: var(--white);
+            --tw-bg-opacity: 1;
+            background-color: rgb(243 244 246 / var(--tw-bg-opacity));
         }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            background-color: var(--white);
+        
+        #sidebar {
+            background-color: var(--primary-color);
+            z-index: 50;
+        }
+        
+        .sidebar-link:hover {
+            background-color: var(--primary-color-hover);
+        }
+        
+        .section-title {
             color: var(--primary-color);
         }
 
-        th, td {
-            border: 1px solid #ccc;
-            padding: 10px;
-            text-align: center;
-        }
-
-        th {
+        .presente { background-color: #89d156; color: #FFFFFF; }
+        .falta { background-color: #ff3131; color: #FFFFFF; }
+        .falta-justificada { background-color: #ffa500; color: #FFFFFF; }
+        .sem-aula { background-color: #A9A9A9; color: #FFFFFF; }
+        
+        #sidebarToggle {
             background-color: var(--primary-color);
-            color: var(--white);
+            z-index: 60;
         }
-
-        select {
-            padding: 5px;
-            font-size: 16px;
-        }
-
-        .presente { background-color: #89d156; color: #FFFFFF; }   /* Verde para presença */
-        .falta { background-color: #ff3131; color: #FFFFFF; }      /* Vermelho para falta */
-        .falta-justificada { background-color: #ffa500; color: #FFFFFF; } /* Laranja para falta justificada */
-        .sem-aula { background-color: #A9A9A9; color: #FFFFFF; }   /* Cinza para sem aula */
     </style>
+</head>
+<body>
+    <div class="flex min-h-screen relative">
+        <!-- Sidebar Mobile-Friendly -->
+        <div id="sidebar" class="fixed top-0 left-0 bottom-0 z-50 w-64 h-full text-white transform -translate-x-full transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:block overflow-y-auto">
+            <div class="p-5">
+                <h2 class="text-2xl font-bold mb-6">ErichEdu</h2>
+                <nav>
+                    <ul class="space-y-3">
+                        <li><a href="{{ url_for('home') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-home mr-3"></i>Início</a></li>
+                        <li><a href="{{ url_for('profile') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-user mr-3"></i>Perfil</a></li>
+                        <li><a href="{{ url_for('materias') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-book mr-3"></i>Matérias</a></li>
+                        <li><a href="{{ url_for('chat', turma_id=user.turma_id) }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-comments mr-3"></i>Chat</a></li>
+                        <li><a href="{{ url_for('cardapio') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-utensils mr-3"></i>Cardápio</a></li>
+                        {% if current_user.is_admin %}
+                        <li><a href="{{ url_for('admin') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-cogs mr-3"></i>Admin</a></li>
+                        {% endif %}
+                        <li><a href="{{ url_for('logout') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-sign-out-alt mr-3"></i>Logout</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
 
-    <h1 style="text-align: center; color: var(--accent-color);">Marcar Faltas para a Turma: {{ turma.nome }}</h1>
+        <!-- Conteúdo Principal -->
+        <main class="flex-1 pt-16 p-4 md:p-8 transition-all duration-300 ease-in-out">
+            <!-- Botão Mobile Toggle Sidebar -->
+            <button id="sidebarToggle" class="md:hidden fixed top-4 left-4 z-60 text-white p-2 rounded-full shadow-lg">
+                <i class="fas fa-bars"></i>
+            </button>
 
-    <div style="max-width: 900px; margin: 0 auto;">
-        <h2>Mês: {{ dias_do_mes[0].strftime('%B') }}</h2>
-        <h3>Legenda:</h3>
-        <ul style="list-style-type: none; padding: 0;">
-            <li><strong style="color: #89d156;">P:</strong> Presença</li>
-            <li><strong style="color: #ff3131;">F:</strong> Falta</li>
-            <li><strong style="color: #ffa500;">FJ:</strong> Falta Justificada</li>
-            <li><strong style="color: #A9A9A9;">SA:</strong> Sem Aula</li>
-        </ul>
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">Marcar Faltas para a Turma: {{ turma.nome }}</h1>
+
+                <div class="mb-6">
+                    <h2 class="text-xl font-semibold text-gray-700">Mês: {{ dias_do_mes[0].strftime('%B') }}</h2>
+                    <h3 class="text-lg font-semibold text-gray-700 mt-4">Legenda:</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2">
+                        <div class="flex items-center"><div class="w-4 h-4 bg-[#89d156] rounded mr-2"></div>P: Presença</div>
+                        <div class="flex items-center"><div class="w-4 h-4 bg-[#ff3131] rounded mr-2"></div>F: Falta</div>
+                        <div class="flex items-center"><div class="w-4 h-4 bg-[#ffa500] rounded mr-2"></div>FJ: Falta Justificada</div>
+                        <div class="flex items-center"><div class="w-4 h-4 bg-[#A9A9A9] rounded mr-2"></div>SA: Sem Aula</div>
+                    </div>
+                </div>
+
+                <form method="POST">
+                    <div class="overflow-x-auto">
+                        <table class="w-full border-collapse">
+                            <thead>
+                                <tr>
+                                    <th class="border p-2 bg-gray-100">Aluno</th>
+                                    {% for dia in dias_do_mes %}
+                                        <th class="border p-2 bg-gray-100">{{ dia.day }}</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for aluno in alunos %}
+                                    <tr>
+                                        <td class="border p-2">{{ aluno.nome_completo }}</td>
+                                        {% for dia in dias_do_mes %}
+                                            <td class="border p-2">
+                                                <select name="presente_{{ aluno.id }}_{{ dia.day }}" class="w-full p-1 rounded">
+                                                    <option value="presente" class="presente" {% if faltas[aluno.id][dia.day] == 'presente' %}selected{% endif %}>P</option>
+                                                    <option value="falta" class="falta" {% if faltas[aluno.id][dia.day] == 'falta' %}selected{% endif %}>F</option>
+                                                    <option value="falta_justificada" class="falta-justificada" {% if faltas[aluno.id][dia.day] == 'falta_justificada' %}selected{% endif %}>FJ</option>
+                                                    <option value="sem_aula" class="sem-aula" {% if faltas[aluno.id][dia.day] == 'sem_aula' %}selected{% endif %}>SA</option>
+                                                </select>
+                                            </td>
+                                        {% endfor %}
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="text-center mt-6">
+                        <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition duration-200">
+                            Salvar Faltas
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </main>
     </div>
 
-    <form method="POST" style="max-width: 900px; margin: 0 auto;">
-        <table>
-            <thead>
-                <tr>
-                    <th>Aluno</th>
-                    {% for dia in dias_do_mes %}
-                        <th>{{ dia.day }}</th>
-                    {% endfor %}
-                </tr>
-            </thead>
-            <tbody>
-                {% for aluno in alunos %}
-                    <tr>
-                        <td>{{ aluno.nome_completo }}</td>
-                        {% for dia in dias_do_mes %}
-                            <td>
-                                <select name="presente_{{ aluno.id }}_{{ dia.day }}" style="background-color: var(--white);">
-                                    <option value="presente" class="presente" style="background-color: #89d156; color: #FFFFFF;" {% if faltas[aluno.id][dia.day] == 'presente' %}selected{% endif %}>P</option>
-                                    <option value="falta" class="falta" style="background-color: #ff3131; color: #FFFFFF;" {% if faltas[aluno.id][dia.day] == 'falta' %}selected{% endif %}>F</option>
-                                    <option value="falta_justificada" class="falta-justificada" style="background-color: #ffa500; color: #FFFFFF;" {% if faltas[aluno.id][dia.day] == 'falta_justificada' %}selected{% endif %}>FJ</option>
-                                    <option value="sem_aula" class="sem-aula" style="background-color: #A9A9A9; color: #FFFFFF;" {% if faltas[aluno.id][dia.day] == 'sem_aula' %}selected{% endif %}>SA</option>
-                                </select>
-                            </td>
-                        {% endfor %}
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <script>
+        document.getElementById('sidebarToggle').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('-translate-x-full');
+        });
 
-        <div style="text-align: center; margin-top: 20px;">
-            <button type="submit" style="padding: 10px 20px; font-size: 16px; background-color: var(--accent-color); color: var(--primary-color); border: none; border-radius: 4px; cursor: pointer;">Salvar Faltas</button>
-        </div>
-    </form>
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const isClickInsideSidebar = sidebar.contains(event.target);
+            const isClickOnToggle = sidebarToggle.contains(event.target);
+
+            if (!isClickInsideSidebar && !isClickOnToggle && !sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.add('-translate-x-full');
+            }
+        });
+    </script>
 </body>
 </html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oops! Algo deu errado</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        h1 {
+            font-size: 3rem;
+            color: #dc3545;
+        }
+        p {
+            font-size: 1.2rem;
+        }
+        .error-details {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f1f1f1;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            display: inline-block;
+            text-align: left;
+            max-width: 600px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Não é você, somos nós!</h1>
+    <p>Algo inesperado aconteceu. Estamos trabalhando para resolver isso o mais rápido possível.</p>
+    <div class="error-details">
+        <strong>Erro:</strong> {{ error_message }}
+    </div>
+</body>
+</html>

@@ -479,6 +479,16 @@ def quadro_almoco():
 
     return "Quadro de almoço atualizado com sucesso!"
 
+
+@app.errorhandler(Exception)
+def handle_exception(e):
+    # Log detalhado do erro (opcional, útil para depuração)
+    app.logger.error(f"Erro: {e}")
+
+    # Retornar página de erro amigável
+    return render_template('error.html', error_message=str(e)), 500
+
+
 @app.route('/eu')
 @login_required
 def profile():
