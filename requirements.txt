@@ -16,3 +16,5 @@ flask_wtf
 stream_chat
 cairosvg
 zulip
+svglib
+Pillow

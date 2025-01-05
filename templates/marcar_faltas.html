@@ -66,7 +66,7 @@
 </head>
 <body>
     <div class="flex min-h-screen relative">
-        <!-- Sidebar Mobile-Friendly -->
+        <!-- Sidebar -->
         <div id="sidebar" class="fixed top-0 left-0 bottom-0 z-50 w-64 h-full text-white transform -translate-x-full transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:block overflow-y-auto">
             <div class="p-5">
                 <h2 class="text-2xl font-bold mb-6">ErichEdu</h2>
@@ -82,6 +82,10 @@
                             <i class="fas fa-comments mr-3"></i>Chat</a></li>
                         <li><a href="{{ url_for('cardapio') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
                             <i class="fas fa-utensils mr-3"></i>Cardápio</a></li>
+                        <li><a href="{{ url_for('criadores') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-users mr-3"></i>Criadores</a></li>
+                        <li><a href="{{ url_for('projetos') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-project-diagram mr-3"></i>Projetos</a></li>
                         {% if current_user.is_admin %}
                         <li><a href="{{ url_for('admin') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
                             <i class="fas fa-cogs mr-3"></i>Admin</a></li>
@@ -92,6 +96,7 @@
                 </nav>
             </div>
         </div>
+
 
         <!-- Conteúdo Principal -->
         <main class="flex-1 pt-16 p-4 md:p-8 transition-all duration-300 ease-in-out">
@@ -107,48 +112,46 @@
                     <h1 class="text-2xl font-bold text-gray-800">Marcar Faltas: {{ turma.nome }}</h1>
                     
                     <!-- Controles de Navegação -->
-                    <div class="flex items-center space-x-4 mt-4 md:mt-0">
-                        <button id="prevMonth" class="p-2 rounded bg-gray-100 hover:bg-gray-200">
-                            <i class="fas fa-chevron-left"></i>
-                        </button>
-                        <span id="currentMonth" class="text-lg font-semibold">{{ dias_do_mes[0].strftime('%B %Y') }}</span>
-                        <button id="nextMonth" class="p-2 rounded bg-gray-100 hover:bg-gray-200">
-                            <i class="fas fa-chevron-right"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Legenda -->
-                <div class="mb-6 bg-gray-50 p-4 rounded-lg">
-                    <h3 class="text-lg font-semibold text-gray-700 mb-2">Legenda:</h3>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div class="flex items-center space-x-2">
-                            <button class="w-8 h-8 rounded presente" data-status="presente">P</button>
-                            <span>Presença</span>
+                    <div class="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4 mt-4 md:mt-0">
+                        <!-- Seletor de Mês -->
+                        <div class="flex items-center space-x-4">
+                            <button id="prevMonth" class="p-2 rounded bg-gray-100 hover:bg-gray-200">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <span id="currentMonth" class="text-lg font-semibold">{{ dias_do_mes[0].strftime('%B %Y') }}</span>
+                            <button id="nextMonth" class="p-2 rounded bg-gray-100 hover:bg-gray-200">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
                         </div>
-                        <div class="flex items-center space-x-2">
-                            <button class="w-8 h-8 rounded falta" data-status="falta">F</button>
-                            <span>Falta</span>
-                        </div>
-                        <div class="flex items-center space-x-2">
-                            <button class="w-8 h-8 rounded falta-justificada" data-status="falta_justificada">FJ</button>
-                            <span>Falta Justificada</span>
-                        </div>
-                        <div class="flex items-center space-x-2">
-                            <button class="w-8 h-8 rounded sem-aula" data-status="sem_aula">SA</button>
-                            <span>Sem Aula</span>
+                        
+                        <!-- Seletor de Dia -->
+                        <div class="flex items-center space-x-4">
+                            <button id="prevDay" class="p-2 rounded bg-gray-100 hover:bg-gray-200">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <select id="daySelector" class="p-2 rounded bg-gray-100">
+                                {% for dia in dias_do_mes %}
+                                    <option value="{{ dia.day }}">
+                                        {{ dia.strftime('%d') }} - {{ dia.strftime('%a') }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <button id="nextDay" class="p-2 rounded bg-gray-100 hover:bg-gray-200">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Ações Rápidas -->
-                <div class="mb-6 flex flex-wrap gap-4">
-                    <button id="markAllPresent" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
-                        Marcar Todos Presentes
-                    </button>
-                    <button id="markAllAbsent" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
-                        Marcar Todos Ausentes
-                    </button>
+                <!-- Legenda e resto do conteúdo -->
+                <div class="mb-6">
+                    <h3 class="text-xl font-semibold text-gray-700">Legenda</h3>
+                    <ul class="flex space-x-6 mt-2">
+                        <li><span class="presente px-3 py-1 rounded-full text-sm">Presente</span></li>
+                        <li><span class="falta px-3 py-1 rounded-full text-sm">Falta</span></li>
+                        <li><span class="falta-justificada px-3 py-1 rounded-full text-sm">Falta Justificada</span></li>
+                        <li><span class="sem-aula px-3 py-1 rounded-full text-sm">Sem Aula</span></li>
+                    </ul>
                 </div>
 
                 <!-- Tabela de Presença -->
@@ -158,31 +161,27 @@
                             <thead>
                                 <tr class="attendance-header">
                                     <th class="border p-2 bg-gray-100 name-column">Aluno</th>
-                                    {% for dia in dias_do_mes %}
-                                        <th class="border p-2 bg-gray-100">
-                                            <div class="text-sm">{{ dia.strftime('%d') }}</div>
-                                            <div class="text-xs text-gray-500">{{ dia.strftime('%a') }}</div>
-                                        </th>
-                                    {% endfor %}
+                                    <th class="border p-2 bg-gray-100" id="selectedDayHeader">
+                                        <div class="text-sm" id="selectedDayNumber"></div>
+                                        <div class="text-xs text-gray-500" id="selectedDayName"></div>
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for aluno in alunos %}
                                     <tr>
                                         <td class="border p-2 name-column bg-white">{{ aluno.nome_completo }}</td>
-                                        {% for dia in dias_do_mes %}
-                                            <td class="border p-1 relative">
-                                                <div class="attendance-cell w-12 h-12 rounded flex items-center justify-center"
-                                                     data-aluno="{{ aluno.id }}"
-                                                     data-dia="{{ dia.day }}"
-                                                     data-status="{{ faltas[aluno.id][dia.day] }}">
-                                                    <input type="hidden" 
-                                                           name="presente_{{ aluno.id }}_{{ dia.day }}" 
-                                                           value="{{ faltas[aluno.id][dia.day] }}">
-                                                    <span>{{ faltas[aluno.id][dia.day]|upper|truncate(2, True, '') }}</span>
-                                                </div>
-                                            </td>
-                                        {% endfor %}
+                                        <td class="border p-1 relative">
+                                            <div class="attendance-cell w-12 h-12 rounded flex items-center justify-center"
+                                                 data-aluno="{{ aluno.id }}"
+                                                 data-dia="{{ dias_do_mes[0].day }}"
+                                                 data-status="{{ faltas[aluno.id][1] }}">
+                                                <input type="hidden" 
+                                                       name="presente_{{ aluno.id }}_{{ dias_do_mes[0].day }}" 
+                                                       value="{{ faltas[aluno.id][1] }}">
+                                                <span>{{ faltas[aluno.id][1]|upper|truncate(2, True, '') }}</span>
+                                            </div>
+                                        </td>
                                     </tr>
                                 {% endfor %}
                             </tbody>
@@ -205,113 +204,87 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const sidebar = document.getElementById('sidebar');
-            const sidebarToggle = document.getElementById('sidebarToggle');
-            const form = document.getElementById('attendanceForm');
-            const undoButton = document.getElementById('undoButton');
-            let previousStates = [];
+            const daySelector = document.getElementById('daySelector');
+            const prevDay = document.getElementById('prevDay');
+            const nextDay = document.getElementById('nextDay');
+            const selectedDayNumber = document.getElementById('selectedDayNumber');
+            const selectedDayName = document.getElementById('selectedDayName');
 
-            // Sidebar Toggle
+            // Atualiza o cabeçalho da tabela com o dia selecionado
+            function updateSelectedDay() {
+                const selectedOption = daySelector.options[daySelector.selectedIndex];
+                const selectedDate = new Date(daySelector.value);
+                selectedDayNumber.textContent = selectedOption.text.split(' - ')[0];
+                selectedDayName.textContent = selectedOption.text.split(' - ')[1];
+                
+                // Atualiza os data-dia e names dos inputs
+                document.querySelectorAll('.attendance-cell').forEach(cell => {
+                    cell.dataset.dia = daySelector.value;
+                    const input = cell.querySelector('input');
+                    input.name = input.name.replace(/_\d+$/, `_${daySelector.value}`);
+                });
+            }
+
+            // Navegação entre dias
+            daySelector.addEventListener('change', updateSelectedDay);
+            
+            prevDay.addEventListener('click', () => {
+                const currentIndex = daySelector.selectedIndex;
+                if (currentIndex > 0) {
+                    daySelector.selectedIndex = currentIndex - 1;
+                    updateSelectedDay();
+                }
+            });
+
+            nextDay.addEventListener('click', () => {
+                const currentIndex = daySelector.selectedIndex;
+                if (currentIndex < daySelector.options.length - 1) {
+                    daySelector.selectedIndex = currentIndex + 1;
+                    updateSelectedDay();
+                }
+            });
+
+            // Inicializa com o primeiro dia
+            updateSelectedDay();
+
+            // Toggle sidebar visibility
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('sidebar');
+            
             sidebarToggle.addEventListener('click', () => {
                 sidebar.classList.toggle('-translate-x-full');
             });
 
-            // Click Outside Sidebar
-            document.addEventListener('click', (event) => {
-                const isClickInsideSidebar = sidebar.contains(event.target);
-                const isClickOnToggle = sidebarToggle.contains(event.target);
-
-                if (!isClickInsideSidebar && !isClickOnToggle && !sidebar.classList.contains('-translate-x-full')) {
-                    sidebar.classList.add('-translate-x-full');
-                }
-            });
-
-            // Status Cycling
-            const statusCycle = ['presente', 'falta', 'falta_justificada', 'sem_aula'];
-            
+            // Atualizar a célula de presença
             document.querySelectorAll('.attendance-cell').forEach(cell => {
-                cell.addEventListener('click', function() {
-                    const currentStatus = this.dataset.status;
-                    const currentIndex = statusCycle.indexOf(currentStatus);
-                    const nextStatus = statusCycle[(currentIndex + 1) % statusCycle.length];
+                cell.addEventListener('click', () => {
+                    const alunoId = cell.dataset.aluno;
+                    const dia = cell.dataset.dia;
+                    const statusInput = cell.querySelector('input');
+                    let currentStatus = statusInput.value;
                     
-                    // Save previous state
-                    previousStates.push({
-                        element: this,
-                        status: currentStatus
-                    });
-                    undoButton.disabled = false;
-                    
-                    updateCellStatus(this, nextStatus);
-                });
-
-                // Initialize cell status
-                updateCellStatus(cell, cell.dataset.status);
-            });
-
-            // Undo functionality
-            undoButton.addEventListener('click', () => {
-                const lastState = previousStates.pop();
-                if (lastState) {
-                    updateCellStatus(lastState.element, lastState.status);
-                    if (previousStates.length === 0) {
-                        undoButton.disabled = true;
+                    if (currentStatus === 'presente') {
+                        statusInput.value = 'falta';
+                        cell.classList.remove('presente');
+                        cell.classList.add('falta');
+                        cell.querySelector('span').textContent = 'F';
+                    } else if (currentStatus === 'falta') {
+                        statusInput.value = 'falta-justificada';
+                        cell.classList.remove('falta');
+                        cell.classList.add('falta-justificada');
+                        cell.querySelector('span').textContent = 'FJ';
+                    } else if (currentStatus === 'falta-justificada') {
+                        statusInput.value = 'sem-aula';
+                        cell.classList.remove('falta-justificada');
+                        cell.classList.add('sem-aula');
+                        cell.querySelector('span').textContent = 'SA';
+                    } else {
+                        statusInput.value = 'presente';
+                        cell.classList.remove('sem-aula');
+                        cell.classList.add('presente');
+                        cell.querySelector('span').textContent = 'P';
                     }
-                }
-            });
-
-            // Bulk Actions
-            document.getElementById('markAllPresent').addEventListener('click', () => {
-                document.querySelectorAll('.attendance-cell').forEach(cell => {
-                    previousStates.push({
-                        element: cell,
-                        status: cell.dataset.status
-                    });
-                    updateCellStatus(cell, 'presente');
                 });
-                undoButton.disabled = false;
-            });
-
-            document.getElementById('markAllAbsent').addEventListener('click', () => {
-                document.querySelectorAll('.attendance-cell').forEach(cell => {
-                    previousStates.push({
-                        element: cell,
-                        status: cell.dataset.status
-                    });
-                    updateCellStatus(cell, 'falta');
-                });
-                undoButton.disabled = false;
-            });
-
-            function updateCellStatus(cell, status) {
-                // Remove all status classes
-                cell.classList.remove('presente', 'falta', 'falta-justificada', 'sem-aula');
-                // Add new status class
-                cell.classList.add(status);
-                // Update data attribute
-                cell.dataset.status = status;
-                // Update hidden input
-                const input = cell.querySelector('input');
-                input.value = status;
-                // Update display text
-                const span = cell.querySelector('span');
-                span.textContent = status.substring(0, 2).toUpperCase();
-            }
-
-            // Form submission with confirmation
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-                if (confirm('Deseja salvar as alterações?')) {
-                    this.submit();
-                }
-            });
-
-            // Keyboard navigation
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'z' && (e.ctrlKey || e.metaKey)) {
-                    e.preventDefault();
-                    undoButton.click();
-                }
             });
         });
     </script>

@@ -205,7 +205,7 @@
                             <a href="{{ url_for('upload_materia') }}" class="quick-action p-3 rounded text-center hover:opacity-80 transition">
                                 <i class="fas fa-upload block mb-2"></i>Enviar Matéria
                             </a>
-                            <a href="{{ url_for('contagem_faltas') }}" class="quick-action p-3 rounded text-center hover:opacity-80 transition">
+                            <a href="{{ url_for('marcar_faltas',  turma_id=user.turma_id) }}" class="quick-action p-3 rounded text-center hover:opacity-80 transition">
                                 <i class="fas fa-calendar-alt block mb-2"></i>Ver Faltas
                             </a>
                         {% endif %}

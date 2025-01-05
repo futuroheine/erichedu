@@ -7,7 +7,7 @@ from google.cloud import storage
 import hashlib
 import uuid
 import logging
-from cairosvg import svg2png 
+from svglib.svglib import svg2rlg
 import firebase_admin
 from firebase_admin import credentials
 from cryptography.fernet import Fernet, InvalidToken
@@ -181,7 +181,6 @@ class QHForm(FlaskForm):
 storage_client = storage.Client.from_service_account_json("serviceAccountKey.json")
 bucket_name = "app-erichedu.appspot.com"  # Nome do seu bucket do Firebase Storage
 
-# Backend (Flask)
 @app.route('/save-avatar', methods=['POST'])
 def save_avatar():
     data = request.json
@@ -211,10 +210,11 @@ def save_avatar():
         logging.error(f'Erro ao baixar a imagem: {e}')
         return jsonify({'error': 'Erro ao baixar a imagem'}), 400
 
-    # Converter SVG para PNG usando cairosvg
+    # Converter SVG para PNG usando svglib + Pillow
     try:
+        drawing = svg2rlg(BytesIO(svg_content))
         png_output = BytesIO()
-        svg2png(bytestring=svg_content, write_to=png_output, scale=2.0)  # Aumentando a escala para melhor qualidade
+        drawToFile(drawing, png_output, fmt='PNG')
         png_output.seek(0)
         png_bytes = png_output.read()
         logging.debug('Imagem convertida para PNG com sucesso!')
@@ -482,11 +482,14 @@ def quadro_almoco():
 
 @app.errorhandler(Exception)
 def handle_exception(e):
+    user = User.query.get(session['user_id'])
+    turma_id = user.turma_id
+    cor_primaria = determinar_cor_primaria(turma_id)
     # Log detalhado do erro (opcional, útil para depuração)
     app.logger.error(f"Erro: {e}")
 
     # Retornar página de erro amigável
-    return render_template('error.html', error_message=str(e)), 500
+    return render_template('error.html', primary_collor=cor_primaria, error_message=str(e)), 500
 
 
 @app.route('/eu')
@@ -500,7 +503,6 @@ def profile():
     faltas = Falta.query.filter_by(user_id=current_user.id, presente=False, falta_justificada=False).all()
     total_faltas = len(faltas)
     return render_template('eu.html', user=user, faltas_count=total_faltas, primary_collor=cor_primaria)
-
 
 # Inicializar o Firebase Admin SDK
 cred = credentials.Certificate("serviceAccountKey.json")
@@ -602,13 +604,12 @@ def chat(turma_id):
 
     cor_primaria = determinar_cor_primaria(turma_id)
 
-
     # Garante que todas as turmas têm uma chave
     ensure_all_turmas_have_key()
 
     key = turma.key  
 
-    mensagens = ChatMessage.query.filter_by(turma_id=turma.id).all()
+    mensagens = ChatMessage.query.filter_by(turma_id=turma.id).order_by(ChatMessage.timestamp).all()
     decrypted_messages = []
     for msg in mensagens:
         try:
@@ -649,7 +650,8 @@ def handle_send_message_event(data):
         'user_nome': current_user.nome_completo,
         'message': data['message'],
         'rotulos': rotulos,
-        'foto_perfil': current_user.foto_perfil
+        'foto_perfil': current_user.foto_perfil,
+        'timestamp': datetime.now().strftime('%H:%M')
     }
 
     emit('receive_message', message_data, room=str(turma_id))
@@ -658,11 +660,13 @@ def handle_send_message_event(data):
 def on_join(data):
     room = data['room']
     join_room(room)
+    emit('user_joined', {'user_nome': current_user.nome_completo}, room=room)
 
 @socketio.on('leave')
 def on_leave(data):
     room = data['room']
     leave_room(room)
+    emit('user_left', {'user_nome': current_user.nome_completo}, room=room)
 
 @app.route('/manifest.json')
 def manifest():
@@ -848,8 +852,7 @@ def contagem_faltas():
 @login_required
 def marcar_faltas(turma_id):
     user = User.query.get(session['user_id'])
-    turma_id = user.turma_id
-    cor_primaria = determinar_cor_primaria(turma_id)
+    cor_primaria = determinar_cor_primaria(user.turma_id)
 
     # Verifica se o usuário é um representante
     if not current_user.is_representante:
@@ -892,7 +895,8 @@ def marcar_faltas(turma_id):
 
                 if status == 'presente':
                     if falta_existente:
-                        db.session.delete(falta_existente)
+                        falta_existente.presente = True
+                        falta_existente.falta_justificada = False
                     else:
                         nova_falta = Falta(user_id=aluno.id, data=dia, presente=True, turma_id=turma.id)
                         db.session.add(nova_falta)
