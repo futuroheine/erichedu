@@ -27,18 +27,40 @@
             background-color: var(--primary-color-hover);
         }
         
-        .section-title {
-            color: var(--primary-color);
+        .presente { background-color: #89d156 !important; color: #FFFFFF !important; }
+        .falta { background-color: #ff3131 !important; color: #FFFFFF !important; }
+        .falta-justificada { background-color: #ffa500 !important; color: #FFFFFF !important; }
+        .sem-aula { background-color: #A9A9A9 !important; color: #FFFFFF !important; }
+        
+        .attendance-cell {
+            cursor: pointer;
+            transition: all 0.2s;
         }
 
-        .presente { background-color: #89d156; color: #FFFFFF; }
-        .falta { background-color: #ff3131; color: #FFFFFF; }
-        .falta-justificada { background-color: #ffa500; color: #FFFFFF; }
-        .sem-aula { background-color: #A9A9A9; color: #FFFFFF; }
-        
-        #sidebarToggle {
-            background-color: var(--primary-color);
-            z-index: 60;
+        .attendance-cell:hover {
+            transform: scale(1.05);
+        }
+
+        @media (max-width: 768px) {
+            .attendance-table {
+                display: block;
+                width: 100%;
+                overflow-x: auto;
+            }
+            
+            .attendance-header {
+                position: sticky;
+                top: 0;
+                background: white;
+                z-index: 10;
+            }
+
+            .name-column {
+                position: sticky;
+                left: 0;
+                background: white;
+                z-index: 5;
+            }
         }
     </style>
 </head>
@@ -78,43 +100,87 @@
                 <i class="fas fa-bars"></i>
             </button>
 
+            <!-- Container Principal -->
             <div class="bg-white p-6 rounded-lg shadow-md">
-                <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">Marcar Faltas para a Turma: {{ turma.nome }}</h1>
-
-                <div class="mb-6">
-                    <h2 class="text-xl font-semibold text-gray-700">Mês: {{ dias_do_mes[0].strftime('%B') }}</h2>
-                    <h3 class="text-lg font-semibold text-gray-700 mt-4">Legenda:</h3>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2">
-                        <div class="flex items-center"><div class="w-4 h-4 bg-[#89d156] rounded mr-2"></div>P: Presença</div>
-                        <div class="flex items-center"><div class="w-4 h-4 bg-[#ff3131] rounded mr-2"></div>F: Falta</div>
-                        <div class="flex items-center"><div class="w-4 h-4 bg-[#ffa500] rounded mr-2"></div>FJ: Falta Justificada</div>
-                        <div class="flex items-center"><div class="w-4 h-4 bg-[#A9A9A9] rounded mr-2"></div>SA: Sem Aula</div>
+                <!-- Cabeçalho -->
+                <div class="flex flex-col md:flex-row justify-between items-center mb-6">
+                    <h1 class="text-2xl font-bold text-gray-800">Marcar Faltas: {{ turma.nome }}</h1>
+                    
+                    <!-- Controles de Navegação -->
+                    <div class="flex items-center space-x-4 mt-4 md:mt-0">
+                        <button id="prevMonth" class="p-2 rounded bg-gray-100 hover:bg-gray-200">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <span id="currentMonth" class="text-lg font-semibold">{{ dias_do_mes[0].strftime('%B %Y') }}</span>
+                        <button id="nextMonth" class="p-2 rounded bg-gray-100 hover:bg-gray-200">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
                     </div>
                 </div>
 
-                <form method="POST">
-                    <div class="overflow-x-auto">
+                <!-- Legenda -->
+                <div class="mb-6 bg-gray-50 p-4 rounded-lg">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-2">Legenda:</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="flex items-center space-x-2">
+                            <button class="w-8 h-8 rounded presente" data-status="presente">P</button>
+                            <span>Presença</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button class="w-8 h-8 rounded falta" data-status="falta">F</button>
+                            <span>Falta</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button class="w-8 h-8 rounded falta-justificada" data-status="falta_justificada">FJ</button>
+                            <span>Falta Justificada</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button class="w-8 h-8 rounded sem-aula" data-status="sem_aula">SA</button>
+                            <span>Sem Aula</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ações Rápidas -->
+                <div class="mb-6 flex flex-wrap gap-4">
+                    <button id="markAllPresent" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+                        Marcar Todos Presentes
+                    </button>
+                    <button id="markAllAbsent" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
+                        Marcar Todos Ausentes
+                    </button>
+                </div>
+
+                <!-- Tabela de Presença -->
+                <form id="attendanceForm" method="POST">
+                    <div class="overflow-x-auto attendance-table">
                         <table class="w-full border-collapse">
                             <thead>
-                                <tr>
-                                    <th class="border p-2 bg-gray-100">Aluno</th>
+                                <tr class="attendance-header">
+                                    <th class="border p-2 bg-gray-100 name-column">Aluno</th>
                                     {% for dia in dias_do_mes %}
-                                        <th class="border p-2 bg-gray-100">{{ dia.day }}</th>
+                                        <th class="border p-2 bg-gray-100">
+                                            <div class="text-sm">{{ dia.strftime('%d') }}</div>
+                                            <div class="text-xs text-gray-500">{{ dia.strftime('%a') }}</div>
+                                        </th>
                                     {% endfor %}
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for aluno in alunos %}
                                     <tr>
-                                        <td class="border p-2">{{ aluno.nome_completo }}</td>
+                                        <td class="border p-2 name-column bg-white">{{ aluno.nome_completo }}</td>
                                         {% for dia in dias_do_mes %}
-                                            <td class="border p-2">
-                                                <select name="presente_{{ aluno.id }}_{{ dia.day }}" class="w-full p-1 rounded">
-                                                    <option value="presente" class="presente" {% if faltas[aluno.id][dia.day] == 'presente' %}selected{% endif %}>P</option>
-                                                    <option value="falta" class="falta" {% if faltas[aluno.id][dia.day] == 'falta' %}selected{% endif %}>F</option>
-                                                    <option value="falta_justificada" class="falta-justificada" {% if faltas[aluno.id][dia.day] == 'falta_justificada' %}selected{% endif %}>FJ</option>
-                                                    <option value="sem_aula" class="sem-aula" {% if faltas[aluno.id][dia.day] == 'sem_aula' %}selected{% endif %}>SA</option>
-                                                </select>
+                                            <td class="border p-1 relative">
+                                                <div class="attendance-cell w-12 h-12 rounded flex items-center justify-center"
+                                                     data-aluno="{{ aluno.id }}"
+                                                     data-dia="{{ dia.day }}"
+                                                     data-status="{{ faltas[aluno.id][dia.day] }}">
+                                                    <input type="hidden" 
+                                                           name="presente_{{ aluno.id }}_{{ dia.day }}" 
+                                                           value="{{ faltas[aluno.id][dia.day] }}">
+                                                    <span>{{ faltas[aluno.id][dia.day]|upper|truncate(2, True, '') }}</span>
+                                                </div>
                                             </td>
                                         {% endfor %}
                                     </tr>
@@ -123,9 +189,13 @@
                         </table>
                     </div>
 
-                    <div class="text-center mt-6">
-                        <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition duration-200">
-                            Salvar Faltas
+                    <!-- Botões de Ação -->
+                    <div class="flex justify-between mt-6">
+                        <button type="button" id="undoButton" class="px-6 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 disabled:opacity-50">
+                            <i class="fas fa-undo mr-2"></i>Desfazer
+                        </button>
+                        <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                            <i class="fas fa-save mr-2"></i>Salvar Alterações
                         </button>
                     </div>
                 </form>
@@ -134,20 +204,115 @@
     </div>
 
     <script>
-        document.getElementById('sidebarToggle').addEventListener('click', function() {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('-translate-x-full');
-        });
-
-        document.addEventListener('click', function(event) {
+        document.addEventListener('DOMContentLoaded', function() {
             const sidebar = document.getElementById('sidebar');
             const sidebarToggle = document.getElementById('sidebarToggle');
-            const isClickInsideSidebar = sidebar.contains(event.target);
-            const isClickOnToggle = sidebarToggle.contains(event.target);
+            const form = document.getElementById('attendanceForm');
+            const undoButton = document.getElementById('undoButton');
+            let previousStates = [];
 
-            if (!isClickInsideSidebar && !isClickOnToggle && !sidebar.classList.contains('-translate-x-full')) {
-                sidebar.classList.add('-translate-x-full');
+            // Sidebar Toggle
+            sidebarToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('-translate-x-full');
+            });
+
+            // Click Outside Sidebar
+            document.addEventListener('click', (event) => {
+                const isClickInsideSidebar = sidebar.contains(event.target);
+                const isClickOnToggle = sidebarToggle.contains(event.target);
+
+                if (!isClickInsideSidebar && !isClickOnToggle && !sidebar.classList.contains('-translate-x-full')) {
+                    sidebar.classList.add('-translate-x-full');
+                }
+            });
+
+            // Status Cycling
+            const statusCycle = ['presente', 'falta', 'falta_justificada', 'sem_aula'];
+            
+            document.querySelectorAll('.attendance-cell').forEach(cell => {
+                cell.addEventListener('click', function() {
+                    const currentStatus = this.dataset.status;
+                    const currentIndex = statusCycle.indexOf(currentStatus);
+                    const nextStatus = statusCycle[(currentIndex + 1) % statusCycle.length];
+                    
+                    // Save previous state
+                    previousStates.push({
+                        element: this,
+                        status: currentStatus
+                    });
+                    undoButton.disabled = false;
+                    
+                    updateCellStatus(this, nextStatus);
+                });
+
+                // Initialize cell status
+                updateCellStatus(cell, cell.dataset.status);
+            });
+
+            // Undo functionality
+            undoButton.addEventListener('click', () => {
+                const lastState = previousStates.pop();
+                if (lastState) {
+                    updateCellStatus(lastState.element, lastState.status);
+                    if (previousStates.length === 0) {
+                        undoButton.disabled = true;
+                    }
+                }
+            });
+
+            // Bulk Actions
+            document.getElementById('markAllPresent').addEventListener('click', () => {
+                document.querySelectorAll('.attendance-cell').forEach(cell => {
+                    previousStates.push({
+                        element: cell,
+                        status: cell.dataset.status
+                    });
+                    updateCellStatus(cell, 'presente');
+                });
+                undoButton.disabled = false;
+            });
+
+            document.getElementById('markAllAbsent').addEventListener('click', () => {
+                document.querySelectorAll('.attendance-cell').forEach(cell => {
+                    previousStates.push({
+                        element: cell,
+                        status: cell.dataset.status
+                    });
+                    updateCellStatus(cell, 'falta');
+                });
+                undoButton.disabled = false;
+            });
+
+            function updateCellStatus(cell, status) {
+                // Remove all status classes
+                cell.classList.remove('presente', 'falta', 'falta-justificada', 'sem-aula');
+                // Add new status class
+                cell.classList.add(status);
+                // Update data attribute
+                cell.dataset.status = status;
+                // Update hidden input
+                const input = cell.querySelector('input');
+                input.value = status;
+                // Update display text
+                const span = cell.querySelector('span');
+                span.textContent = status.substring(0, 2).toUpperCase();
             }
+
+            // Form submission with confirmation
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                if (confirm('Deseja salvar as alterações?')) {
+                    this.submit();
+                }
+            });
+
+            // Keyboard navigation
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'z' && (e.ctrlKey || e.metaKey)) {
+                    e.preventDefault();
+                    undoButton.click();
+                }
+            });
         });
     </script>
 </body>

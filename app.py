@@ -847,6 +847,10 @@ def contagem_faltas():
 @app.route('/marcar_faltas/<int:turma_id>', methods=['GET', 'POST'])
 @login_required
 def marcar_faltas(turma_id):
+    user = User.query.get(session['user_id'])
+    turma_id = user.turma_id
+    cor_primaria = determinar_cor_primaria(turma_id)
+
     # Verifica se o usuário é um representante
     if not current_user.is_representante:
         flash('Apenas representantes podem gerenciar as faltas.', 'danger')
@@ -917,7 +921,7 @@ def marcar_faltas(turma_id):
         flash('Faltas atualizadas com sucesso!', 'success')
         return redirect(url_for('contagem_faltas'))
 
-    return render_template('marcar_faltas.html', turma=turma, alunos=alunos, dias_do_mes=dias_do_mes, faltas=faltas)
+    return render_template('marcar_faltas.html', turma=turma, primary_collor=cor_primaria, alunos=alunos, dias_do_mes=dias_do_mes, faltas=faltas)
 
 @app.route('/criadores')
 def criadores():
