@@ -19,9 +19,6 @@ from datetime import datetime, timedelta
 import pytz, os
 import mimetypes
 from io import BytesIO
-import json
-from firebase_admin import credentials, initialize_app
-
 
 
 
@@ -38,33 +35,11 @@ login_manager.init_app(app)
 # Em app.py, certifique-se que o caminho está correto
 db = SQLAlchemy(app)
 
-# Carregue o valor JSON da variável de ambiente
-cred_json = os.getenv('GOOGLE_APPLICATION_CREDENTIALS_JSON')
+cred = credentials.Certificate("serviceAccountKey.json")
+firebase_admin.initialize_app(cred, {
+    'storageBucket': 'gs://app-erichedu.appspot.com'  # Substitua pelo seu bucket do Firebase Storage
+})
 
-# Se a variável de ambiente estiver configurada corretamente
-if cred_json:
-    # Carregue as credenciais a partir do JSON
-    cred_dict = json.loads(cred_json)  # Converte o JSON para um dicionário
-    
-    # Inicializa o Firebase com o dicionário de credenciais
-    cred = credentials.Certificate(cred_dict)
-    
-    # Inicialize o Firebase Admin SDK
-    firebase_admin.initialize_app(cred, {
-        'storageBucket': 'your-app-id.appspot.com'  # Substitua pelo nome correto do seu bucket
-    })
-    
-    # Agora você pode acessar o Firebase Storage corretamente usando storage.Client()
-    client = storage.Client()  # Cria uma instância do cliente
-    bucket = client.get_bucket()  # Acessa o bucket com o cliente
-    
-    # Exemplo de como você pode acessar e listar arquivos no bucket
-    blobs = bucket.list_blobs()
-    for blob in blobs:
-        print(blob.name)
-
-else:
-    raise EnvironmentError("A variável de ambiente 'GOOGLE_APPLICATION_CREDENTIALS_JSON' não está definida.")
 
 
 class User(db.Model, UserMixin):
@@ -204,7 +179,7 @@ class QHForm(FlaskForm):
     submit = SubmitField('Adicionar QH')
 
 # Configurações do Firebase Storage
-storage_client = cred
+storage_client = storage.Client.from_service_account_json("serviceAccountKey.json")
 bucket_name = "app-erichedu.appspot.com"  # Nome do seu bucket do Firebase Storage
 
 @app.route('/save-avatar', methods=['POST'])
@@ -250,7 +225,7 @@ def save_avatar():
 
     # Acessar o bucket Firebase
     try:
-        storage_client = cred
+        storage_client = storage.Client.from_service_account_json("serviceAccountKey.json")
         bucket = storage_client.bucket("app-erichedu.appspot.com")
         
         # Gerar um nome único para o arquivo
@@ -536,9 +511,6 @@ def profile():
 
 
 
-
-# Inicializar o Firebase Admin SDK
-
 # Função de upload de imagem
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'jpg', 'jpeg', 'png'}
@@ -549,7 +521,7 @@ def save_profile_picture(picture):
         new_filename = f"{uuid.uuid4().hex}.{ext}"
         
         # Configuração do bucket
-        client = cred
+        client = storage.Client.from_service_account_json("serviceAccountKey.json")
         bucket = client.bucket("app-erichedu.appspot.com")
         
         blob = bucket.blob(new_filename)
