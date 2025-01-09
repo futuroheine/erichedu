@@ -19,6 +19,9 @@ from datetime import datetime, timedelta
 import pytz, os
 import mimetypes
 from io import BytesIO
+import json
+from firebase_admin import credentials, initialize_app
+
 
 
 
@@ -35,10 +38,33 @@ login_manager.init_app(app)
 # Em app.py, certifique-se que o caminho está correto
 db = SQLAlchemy(app)
 
-# Configurações do Firebase Storage
-storage_client = storage.Client.from_service_account_json("serviceAccountKey.json")
-bucket = storage_client.bucket("app-erichedu.appspot.com")  # Substitua pelo nome do seu bucket do Firebase Storage
+# Carregue o valor JSON da variável de ambiente
+cred_json = os.getenv('GOOGLE_APPLICATION_CREDENTIALS_JSON')
 
+# Se a variável de ambiente estiver configurada corretamente
+if cred_json:
+    # Carregue as credenciais a partir do JSON
+    cred_dict = json.loads(cred_json)  # Converte o JSON para um dicionário
+    
+    # Inicializa o Firebase com o dicionário de credenciais
+    cred = credentials.Certificate(cred_dict)
+    
+    # Inicialize o Firebase Admin SDK
+    firebase_admin.initialize_app(cred, {
+        'storageBucket': 'your-app-id.appspot.com'  # Substitua pelo nome correto do seu bucket
+    })
+    
+    # Agora você pode acessar o Firebase Storage corretamente usando storage.Client()
+    client = storage.Client()  # Cria uma instância do cliente
+    bucket = client.get_bucket()  # Acessa o bucket com o cliente
+    
+    # Exemplo de como você pode acessar e listar arquivos no bucket
+    blobs = bucket.list_blobs()
+    for blob in blobs:
+        print(blob.name)
+
+else:
+    raise EnvironmentError("A variável de ambiente 'GOOGLE_APPLICATION_CREDENTIALS_JSON' não está definida.")
 
 
 class User(db.Model, UserMixin):
@@ -178,7 +204,7 @@ class QHForm(FlaskForm):
     submit = SubmitField('Adicionar QH')
 
 # Configurações do Firebase Storage
-storage_client = storage.Client.from_service_account_json("serviceAccountKey.json")
+storage_client = cred
 bucket_name = "app-erichedu.appspot.com"  # Nome do seu bucket do Firebase Storage
 
 @app.route('/save-avatar', methods=['POST'])
@@ -224,7 +250,7 @@ def save_avatar():
 
     # Acessar o bucket Firebase
     try:
-        storage_client = storage.Client.from_service_account_json("serviceAccountKey.json")
+        storage_client = cred
         bucket = storage_client.bucket("app-erichedu.appspot.com")
         
         # Gerar um nome único para o arquivo
@@ -351,7 +377,11 @@ def login():
 @app.route('/materias', methods=['GET'])
 @login_required
 def materias():
-    # Verifica a turma do usuário atual
+    user = db.session.get(User, session.get('user_id'))
+    
+    # Obter a turma do usuário
+    turma_id = user.turma_id
+    cor_primaria = determinar_cor_primaria(turma_id)
     turma = current_user.turma
 
     # Se a turma não for encontrada ou o usuário não tiver uma turma associada
@@ -363,7 +393,7 @@ def materias():
     materias = Materia.query.filter_by(turma_id=turma.id).order_by(Materia.id.desc()).all()
 
     # Renderiza a página com as matérias
-    return render_template('materias.html', materias=materias)
+    return render_template('materias.html', materias=materias, primary_collor=cor_primaria)
 
 
 @app.route('/upload_materia', methods=['GET', 'POST'])
@@ -504,12 +534,10 @@ def profile():
     total_faltas = len(faltas)
     return render_template('eu.html', user=user, faltas_count=total_faltas, primary_collor=cor_primaria)
 
-# Inicializar o Firebase Admin SDK
-cred = credentials.Certificate("serviceAccountKey.json")
-firebase_admin.initialize_app(cred, {
-    'storageBucket': 'gs://app-erichedu.appspot.com'  # Substitua pelo seu bucket do Firebase Storage
-})
 
+
+
+# Inicializar o Firebase Admin SDK
 
 # Função de upload de imagem
 def allowed_file(filename):
@@ -521,7 +549,7 @@ def save_profile_picture(picture):
         new_filename = f"{uuid.uuid4().hex}.{ext}"
         
         # Configuração do bucket
-        client = storage.Client.from_service_account_json("serviceAccountKey.json")
+        client = cred
         bucket = client.bucket("app-erichedu.appspot.com")
         
         blob = bucket.blob(new_filename)
