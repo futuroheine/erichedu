@@ -77,6 +77,10 @@
                 <div class="text-center mb-6">
                     <img src="{{ user.foto_perfil }}" alt="Foto de Perfil" class="w-32 h-32 rounded-full mx-auto mb-4 object-cover">
                     <h1 class="text-2xl font-bold text-gray-800">{{ user.nome_completo }}</h1>
+                    {% if current_user.is_representante %}
+                    <p><strong>Representante </strong></p>
+                    {% endif %}
+
                 </div>
 
                 <div class="space-y-4">
