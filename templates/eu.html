@@ -77,7 +77,6 @@
                 <div class="text-center mb-6">
                     <img src="{{ user.foto_perfil }}" alt="Foto de Perfil" class="w-32 h-32 rounded-full mx-auto mb-4 object-cover">
                     <h1 class="text-2xl font-bold text-gray-800">{{ user.nome_completo }}</h1>
-                    <p class="text-gray-600">{{ user.email }}</p>
                 </div>
 
                 <div class="space-y-4">
@@ -86,7 +85,6 @@
                             <i class="fas fa-user-tag mr-2"></i>Informações Pessoais
                         </h2>
                         <p><strong>Email:</strong> {{ user.email }}</p>
-                        <p><strong>Matrícula:</strong> {{ user.matricula }}</p>
                         <p><strong>Turma:</strong> {{ user.turma }}</p>
                     </div>
 
@@ -94,12 +92,66 @@
                         <h2 class="text-xl font-semibold mb-3 section-title">
                             <i class="fas fa-calendar-alt mr-2"></i>Faltas
                         </h2>
+                        <p><strong>Total de Faltas:</strong> 
+                            <span class="bg-red-100 text-red-800 px-2 py-1 rounded-full text-sm">
+                                {{ faltas_total }}
+                            </span>
+                        </p>
                         <p><strong>Faltas deste mês:</strong> 
                             <span class="bg-red-100 text-red-800 px-2 py-1 rounded-full text-sm">
                                 {{ faltas_count }}
                             </span>
                         </p>
+                    
+                        <!-- Gráfico de linha -->
+                        <canvas id="faltasChart" width="400" height="200"></canvas>
                     </div>
+                    
+                    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                    <script>
+                        const ctx = document.getElementById('faltasChart').getContext('2d');
+                        const faltasChart = new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: {{ meses | tojson }},
+                                datasets: [{
+                                    label: 'Faltas por Mês',
+                                    data: {{ faltas_mensais | tojson }},
+                                    borderColor: 'rgba(255, 99, 132, 1)',
+                                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                                    borderWidth: 2,
+                                    fill: true
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                plugins: {
+                                    legend: {
+                                        position: 'top',
+                                    },
+                                    tooltip: {
+                                        enabled: true
+                                    }
+                                },
+                                scales: {
+                                    x: {
+                                        title: {
+                                            display: true,
+                                            text: 'Meses'
+                                        }
+                                    },
+                                    y: {
+                                        title: {
+                                            display: true,
+                                            text: 'Número de Faltas'
+                                        },
+                                        beginAtZero: true
+                                    }
+                                }
+                            }
+                        });
+                    </script>
+                    
 
                     <div class="flex justify-center space-x-4 mt-6">
                         <a href="{{ url_for('editar_perfil') }}" class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition">

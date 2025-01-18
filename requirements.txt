@@ -18,3 +18,5 @@ cairosvg
 zulip
 svglib
 Pillow
+reportlab
+svgpathtools

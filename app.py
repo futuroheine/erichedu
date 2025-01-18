@@ -9,6 +9,7 @@ import uuid
 import logging
 from svglib.svglib import svg2rlg
 import firebase_admin
+from reportlab.graphics import renderPM
 from firebase_admin import credentials
 from cryptography.fernet import Fernet, InvalidToken
 import random
@@ -40,7 +41,13 @@ firebase_admin.initialize_app(cred, {
     'storageBucket': 'gs://app-erichedu.appspot.com'  # Substitua pelo seu bucket do Firebase Storage
 })
 
+from pytz import timezone
 
+def horario_atual_brasilia():
+    fuso_brasilia = timezone('America/Sao_Paulo')
+    return datetime.now(fuso_brasilia)
+
+print(horario_atual_brasilia())
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
@@ -82,7 +89,7 @@ class Turma(db.Model):
     avisos = db.relationship('Aviso', secondary='aviso_turma', back_populates='turmas')
 
     def __repr__(self):
-        return f'<Turma {self.nome}>'
+        return f'Turma {self.nome}'
 
 
 aviso_turma = db.Table('aviso_turma',
@@ -119,7 +126,7 @@ class Aviso(db.Model):
     turmas = db.relationship('Turma', secondary='aviso_turma', back_populates='avisos')
 
     def __repr__(self):
-        return f'<Aviso {self.titulo}>'
+        return f'Aviso {self.titulo}'
 
 
 class ChatMessage(db.Model):
@@ -182,6 +189,17 @@ class QHForm(FlaskForm):
 storage_client = storage.Client.from_service_account_json("serviceAccountKey.json")
 bucket_name = "app-erichedu.appspot.com"  # Nome do seu bucket do Firebase Storage
 
+from flask import Flask, request, jsonify, session
+from google.cloud import storage
+from datetime import datetime
+import logging
+import io
+import requests
+from PIL import Image
+import base64
+from xml.etree import ElementTree as ET
+import re
+
 @app.route('/save-avatar', methods=['POST'])
 def save_avatar():
     data = request.json
@@ -195,7 +213,7 @@ def save_avatar():
     logging.debug(f'Imagem URL: {img_url}')
     logging.debug(f'User ID: {user_id}')
 
-    # Fazer o download da imagem do avataaars.io
+    # Download SVG from avataaars.io
     try:
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
@@ -205,36 +223,38 @@ def save_avatar():
             logging.error(f'Erro ao baixar a imagem, status code: {response.status_code}')
             return jsonify({'error': 'Erro ao baixar a imagem'}), 400
         
-        # O conteúdo já vem como SVG
-        svg_content = response.content
-    except Exception as e:
-        logging.error(f'Erro ao baixar a imagem: {e}')
-        return jsonify({'error': 'Erro ao baixar a imagem'}), 400
+        # Convert SVG to data URL
+        svg_content = response.content.decode('utf-8')
+        
+        # Check if the content is already a data URL
+        if not svg_content.startswith('data:image/svg+xml;base64,'):
+            # Convert to base64 data URL
+            base64_svg = base64.b64encode(svg_content.encode('utf-8')).decode('utf-8')
+            data_url = f'data:image/svg+xml;base64,{base64_svg}'
+        else:
+            data_url = svg_content
 
-    # Converter SVG para PNG usando svglib + Pillow
-    try:
-        drawing = svg2rlg(BytesIO(svg_content))
-        png_output = BytesIO()
-        drawToFile(drawing, png_output, fmt='PNG')
-        png_output.seek(0)
-        png_bytes = png_output.read()
-        logging.debug('Imagem convertida para PNG com sucesso!')
     except Exception as e:
-        logging.error(f'Erro ao converter para PNG: {e}')
-        return jsonify({'error': 'Erro ao converter para PNG'}), 400
+        logging.error(f'Erro ao processar a imagem SVG: {e}')
+        return jsonify({'error': 'Erro ao processar a imagem SVG'}), 400
 
-    # Acessar o bucket Firebase
+    # Now we can save the data URL directly to Firebase
     try:
         storage_client = storage.Client.from_service_account_json("serviceAccountKey.json")
         bucket = storage_client.bucket("app-erichedu.appspot.com")
         
-        # Gerar um nome único para o arquivo
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        blob_name = f'avatars/avatar-{user_id}_{timestamp}.png'
+        timestamp = horario_atual_brasilia().strftime('%Y%m%d_%H%M%S')
+        # Save as SVG instead of PNG
+        blob_name = f'avatars/avatar-{user_id}_{timestamp}.svg'
         
-        # Upload para o Firebase Storage
+        # Remove the data URL prefix if present and decode
+        if data_url.startswith('data:image/svg+xml;base64,'):
+            svg_data = base64.b64decode(data_url.split(',')[1])
+        else:
+            svg_data = svg_content.encode('utf-8')
+        
         blob = bucket.blob(blob_name)
-        blob.upload_from_string(png_bytes, content_type='image/png')
+        blob.upload_from_string(svg_data, content_type='image/svg+xml')
         blob.make_public()
         download_url = blob.public_url
         
@@ -243,7 +263,7 @@ def save_avatar():
         logging.error(f'Erro no upload para o Firebase: {e}')
         return jsonify({'error': 'Erro no upload para o Firebase'}), 500
 
-    # Atualizar o banco de dados
+    # Update database
     try:
         user = db.session.get(User, user_id)
         if not user:
@@ -252,16 +272,11 @@ def save_avatar():
 
         user.foto_perfil = download_url
         db.session.commit()
-        logging.debug(f'Perfil atualizado para o usuário {user_id}')
+        logging.debug(f'Foto de perfil do usuário {user_id} atualizada para {download_url}')
+        return jsonify({'message': 'Foto de perfil atualizada com sucesso', 'foto_perfil': download_url}), 200
     except Exception as e:
         logging.error(f'Erro ao atualizar o banco de dados: {e}')
         return jsonify({'error': 'Erro ao atualizar o banco de dados'}), 500
-
-    return jsonify({
-        'message': 'Avatar salvo com sucesso!',
-        'downloadURL': download_url
-    })
-
 
 @app.route('/add_qh', methods=['GET', 'POST'])
 def add_qh():
@@ -314,7 +329,7 @@ def determinar_cor_primaria(turma_id):
     if 1 <= turma_id <= 4:
         return "#083888"  # Azul escuro
     elif 6 <= turma_id <= 9:
-        return "#FFEF00"  # Amarelo
+        return "#FFD21F"  # Amarelo
     elif 11 <= turma_id <= 14:
         return "#d40000"  # Vermelho (escolhido como um vermelho forte e marcante)
     elif turma_id in [5, 10, 15]:
@@ -496,6 +511,11 @@ def handle_exception(e):
     # Retornar página de erro amigável
     return render_template('error.html', primary_collor=cor_primaria, error_message=str(e)), 500
 
+from datetime import datetime
+from sqlalchemy.sql import extract
+
+
+from collections import defaultdict
 
 @app.route('/eu')
 @login_required
@@ -504,10 +524,45 @@ def profile():
     turma_id = user.turma_id
     cor_primaria = determinar_cor_primaria(turma_id)
 
-    # Filtrando apenas as faltas que não são presentes e não são justificadas
+    # Obter todas as faltas do usuário
     faltas = Falta.query.filter_by(user_id=current_user.id, presente=False, falta_justificada=False).all()
+
+    # Contador total de faltas
     total_faltas = len(faltas)
-    return render_template('eu.html', user=user, faltas_count=total_faltas, primary_collor=cor_primaria)
+
+    # Data atual
+    data_atual = datetime.now()
+
+    # Contador de faltas apenas do mês atual
+    faltas_mes = Falta.query.filter(
+        Falta.user_id == current_user.id,
+        Falta.presente == False,
+        Falta.falta_justificada == False,
+        extract('month', Falta.data) == data_atual.month,
+        extract('year', Falta.data) == data_atual.year
+    ).all()
+
+    faltas_mes_count = len(faltas_mes)
+
+    # Faltas por mês no ano atual
+    faltas_por_mes = defaultdict(int)
+    for falta in faltas:
+        if falta.data.year == data_atual.year:
+            faltas_por_mes[falta.data.month] += 1
+
+    # Organizar os dados para o gráfico
+    meses = list(range(1, 13))  # Meses de 1 a 12
+    faltas_mensais = [faltas_por_mes.get(mes, 0) for mes in meses]
+
+    return render_template(
+        'eu.html',
+        user=user,
+        faltas_total=total_faltas,
+        faltas_count=faltas_mes_count,
+        primary_collor=cor_primaria,
+        faltas_mensais=faltas_mensais,
+        meses=meses
+    )
 
 
 
@@ -651,7 +706,7 @@ def handle_send_message_event(data):
         'message': data['message'],
         'rotulos': rotulos,
         'foto_perfil': current_user.foto_perfil,
-        'timestamp': datetime.now().strftime('%H:%M')
+        'timestamp': horario_atual_brasilia().strftime('%H:%M')
     }
 
     emit('receive_message', message_data, room=str(turma_id))
@@ -714,7 +769,7 @@ def add_aviso():
         tipo_aviso=tipo_aviso,
         serie=serie if tipo_aviso == 'serie' else None,  # Apenas para avisos por série
         geral=geral,
-        timestamp=datetime.now()
+        timestamp=horario_atual_brasilia()
     )
 
     try:
@@ -869,7 +924,24 @@ def marcar_faltas(turma_id):
 
     alunos = User.query.filter_by(turma_id=turma.id).all()
     mes_atual = datetime.now().month
-    dias_do_mes = [datetime(datetime.now().year, mes_atual, dia) for dia in range(1, 32) if datetime(datetime.now().year, mes_atual, dia).month == mes_atual]
+    dias_do_mes = [
+        datetime(datetime.now().year, mes_atual, dia)
+        for dia in range(1, 32)
+        if datetime(datetime.now().year, mes_atual, dia).month == mes_atual
+    ]
+
+    # Nomes dos meses em português
+    meses_pt = [
+        "Janeiro 2025", "Fevereiro 2025", "Março 2025", "Abril 2025", "Maio 2025", "Junho 2025",
+        "Julho 2025", "Agosto 2025", "Setembro 2025", "Outubro 2025", "Novembro 2025", "Dezembro 2025"
+    ]
+    mes_nome = meses_pt[mes_atual - 1]
+
+    # Dias da semana em português
+    dias_semana_pt = [
+        "Segunda-Feira", "Terça-Feira", "Quarta-Feira", "Quinta-Feira",
+        "Sexta-Feira", "Sábado", "Domingo"
+    ]
 
     # Dicionário para armazenar o status atual das faltas
     faltas = {}
@@ -923,9 +995,18 @@ def marcar_faltas(turma_id):
 
         db.session.commit()
         flash('Faltas atualizadas com sucesso!', 'success')
-        return redirect(url_for('contagem_faltas'))
+        return redirect(url_for('home'))
 
-    return render_template('marcar_faltas.html', turma=turma, primary_collor=cor_primaria, alunos=alunos, dias_do_mes=dias_do_mes, faltas=faltas)
+    return render_template(
+        'marcar_faltas.html',
+        turma=turma,
+        primary_collor=cor_primaria,
+        alunos=alunos,
+        dias_do_mes=dias_do_mes,
+        faltas=faltas,
+        mes_nome=mes_nome,
+        dias_semana_pt=dias_semana_pt
+    )
 
 @app.route('/criadores')
 def criadores():

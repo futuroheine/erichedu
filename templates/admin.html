@@ -171,39 +171,38 @@
                     </form>
                 </div>
                 
-                <!-- Faltas por Turma -->
-                <div class="bg-white p-5 rounded-lg shadow-md">
-                    <h2 class="text-xl font-semibold mb-3 section-title">
-                        <i class="fas fa-users-slash mr-2"></i>Faltas por Turma
-                    </h2>
-                    <div class="overflow-x-auto">
-                        <table class="w-full">
-                            <thead>
-                                <tr class="bg-blue-600 text-white">
-                                    <th class="p-3 text-left">Turma</th>
-                                    <th class="p-3 text-left">Alunos</th>
-                                    <th class="p-3 text-left">Total de Faltas</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for turma in turmas %}
-                                    <tr class="border-b hover:bg-gray-100 transition">
-                                        <td class="p-3">{{ turma.nome }}</td>
-                                        <td class="p-3">
-                                            <ul class="space-y-1">
-                                                {% for aluno in turma.alunos %}
-                                                    <li>{{ aluno.nome_completo }} - Faltas: {{ aluno.faltas|length }}</li>
-                                                {% endfor %}
-                                            </ul>
-                                        </td>
-                                        <td class="p-3">{{ turma.faltas|length }}</td>
-                                    </tr>
+<!-- Faltas por Turma -->
+<div class="bg-white p-5 rounded-lg shadow-md">
+    <h2 class="text-xl font-semibold mb-3 section-title">
+        <i class="fas fa-users-slash mr-2"></i>Faltas por Turma
+    </h2>
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead>
+                <tr class="bg-blue-600 text-white">
+                    <th class="p-3 text-left">Turma</th>
+                    <th class="p-3 text-left">Alunos</th>
+                    <th class="p-3 text-left">Total de Faltas</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for turma in turmas %}
+                    <tr class="border-b hover:bg-gray-100 transition">
+                        <td class="p-3">{{ turma.nome }}</td>
+                        <td class="p-3">
+                            <ul class="space-y-1">
+                                {% for aluno in turma.alunos|sort(attribute='nome_completo') %}
+                                    <li>{{ aluno.nome_completo }} - Faltas: {{ aluno.faltas|length }}</li>
                                 {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
+                            </ul>
+                        </td>
+                        <td class="p-3">{{ turma.faltas|length }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
                 <!-- Cardápio Atual -->
                 <div class="bg-white p-5 rounded-lg shadow-md">
                     <h2 class="text-xl font-semibold mb-3 section-title">
