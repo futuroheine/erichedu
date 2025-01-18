@@ -283,6 +283,12 @@ def add_qh():
     form = QHForm()
     form.turma_id.choices = [(turma.id, turma.nome) for turma in Turma.query.all()]
 
+    # Obter a turma do usuári
+    user = db.session.get(User, session.get('user_id'))
+    turma_id = user.turma_id
+    cor_primaria = determinar_cor_primaria(turma_id)
+    turma = current_user.turma
+
     if form.validate_on_submit():
         nova_aula = QH(
             materia=form.materia.data,
@@ -296,7 +302,7 @@ def add_qh():
         flash('Aula adicionada com sucesso!', 'success')
         return redirect(url_for('add_qh'))
 
-    return render_template('add_qh.html', form=form, user=current_user)
+    return render_template('add_qh.html', form=form, primary_collor=cor_primaria, user=current_user)
 
 
 
