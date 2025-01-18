@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Avatar Animado</title>
+  <style>
+    /* Estilo geral */
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f0f0f0;
+    }
+
+    /* Animação para piscar o olho */
+    @keyframes blink {
+      0%, 70%, 100% { transform: scaleY(1); }
+      75% { transform: scaleY(0.1); }
+    }
+
+    #eye-right {
+      transform-origin: center;
+      animation: blink 2s infinite;
+    }
+
+    /* Animação para acenar com a mão */
+    @keyframes wave {
+      0%, 100% { transform: rotate(0deg); }
+      50% { transform: rotate(-20deg); }
+    }
+
+    #hand {
+      transform-origin: center;
+      animation: wave 1.5s infinite;
+    }
+  </style>
+</head>
+<body>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+    <!-- Cabeça -->
+    <circle cx="100" cy="100" r="80" fill="#FFD966" />
+
+    <!-- Olho esquerdo -->
+    <circle id="eye-left" cx="75" cy="85" r="10" fill="#000" />
+
+    <!-- Olho direito (vai piscar) -->
+    <rect id="eye-right" x="115" y="80" width="20" height="10" rx="5" fill="#000" />
+
+    <!-- Boca -->
+    <path d="M70 130 Q100 150 130 130" fill="none" stroke="#000" stroke-width="4" />
+
+    <!-- Mão (para aceno) -->
+    <circle id="hand" cx="150" cy="50" r="20" fill="#FFD966" />
+  </svg>
+</body>
+</html>
