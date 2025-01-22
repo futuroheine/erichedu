@@ -90,6 +90,20 @@ class Turma(db.Model):
 
     def __repr__(self):
         return f'Turma {self.nome}'
+    
+
+class Suporte(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(100), nullable=False)
+    numero = db.Column(db.String(20), nullable=False)
+    assunto = db.Column(db.String(200), nullable=False)
+    mensagem = db.Column(db.Text, nullable=False)
+    data_envio = db.Column(db.DateTime, default=horario_atual_brasilia)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    usuario = db.relationship('User', backref='suportes')
+
+    def __repr__(self):
+        return f'<Suporte {self.id} - {self.nome}>'
 
 
 aviso_turma = db.Table('aviso_turma',
@@ -630,6 +644,54 @@ def editar_perfil():
 
     return render_template('editar_perfil.html', user=current_user, primary_collor=cor_primaria)
 
+@app.route('/admin/suporte', methods=['GET'])
+@login_required
+def admin_suporte():
+    user = User.query.get(session['user_id'])
+    turma_id = user.turma_id
+    cor_primaria = determinar_cor_primaria(turma_id)
+
+    if not current_user.is_admin:
+        flash('Acesso restrito a administradores.', 'danger')
+        return redirect(url_for('home'))
+
+    mensagens = Suporte.query.all()  # Pega todas as mensagens de suporte
+    return render_template('admin_suporte.html', mensagens=mensagens, primary_collor=cor_primaria)
+
+from flask import Flask, send_file
+import csv
+
+@app.route('/exportar', methods=['POST'])
+def exportar():
+    mensagens = Suporte.query.all()  # Pegue as mensagens do banco de dados
+    with open('relatorio_mensagens.csv', 'w', newline='') as csvfile:
+        fieldnames = ['Nome', 'Assunto', 'Mensagem', 'Contato', 'Data']
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+        for mensagem in mensagens:
+            writer.writerow({
+                'Nome': mensagem.nome,
+                'Assunto': mensagem.assunto,
+                'Mensagem': mensagem.mensagem,
+                'Contato': mensagem.numero,
+                'Data': mensagem.data_envio.strftime('%d/%m/%Y %H:%M')
+            })
+    return send_file('relatorio_mensagens.csv', as_attachment=True)
+
+@app.route('/filtrar', methods=['POST'])
+def filtrar():
+    status = request.form.get('status')
+    mensagens = Suporte.query.filter_by(status=status).all()
+    return render_template('admin_suport.html', mensagens=mensagens)
+
+@app.route('/excluir_mensagem/<int:id>', methods=['POST'])
+def excluir_mensagem(id):
+    mensagem = Suporte.query.get(id)
+    db.session.delete(mensagem)
+    db.session.commit()
+    return redirect(url_for('admin_suporte'))
+
+
 # Função para gerar uma chave válida para Fernet
 def generate_key():
     return Fernet.generate_key()  # Retorna a chave como bytes
@@ -687,35 +749,64 @@ def chat(turma_id):
             decrypted_messages.append((msg.user.nome_completo, "Mensagem inválida.", [], msg.user.foto_perfil, msg.timestamp.strftime('%H:%M')))
 
     return render_template('chat.html', turma=turma, mensagens=decrypted_messages, user=user, primary_collor=cor_primaria)
+import pusher
 
-@socketio.on('send_message')
-def handle_send_message_event(data):
+pusher_client = pusher.Pusher(
+    app_id = "1882919",
+    key = "4df4366db18a7f9ff11e",
+    secret = "c0ca49da33ad35aba25a",
+    cluster = "sa1",
+    ssl=True
+)
+
+@app.route('/suporte', methods=['GET', 'POST'])
+@login_required
+def suporte():
+    if request.method == 'POST':
+        nome = request.form.get('nome')
+        numero = request.form.get('numero')
+        assunto = request.form.get('assunto')
+        mensagem = request.form.get('mensagem')
+        
+        # Criar um novo registro na tabela de Suporte
+        nova_mensagem = Suporte(nome=nome, numero=numero, assunto=assunto, mensagem=mensagem, usuario_id=current_user.id)
+        
+        # Salvar a mensagem no banco de dados
+        db.session.add(nova_mensagem)
+        db.session.commit()
+
+        flash('Sua mensagem foi enviada com sucesso! Em breve entraremos em contato.', 'success')
+        return redirect(url_for('suporte'))
+    
+    return render_template('suporte.html', 
+                           user=current_user,
+                           primary_collor=determinar_cor_primaria(current_user.turma_id))
+
+@app.route('/send-message', methods=['POST'])
+def send_message():
+    data = request.get_json()
     turma_id = data['turma_id']
+    message = data['message']
+
+    # Encripta a mensagem (opcional)
     turma = Turma.query.get(turma_id)
     key = turma.key
-    encrypted_message = encrypt_message(data['message'], key)
+    encrypted_message = encrypt_message(message, key)
 
-    new_message = ChatMessage(turma_id=turma_id, user_id=current_user.id, mensagem=encrypted_message)
+    # Salva no banco de dados
+    new_message = ChatMessage(
+        turma_id=turma_id, user_id=current_user.id, mensagem=encrypted_message
+    )
     db.session.add(new_message)
     db.session.commit()
 
-    rotulos = []
-    if current_user.is_gremio:
-        rotulos.append('GRÊMIO')
-    if current_user.is_representante:
-        rotulos.append('REPRESENTANTE')
-    if current_user.is_admin:
-        rotulos.append('ADMINISTRADOR')
-
-    message_data = {
+    # Envia o evento para o Pusher
+    pusher_client.trigger(f'chat-turma-{turma_id}', 'new-message', {
         'user_nome': current_user.nome_completo,
-        'message': data['message'],
-        'rotulos': rotulos,
-        'foto_perfil': current_user.foto_perfil,
-        'timestamp': horario_atual_brasilia().strftime('%H:%M')
-    }
+        'message': message,
+    })
 
-    emit('receive_message', message_data, room=str(turma_id))
+    return jsonify({'status': 'success'})
 
 @socketio.on('join')
 def on_join(data):
