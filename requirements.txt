@@ -20,3 +20,4 @@ svglib
 Pillow
 reportlab
 svgpathtools
+pusher
