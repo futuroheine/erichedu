@@ -368,21 +368,25 @@ def index():
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+app.config['REMEMBER_COOKIE_DURATION'] = timedelta(days=30)  # 30 dias
+
+
+from flask_login import login_user, logout_user
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         email = request.form['email']
-        senha = request.form['senha']
+        senha = request.form['password']
         user = User.query.filter_by(email=email).first()
 
         if user and check_password_hash(user.senha_hash, senha):
-            login_user(user)
-            session['user_id'] = user.id
-            flash('Login bem-sucedido!', 'success')
-            return redirect(url_for('home'))
+            remember = 'remember_me' in request.form  # Checkbox no formulário
+            login_user(user, remember=remember)
+            return redirect(url_for('home'))  # Redirecione para a página inicial
         else:
-            flash('Email ou senha inválidos.', 'danger')
-    
+            flash('Credenciais inválidas', 'danger')
+
     return render_template('login.html')
 
 @app.route('/materias', methods=['GET'])
