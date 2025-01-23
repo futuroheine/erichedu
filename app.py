@@ -99,6 +99,7 @@ class Suporte(db.Model):
     assunto = db.Column(db.String(200), nullable=False)
     mensagem = db.Column(db.Text, nullable=False)
     data_envio = db.Column(db.DateTime, default=horario_atual_brasilia)
+    status = db.Column(db.String(20), default='pendente')
     usuario_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     usuario = db.relationship('User', backref='suportes')
 
@@ -691,6 +692,42 @@ def excluir_mensagem(id):
     db.session.commit()
     return redirect(url_for('admin_suporte'))
 
+@app.route('/mensagem/<int:id>', methods=['GET'])
+@login_required
+def ver_mensagem(id):
+    if not current_user.is_admin:
+        flash('Acesso restrito a administradores.', 'danger')
+        return redirect(url_for('home'))
+
+    # Busca a mensagem específica
+    mensagem = Suporte.query.get_or_404(id)
+    
+    # Determina a cor primária da turma do usuário atual
+    user = User.query.get(session['user_id'])
+    cor_primaria = determinar_cor_primaria(user.turma_id)
+
+    # Atualiza o status para 'em_andamento' quando a mensagem é visualizada
+    if mensagem.status == 'pendente':
+        mensagem.status = 'em_andamento'
+        db.session.commit()
+
+    return render_template('detalhe_mensagem.html', 
+                           mensagem=mensagem, 
+                           primary_collor=cor_primaria)
+
+@app.route('/resolver_mensagem/<int:id>', methods=['POST'])
+@login_required
+def resolver_mensagem(id):
+    if not current_user.is_admin:
+        flash('Acesso restrito a administradores.', 'danger')
+        return redirect(url_for('home'))
+
+    mensagem = Suporte.query.get_or_404(id)
+    mensagem.status = 'resolvido'
+    db.session.commit()
+    
+    flash('Mensagem marcada como resolvida.', 'success')
+    return redirect(url_for('admin_suporte'))
 
 # Função para gerar uma chave válida para Fernet
 def generate_key():

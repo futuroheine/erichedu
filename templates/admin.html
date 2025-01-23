@@ -55,6 +55,8 @@
                             <i class="fas fa-comments mr-3"></i>Chat</a></li>
                         <li><a href="{{ url_for('cardapio') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
                             <i class="fas fa-utensils mr-3"></i>Cardápio</a></li>
+                        <li><a href="{{ url_for('suporte') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-headset mr-3"></i>Suporte</a></li>
                         <li><a href="{{ url_for('criadores') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
                             <i class="fas fa-users mr-3"></i>Criadores</a></li>
                         <li><a href="{{ url_for('projetos') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
@@ -92,6 +94,16 @@
                     <div class="flex justify-start">
                         <a href="{{ url_for('add_qh') }}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
                             <i class="fas fa-plus mr-2"></i>Adicionar QH
+                        </a>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-lg shadow-md">
+                    <h2 class="text-xl font-semibold mb-3 section-title">
+                        <i class="fas fa-headset mr-2"></i>Gerenciamento de Suporte
+                    </h2>
+                    <div class="flex justify-start">
+                        <a href="{{ url_for('admin_suporte') }}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+                            <i class="fas fa-plus mr-2"></i>Suporte
                         </a>
                     </div>
                 </div>

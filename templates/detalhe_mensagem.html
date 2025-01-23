@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ErichEdu - Detalhes da Mensagem</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: {{ primary_collor }};
+            --primary-color-hover: {{ primary_collor }}dd;
+            --primary-color-light: {{ primary_collor }}22;
+        }
+        
+        body {
+            --tw-bg-opacity: 1;
+            background-color: rgb(243 244 246 / var(--tw-bg-opacity));
+        }
+        
+        #sidebar {
+            background-color: var(--primary-color);
+            z-index: 50;
+        }
+        
+        .sidebar-link:hover {
+            background-color: var(--primary-color-hover);
+        }
+        
+        .section-title {
+            color: var(--primary-color);
+        }
+        
+        #sidebarToggle {
+            background-color: var(--primary-color);
+            z-index: 60;
+        }
+    </style>
+</head>
+<body>
+    <div class="flex min-h-screen relative">
+        <!-- Sidebar -->
+<!-- Sidebar Mobile-Friendly -->
+<div id="sidebar" class="fixed top-0 left-0 bottom-0 z-50 w-64 h-full text-white transform -translate-x-full transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:block overflow-y-auto">
+    <div class="p-5">
+        <h2 class="text-2xl font-bold mb-6">ErichEdu</h2>
+        <nav>
+            <ul class="space-y-3">
+                <li><a href="{{ url_for('home') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                    <i class="fas fa-home mr-3"></i>Início</a></li>
+                <li><a href="{{ url_for('profile') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                    <i class="fas fa-user mr-3"></i>Perfil</a></li>
+                <li><a href="{{ url_for('materias') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                    <i class="fas fa-book mr-3"></i>Matérias</a></li>
+                <li><a href="{{ url_for('chat', turma_id=user.turma_id) }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                    <i class="fas fa-comments mr-3"></i>Chat</a></li>
+                <li><a href="{{ url_for('cardapio') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                    <i class="fas fa-utensils mr-3"></i>Cardápio</a></li>
+                <li><a href="{{ url_for('suporte') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                    <i class="fas fa-headset mr-3"></i>Suporte</a></li>
+                <li><a href="{{ url_for('criadores') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                    <i class="fas fa-users mr-3"></i>Criadores</a></li>
+                <li><a href="{{ url_for('projetos') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                    <i class="fas fa-project-diagram mr-3"></i>Projetos</a></li>
+                {% if current_user.is_admin %}
+                <li><a href="{{ url_for('admin') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                    <i class="fas fa-cogs mr-3"></i>Admin</a></li>
+                {% endif %}
+                <li><a href="{{ url_for('logout') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                    <i class="fas fa-sign-out-alt mr-3"></i>Logout</a></li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+        <!-- Conteúdo Principal -->
+        <main class="flex-1 pt-16 p-4 md:p-8 transition-all duration-300 ease-in-out">
+            <!-- Botão Mobile Toggle Sidebar -->
+            <button id="sidebarToggle" class="md:hidden fixed top-4 left-4 z-60 text-white p-2 rounded-full shadow-lg">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <!-- Cabeçalho -->
+            <header class="mb-6">
+                <h1 class="text-3xl font-bold text-gray-800">Detalhes da Mensagem</h1>
+                <p class="text-gray-600">Informações completas do chamado de suporte</p>
+            </header>
+
+            <!-- Detalhes da Mensagem -->
+            <div class="bg-white shadow-md rounded-lg p-6 space-y-4">
+                <div>
+                    <h2 class="text-xl font-semibold text-gray-800">Informações do Remetente</h2>
+                    <div class="mt-2 grid grid-cols-2 gap-4">
+                        <div>
+                            <span class="text-gray-600">Nome:</span>
+                            <p class="font-medium">{{ mensagem.nome }}</p>
+                        </div>
+                        <div>
+                            <span class="text-gray-600">Contato:</span>
+                            <p class="font-medium">{{ mensagem.numero }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h2 class="text-xl font-semibold text-gray-800">Detalhes do Chamado</h2>
+                    <div class="mt-2 grid grid-cols-2 gap-4">
+                        <div>
+                            <span class="text-gray-600">Assunto:</span>
+                            <p class="font-medium">{{ mensagem.assunto }}</p>
+                        </div>
+                        <div>
+                            <span class="text-gray-600">Status:</span>
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                {% if mensagem.status == 'pendente' %}bg-yellow-100 text-yellow-800
+                                {% elif mensagem.status == 'em_andamento' %}bg-blue-100 text-blue-800
+                                {% else %}bg-green-100 text-green-800{% endif %}">
+                                {{ mensagem.status.replace('_', ' ').title() }}
+                            </span>
+                        </div>
+                        <div class="col-span-2">
+                            <span class="text-gray-600">Data de Envio:</span>
+                            <p class="font-medium">{{ mensagem.data_envio.strftime('%d/%m/%Y %H:%M') }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h2 class="text-xl font-semibold text-gray-800">Mensagem</h2>
+                    <div class="mt-2 p-4 bg-gray-50 rounded-lg">
+                        <p class="text-gray-800">{{ mensagem.mensagem }}</p>
+                    </div>
+                </div>
+
+                <div class="flex space-x-4">
+                    <form method="POST" action="{{ url_for('resolver_mensagem', id=mensagem.id) }}" class="flex-1">
+                        <button type="submit" class="w-full bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition">
+                            Marcar como Resolvido
+                        </button>
+                    </form>
+                    <form method="POST" action="{{ url_for('excluir_mensagem', id=mensagem.id) }}" class="flex-1">
+                        <button type="submit" class="w-full bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition">
+                            Excluir Mensagem
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Script para o toggle do sidebar
+        document.getElementById('sidebarToggle').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('-translate-x-full');
+        });
+
+        // Fechar sidebar ao clicar fora
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const isClickInsideSidebar = sidebar.contains(event.target);
+            const isClickOnToggle = sidebarToggle.contains(event.target);
+
+            if (!isClickInsideSidebar && !isClickOnToggle && !sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.add('-translate-x-full');
+            }
+        });
+    </script>
+</body>
+</html>

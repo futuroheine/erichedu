@@ -7,77 +7,128 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        /* Estilos personalizados */
         :root {
             --primary-color: {{ primary_collor }};
             --primary-color-hover: {{ primary_collor }}dd;
             --primary-color-light: {{ primary_collor }}22;
         }
+        
         body {
+            --tw-bg-opacity: 1;
             background-color: rgb(243 244 246 / var(--tw-bg-opacity));
+        }
+        
+        #sidebar {
+            background-color: var(--primary-color);
+            z-index: 50;
+        }
+        
+        .sidebar-link:hover {
+            background-color: var(--primary-color-hover);
+        }
+        
+        .section-title {
+            color: var(--primary-color);
+        }
+        
+        #sidebarToggle {
+            background-color: var(--primary-color);
+            z-index: 60;
         }
     </style>
 </head>
 <body>
     <div class="flex min-h-screen relative">
         <!-- Sidebar -->
-        <!-- Código da sidebar como no seu exemplo -->
+        <div id="sidebar" class="fixed top-0 left-0 bottom-0 z-50 w-64 h-full text-white transform -translate-x-full transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:block overflow-y-auto">
+            <div class="p-5">
+                <h2 class="text-2xl font-bold mb-6">ErichEdu</h2>
+                <nav>
+                    <ul class="space-y-3">
+                        <li><a href="{{ url_for('home') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-home mr-3"></i>Início</a></li>
+                        <li><a href="{{ url_for('profile') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-user mr-3"></i>Perfil</a></li>
+                        <li><a href="{{ url_for('materias') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-book mr-3"></i>Matérias</a></li>
+                        <li><a href="{{ url_for('chat', turma_id=user.turma_id) }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-comments mr-3"></i>Chat</a></li>
+                        <li><a href="{{ url_for('cardapio') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-utensils mr-3"></i>Cardápio</a></li>
+                        <li><a href="{{ url_for('suporte') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-headset mr-3"></i>Suporte</a></li>
+                        <li><a href="{{ url_for('criadores') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-users mr-3"></i>Criadores</a></li>
+                        <li><a href="{{ url_for('projetos') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-project-diagram mr-3"></i>Projetos</a></li>
+                        {% if current_user.is_admin %}
+                        <li><a href="{{ url_for('admin') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-cogs mr-3"></i>Admin</a></li>
+                        {% endif %}
+                        <li><a href="{{ url_for('logout') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-sign-out-alt mr-3"></i>Logout</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+
         <!-- Conteúdo Principal -->
-        <main class="flex-1 pt-16 p-4 md:p-8">
-            <header class="mb-6">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <h1 class="text-3xl font-bold text-gray-800">Relatório de Suporte</h1>
-                        <p class="text-gray-600">Gestão de mensagens de suporte</p>
-                    </div>
-                    <div class="flex gap-2">
-                        <!-- Botão de exportação -->
-                        <form method="POST" action="{{ url_for('exportar') }}">
-                            <button class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition flex items-center">
-                                <i class="fas fa-file-export mr-2"></i>Exportar
-                            </button>
-                        </form>
-                        <!-- Botão de filtro -->
-                        <button id="filtrarBtn" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition flex items-center">
-                            <i class="fas fa-filter mr-2"></i>Filtrar
+        <main class="flex-1 pt-16 p-4 md:p-8 transition-all duration-300 ease-in-out">
+            <!-- Botão Mobile Toggle Sidebar -->
+            <button id="sidebarToggle" class="md:hidden fixed top-4 left-4 z-60 text-white p-2 rounded-full shadow-lg">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <!-- Cabeçalho -->
+            <header class="mb-6 flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800">Relatório de Suporte</h1>
+                    <p class="text-gray-600">Gestão de mensagens de suporte</p>
+                </div>
+                <div class="flex gap-2">
+                    <!-- Botão de exportação -->
+                    <form method="POST" action="{{ url_for('exportar') }}">
+                        <button class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition flex items-center">
+                            <i class="fas fa-file-export mr-2"></i>Exportar
                         </button>
-                    </div>
+                    </form>
+                    <!-- Botão de filtro -->
+                    <button id="filtrarBtn" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition flex items-center">
+                        <i class="fas fa-filter mr-2"></i>Filtrar
+                    </button>
                 </div>
             </header>
 
             <div class="overflow-x-auto bg-white rounded-lg shadow-md">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
-                        <!-- Cabeçalho da tabela -->
                         <tr>
-                            <th>Nome</th>
-                            <th>Assunto</th>
-                            <th>Mensagem</th>
-                            <th>Status</th>
-                            <th>Data</th>
-                            <th>Ações</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Assunto</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mensagem</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         {% for mensagem in mensagens %}
                         <tr>
-                            <td>{{ mensagem.nome }}</td>
-                            <td>{{ mensagem.assunto }}</td>
-                            <td class="max-w-xs truncate">{{ mensagem.mensagem }}</td>
-                            <td>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ mensagem.nome }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ mensagem.assunto }}</td>
+                            <td class="px-6 py-4 max-w-xs truncate">{{ mensagem.mensagem }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
                                 {% if mensagem.status == 'pendente' %}
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
                                     Pendente
                                 </span>
                                 {% endif %}
                             </td>
-                            <td>{{ mensagem.data_envio.strftime('%d/%m/%Y %H:%M') }}</td>
-                            <td>
-                                <!-- Botão para abrir mensagem -->
-                                <button class="text-blue-600 hover:text-blue-900" onclick="openMessage('{{ mensagem.id }}')">
+                            <td class="px-6 py-4 whitespace-nowrap">{{ mensagem.data_envio.strftime('%d/%m/%Y %H:%M') }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <button class="text-blue-600 hover:text-blue-900 mr-2" onclick="openMessage('{{ mensagem.id }}')">
                                     <i class="fas fa-eye"></i>
                                 </button>
-                                <!-- Botão para excluir mensagem -->
                                 <form method="POST" action="{{ url_for('excluir_mensagem', id=mensagem.id) }}" style="display:inline;">
                                     <button class="text-red-600 hover:text-red-900" type="submit">
                                         <i class="fas fa-trash"></i>
@@ -95,29 +146,47 @@
     <!-- Modal de Filtro -->
     <div id="filtrarModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center">
         <div class="bg-white p-6 rounded-lg">
-            <h2 class="text-xl font-bold">Filtrar Mensagens</h2>
+            <h2 class="text-xl font-bold mb-4">Filtrar Mensagens</h2>
             <form method="POST" action="{{ url_for('filtrar') }}">
                 <div>
-                    <label for="status">Status</label>
-                    <select id="status" name="status" class="mt-2 p-2 border rounded">
+                    <label for="status" class="block text-gray-700 mb-2">Status</label>
+                    <select id="status" name="status" class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="pendente">Pendente</option>
                         <option value="em_andamento">Em Andamento</option>
                         <option value="resolvido">Resolvido</option>
                     </select>
                 </div>
-                <div class="mt-4">
+                <div class="mt-4 flex space-x-2">
                     <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">Aplicar Filtro</button>
-                    <button type="button" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 mt-2" onclick="closeFilter()">Cancelar</button>
+                    <button type="button" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600" onclick="closeFilter()">Cancelar</button>
                 </div>
             </form>
         </div>
     </div>
 
     <script>
+        // Script para o toggle do sidebar
+        document.getElementById('sidebarToggle').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('-translate-x-full');
+        });
+
+        // Fechar sidebar ao clicar fora
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const isClickInsideSidebar = sidebar.contains(event.target);
+            const isClickOnToggle = sidebarToggle.contains(event.target);
+
+            if (!isClickInsideSidebar && !isClickOnToggle && !sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.add('-translate-x-full');
+            }
+        });
+
         // Função para abrir o filtro
-        function openFilter() {
+        document.getElementById('filtrarBtn').addEventListener('click', function() {
             document.getElementById('filtrarModal').classList.remove('hidden');
-        }
+        });
 
         // Função para fechar o filtro
         function closeFilter() {
@@ -126,7 +195,6 @@
 
         // Função para abrir a mensagem
         function openMessage(id) {
-            // Exemplo de redirecionamento para uma página de detalhes da mensagem
             window.location.href = '/mensagem/' + id;
         }
     </script>
