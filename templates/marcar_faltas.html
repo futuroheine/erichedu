@@ -168,7 +168,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for aluno in alunos %}
+                                {% for aluno in alunos|sort(attribute='nome_completo') %}
                                     <tr>
                                         <td class="border p-2 name-column bg-white">{{ aluno.nome_completo }}</td>
                                         <td class="border p-1 relative">

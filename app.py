@@ -7,7 +7,7 @@ from google.cloud import storage
 import hashlib
 import uuid
 import logging
-from svglib.svglib import svg2rlg
+import svglib
 import firebase_admin
 from reportlab.graphics import renderPM
 from firebase_admin import credentials
@@ -21,25 +21,27 @@ import pytz, os
 import mimetypes
 from io import BytesIO
 
-
+# Criar instância do SQLAlchemy SEM passar app ainda
+db = SQLAlchemy()
 
 app = Flask(__name__)
-login_manager = LoginManager(app)
 app.config['SECRET_KEY'] = 'futuroheine2024'
-socketio = SocketIO(app)
-
-# Configuração da base de dados (usando Supabase com PostgreSQL)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://postgres.siihlnhoryxbdhrkkmie:futuroheine2024@aws-0-sa-east-1.pooler.supabase.com:6543/postgres'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-login_manager = LoginManager()
-login_manager.init_app(app)
-# Em app.py, certifique-se que o caminho está correto
-db = SQLAlchemy(app)
+
+# Inicializar `db` APÓS configurar o app
+db.init_app(app)
+
+login_manager = LoginManager(app)
+socketio = SocketIO(app)
+
+
 
 cred = credentials.Certificate("serviceAccountKey.json")
-firebase_admin.initialize_app(cred, {
-    'storageBucket': 'gs://app-erichedu.appspot.com'  # Substitua pelo seu bucket do Firebase Storage
-})
+if not firebase_admin._apps:
+    firebase_admin.initialize_app(cred, {
+        'storageBucket': 'gs://app-erichedu.appspot.com'
+    })
 
 from pytz import timezone
 
@@ -199,6 +201,17 @@ class QHForm(FlaskForm):
     ], validators=[DataRequired()])  # Novo campo para o dia da semana
     turma_id = SelectField('Turma', coerce=int, validators=[DataRequired()])
     submit = SubmitField('Adicionar QH')
+
+
+class Teacher(db.Model, UserMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    nome_completo = db.Column(db.String(150), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    senha_hash = db.Column(db.String(128), nullable=False)
+    
+    # O método get_id() inclui um prefixo para diferenciar dos alunos
+    def get_id(self):
+        return f"teacher-{self.id}"
 
 # Configurações do Firebase Storage
 storage_client = storage.Client.from_service_account_json("serviceAccountKey.json")
@@ -366,27 +379,28 @@ def index():
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
-
-app.config['REMEMBER_COOKIE_DURATION'] = timedelta(days=30)  # 30 dias
-
-
-from flask_login import login_user, logout_user
+    # Verifica se o ID possui o prefixo "teacher-"
+    if user_id.startswith("teacher-"):
+        teacher_id = int(user_id.split("-")[1])
+        return Teacher.query.get(teacher_id)
+    else:
+        return User.query.get(int(user_id))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         email = request.form['email']
-        senha = request.form['password']
+        senha = request.form['senha']
         user = User.query.filter_by(email=email).first()
 
         if user and check_password_hash(user.senha_hash, senha):
-            remember = 'remember_me' in request.form  # Checkbox no formulário
-            login_user(user, remember=remember)
-            return redirect(url_for('home'))  # Redirecione para a página inicial
+            login_user(user)
+            session['user_id'] = user.id
+            flash('Login bem-sucedido!', 'success')
+            return redirect(url_for('home'))
         else:
-            flash('Credenciais inválidas', 'danger')
-
+            flash('Email ou senha inválidos.', 'danger')
+    
     return render_template('login.html')
 
 @app.route('/materias', methods=['GET'])
@@ -1027,19 +1041,7 @@ def delete_menu(menu_id):
     return redirect(url_for('admin'))
 
 
-@app.route('/contagem_faltas', methods=['GET', 'POST'])
-@login_required
-def contagem_faltas():
-    if not current_user.is_representante:
-        flash('Apenas representantes podem gerenciar as faltas.', 'danger')
-        return redirect(url_for('index'))
-
-    turmas = Turma.query.all()
-    if request.method == 'POST':
-        turma_id = request.form.get('turma_id')
-        if turma_id:
-            return redirect(url_for('marcar_faltas', turma_id=turma_id))
-    return render_template('selecao_turma_faltas.html', turmas=turmas)
+import calendar
 
 @app.route('/marcar_faltas/<int:turma_id>', methods=['GET', 'POST'])
 @login_required
@@ -1061,12 +1063,12 @@ def marcar_faltas(turma_id):
         return redirect(url_for('contagem_faltas'))
 
     alunos = User.query.filter_by(turma_id=turma.id).all()
+
+    # Corrige a criação dos dias do mês utilizando calendar.monthrange
+    ano_atual = datetime.now().year
     mes_atual = datetime.now().month
-    dias_do_mes = [
-        datetime(datetime.now().year, mes_atual, dia)
-        for dia in range(1, 32)
-        if datetime(datetime.now().year, mes_atual, dia).month == mes_atual
-    ]
+    ultimo_dia = calendar.monthrange(ano_atual, mes_atual)[1]
+    dias_do_mes = [datetime(ano_atual, mes_atual, dia) for dia in range(1, ultimo_dia + 1)]
 
     # Nomes dos meses em português
     meses_pt = [
@@ -1229,6 +1231,10 @@ def signup():
             return redirect(url_for('signup'))
 
     return render_template('signup.html')
+
+
+from professor import prof_bp
+app.register_blueprint(prof_bp)
 
 if __name__ == '__main__':
     with app.app_context():
