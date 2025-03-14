@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Termos de Uso - ErichEdu</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: {{ primary_collor }};
+            --primary-color-hover: {{ primary_collor }}dd;
+            --primary-color-light: {{ primary_collor }}22;
+        }
+        
+        body {
+            --tw-bg-opacity: 1;
+            background-color: rgb(243 244 246 / var(--tw-bg-opacity));
+        }
+
+        #sidebar {
+            background-color: var(--primary-color);
+            z-index: 50;
+        }
+
+        .sidebar-link:hover {
+            background-color: var(--primary-color-hover);
+        }
+
+        .section-title {
+            color: var(--primary-color);
+        }
+
+        #sidebarToggle {
+            background-color: var(--primary-color);
+            z-index: 60;
+        }
+
+        .chapter-title {
+            color: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="flex min-h-screen relative">
+        <!-- Sidebar (Same as before) -->
+        <div id="sidebar" class="fixed top-0 left-0 bottom-0 z-50 w-64 h-full text-white transform -translate-x-full transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:block overflow-y-auto">
+            <!-- Sidebar content same as before -->
+        </div>
+
+        <main class="flex-1 pt-16 p-4 md:p-8 transition-all duration-300 ease-in-out">
+            <button id="sidebarToggle" class="md:hidden fixed top-4 left-4 z-60 text-white p-2 rounded-full shadow-lg">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <!-- Conteúdo dos Termos -->
+            <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-8">
+                <h1 class="text-3xl font-bold text-center mb-8 section-title">Termos de Uso - ErichEdu</h1>
+
+                <div class="space-y-8">
+                    <!-- Preâmbulo -->
+                    <section>
+                        <h2 class="text-2xl font-semibold mb-4 chapter-title">Preâmbulo</h2>
+                        <p class="text-gray-700 leading-relaxed">
+                            Este documento estabelece os termos e condições para o uso do aplicativo ErichEDU, uma plataforma desenvolvida para otimizar a comunicação, organização e gestão escolar. Ao utilizar nossos serviços, você concorda com estas diretrizes.
+                        </p>
+                    </section>
+
+                    <!-- Capítulos -->
+                    <section>
+                        <h2 class="text-2xl font-semibold mb-4 chapter-title">1. Disposições Gerais</h2>
+                        <div class="pl-4 space-y-4">
+                            <p class="text-gray-700">1.1. O ErichEDU é uma plataforma exclusiva para a comunidade escolar.</p>
+                            <p class="text-gray-700">1.2. O acesso e uso da plataforma estão sujeitos a estes termos.</p>
+                        </div>
+                    </section>
+
+                    <section>
+                        <h2 class="text-2xl font-semibold mb-4 chapter-title">2. Funções e Responsabilidades</h2>
+                        <div class="pl-4 space-y-4">
+                            <h3 class="text-xl font-medium">2.1. Administradores</h3>
+                            <ul class="list-disc pl-8 text-gray-700">
+                                <li>Acesso a dados sensíveis do sistema</li>
+                                <li>Gerenciamento do quadro de horários</li>
+                                <li>Controle de frequência</li>
+                            </ul>
+
+                            <h3 class="text-xl font-medium">2.2. Representantes de Turma</h3>
+                            <ul class="list-disc pl-8 text-gray-700">
+                                <li>Registro de matérias lecionadas</li>
+                                <li>Realização da chamada</li>
+                                <li>Atualização de conteúdo</li>
+                            </ul>
+                        </div>
+                    </section>
+
+                    <section>
+                        <h2 class="text-2xl font-semibold mb-4 chapter-title">3. Regras de Uso</h2>
+                        <div class="pl-4 space-y-4">
+                            <p class="text-gray-700">3.1. É proibido qualquer tipo de assédio ou discriminação.</p>
+                            <p class="text-gray-700">3.2. Mantenha suas credenciais em sigilo.</p>
+                            <p class="text-gray-700">3.3. Respeite as diretrizes da comunidade.</p>
+                        </div>
+                    </section>
+
+                    <section>
+                        <h2 class="text-2xl font-semibold mb-4 chapter-title">4. Privacidade e Segurança</h2>
+                        <div class="pl-4 space-y-4">
+                            <p class="text-gray-700">4.1. Seus dados são protegidos conforme as leis vigentes.</p>
+                            <p class="text-gray-700">4.2. Utilizamos medidas de segurança adequadas.</p>
+                        </div>
+                    </section>
+
+                    <!-- Aceite dos Termos -->
+                    <div class="mt-8 p-4 bg-gray-100 rounded-lg">
+                        <p class="text-gray-700 text-center">
+                            Ao utilizar o ErichEDU, você concorda com todos os termos e condições estabelecidos neste documento.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.getElementById('sidebarToggle').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('-translate-x-full');
+        });
+
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const isClickInsideSidebar = sidebar.contains(event.target);
+            const isClickOnToggle = sidebarToggle.contains(event.target);
+
+            if (!isClickInsideSidebar && !isClickOnToggle && !sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.add('-translate-x-full');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -550,6 +550,12 @@ def handle_exception(e):
     # Retornar página de erro amigável
     return render_template('error.html', primary_collor=cor_primaria, error_message=str(e)), 500
 
+@app.route('/termos')
+def termos():
+    # Você pode passar dados adicionais para o template se necessário
+    data_atualizacao = "14 de Março de 2025"  # Exemplo de data
+    return render_template('termos.html')  # Assumindo que você está usando Flask-Login
+
 from datetime import datetime
 from sqlalchemy.sql import extract
 
@@ -1043,6 +1049,16 @@ def delete_menu(menu_id):
 
 import calendar
 
+@app.errorhandler(404)
+def not_found_error(error):
+    return render_template('error.html', error_message='Página não encontrada'), 404
+
+@app.errorhandler(500)
+def internal_error(error):
+    db.session.rollback()
+    return render_template('error.html', error_message='Erro interno do servidor'), 500
+
+
 @app.route('/marcar_faltas/<int:turma_id>', methods=['GET', 'POST'])
 @login_required
 def marcar_faltas(turma_id):
@@ -1232,9 +1248,6 @@ def signup():
 
     return render_template('signup.html')
 
-
-from professor import prof_bp
-app.register_blueprint(prof_bp)
 
 if __name__ == '__main__':
     with app.app_context():
