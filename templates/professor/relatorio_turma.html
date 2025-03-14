@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ErichEdu - Relatório da Turma</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: {{ primary_collor }};
+        }
+        
+        body {
+            background-color: rgb(243 244 246);
+        }
+        
+        #sidebar {
+            background-color: var(--primary-color);
+            z-index: 50;
+        }
+        
+        .sidebar-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+    </style>
+</head>
+<body>
+    <div class="flex min-h-screen relative">
+        <!-- Sidebar -->
+        <div id="sidebar" class="fixed top-0 left-0 bottom-0 w-64 text-white transform -translate-x-full transition-transform duration-300 ease-in-out md:translate-x-0 md:static">
+            <div class="p-5">
+                <div class="flex items-center mb-8">
+                    <i class="fas fa-graduation-cap text-3xl mr-3"></i>
+                    <h2 class="text-2xl font-bold">ErichEdu - Prof</h2>
+                </div>
+                
+                <nav>
+                    <ul class="space-y-3">
+                        <li>
+                            <a href="{{ url_for('prof.dashboard') }}" class="sidebar-link flex items-center p-3 rounded transition">
+                                <i class="fas fa-home mr-3"></i>Dashboard
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('prof.aulas') }}" class="sidebar-link flex items-center p-3 rounded transition">
+                                <i class="fas fa-book mr-3"></i>Minhas Aulas
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('prof.perfil') }}" class="sidebar-link flex items-center p-3 rounded transition">
+                                <i class="fas fa-user mr-3"></i>Perfil
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('prof.logout') }}" class="sidebar-link flex items-center p-3 rounded transition">
+                                <i class="fas fa-sign-out-alt mr-3"></i>Sair
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Conteúdo Principal -->
+        <main class="flex-1 p-4 md:p-8">
+            <!-- Botão Toggle Sidebar (Mobile) -->
+            <button id="sidebarToggle" class="md:hidden fixed top-4 left-4 z-50 bg-[var(--primary-color)] text-white p-3 rounded-full shadow-lg">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <!-- Cabeçalho -->
+            <header class="mb-8 mt-16 md:mt-0">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <img src="{{ professor.imagem_url or url_for('static', filename='default_profile.png') }}" 
+                             alt="Foto de Perfil" 
+                             class="w-16 h-16 rounded-full object-cover border-4 border-white shadow-lg">
+                        <div>
+                            <h1 class="text-3xl font-bold text-gray-800">Relatório de Turma</h1>
+                            <p class="text-gray-600">{{ turma.nome }}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-2xl font-bold text-gray-800" id="current-time">00:00</p>
+                        <p class="text-gray-600" id="current-date">00/00/0000</p>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Sumário da Turma -->
+            <div class="grid grid-cols-1 gap-6 mb-8">
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-semibold text-gray-800">Informações da Turma</h2>
+                        <i class="fas fa-users text-[var(--primary-color)]"></i>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <p class="text-gray-500 text-sm">Total de Alunos</p>
+                            <p class="text-2xl font-bold text-gray-800">{{ estatisticas|length }}</p>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <p class="text-gray-500 text-sm">Média de Frequência</p>
+                            <p class="text-2xl font-bold text-gray-800">
+                                {% set total_freq = namespace(value=0) %}
+                                {% for est in estatisticas %}
+                                    {% set total_freq.value = total_freq.value + est.porcentagem_presenca %}
+                                {% endfor %}
+                                {% if estatisticas|length > 0 %}
+                                    {{ (total_freq.value / estatisticas|length)|round(2) }}%
+                                {% else %}
+                                    0%
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <p class="text-gray-500 text-sm">Alunos em Risco</p>
+                            <p class="text-2xl font-bold text-gray-800">
+                                {% set risco = namespace(value=0) %}
+                                {% for est in estatisticas %}
+                                    {% if est.porcentagem_presenca < 75 %}
+                                        {% set risco.value = risco.value + 1 %}
+                                    {% endif %}
+                                {% endfor %}
+                                {{ risco.value }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Relatório de Frequência -->
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-semibold text-gray-800">Relatório de Frequência</h2>
+                    <div>
+                        <button id="printReport" class="bg-[var(--primary-color)] text-white px-4 py-2 rounded-lg shadow hover:opacity-90 transition">
+                            <i class="fas fa-print mr-2"></i>Imprimir
+                        </button>
+                        <button id="exportCSV" class="bg-green-600 text-white px-4 py-2 rounded-lg shadow hover:opacity-90 transition ml-2">
+                            <i class="fas fa-file-csv mr-2"></i>Exportar CSV
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50">
+                                <th class="p-3 text-left border-b-2 border-gray-200">Aluno</th>
+                                <th class="p-3 text-center border-b-2 border-gray-200">Total de Faltas</th>
+                                <th class="p-3 text-center border-b-2 border-gray-200">Faltas Justificadas</th>
+                                <th class="p-3 text-center border-b-2 border-gray-200">Frequência</th>
+                                <th class="p-3 text-center border-b-2 border-gray-200">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for est in estatisticas %}
+                            <tr class="hover:bg-gray-50">
+                                <td class="p-3 border-b border-gray-200">
+                                    <div class="flex items-center">
+                                        <img src="{{ est.aluno.foto_perfil or url_for('static', filename='default_profile.png') }}"
+                                             alt="Foto de {{ est.aluno.nome_completo }}"
+                                             class="w-8 h-8 rounded-full object-cover mr-3">
+                                        <div>
+                                            <p class="font-medium">{{ est.aluno.nome_completo }}</p>
+                                            <p class="text-sm text-gray-500">{{ est.aluno.email }}</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="p-3 text-center border-b border-gray-200">{{ est.total_faltas }}</td>
+                                <td class="p-3 text-center border-b border-gray-200">{{ est.faltas_justificadas }}</td>
+                                <td class="p-3 text-center border-b border-gray-200">
+                                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                        <div class="h-2.5 rounded-full 
+                                            {% if est.porcentagem_presenca >= 90 %}
+                                                bg-green-500
+                                            {% elif est.porcentagem_presenca >= 75 %}
+                                                bg-yellow-500
+                                            {% else %}
+                                                bg-red-500
+                                            {% endif %}"
+                                            style="width: {{ est.porcentagem_presenca }}%"></div>
+                                    </div>
+                                    <span class="text-sm mt-1 block">{{ est.porcentagem_presenca }}%</span>
+                                </td>
+                                <td class="p-3 text-center border-b border-gray-200">
+                                    {% if est.porcentagem_presenca >= 90 %}
+                                        <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">Ótimo</span>
+                                    {% elif est.porcentagem_presenca >= 75 %}
+                                        <span class="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded">Regular</span>
+                                    {% else %}
+                                        <span class="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded">Em Risco</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Botão Voltar -->
+            <div class="mt-6">
+                <a href="{{ url_for('prof.turma_detalhes', turma_id=turma.id) }}" class="inline-flex items-center text-[var(--primary-color)] hover:underline">
+                    <i class="fas fa-arrow-left mr-2"></i> Voltar para detalhes da turma
+                </a>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Atualização de data e hora
+        function updateDateTime() {
+            const now = new Date();
+            const timeElement = document.getElementById('current-time');
+            const dateElement = document.getElementById('current-date');
+            
+            timeElement.textContent = now.toLocaleTimeString('pt-BR', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            
+            dateElement.textContent = now.toLocaleDateString('pt-BR', { 
+                day: '2-digit', 
+                month: '2-digit', 
+                year: 'numeric' 
+            });
+        }
+
+        // Toggle Sidebar (Mobile)
+        document.getElementById('sidebarToggle').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('-translate-x-full');
+        });
+
+        // Inicialização
+        updateDateTime();
+        setInterval(updateDateTime, 1000);
+
+        // Fechar sidebar ao clicar fora (Mobile)
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            
+            if (!sidebar.contains(event.target) && 
+                !sidebarToggle.contains(event.target) && 
+                window.innerWidth < 768) {
+                sidebar.classList.add('-translate-x-full');
+            }
+        });
+
+        // Função para imprimir relatório
+        document.getElementById('printReport').addEventListener('click', function() {
+            window.print();
+        });
+
+        // Função para exportar CSV
+        document.getElementById('exportCSV').addEventListener('click', function() {
+            const rows = [
+                ['Aluno', 'Total de Faltas', 'Faltas Justificadas', 'Frequência (%)', 'Status']
+            ];
+            
+            const tableRows = document.querySelectorAll('tbody tr');
+            tableRows.forEach(row => {
+                const name = row.querySelector('td:nth-child(1) .font-medium').textContent;
+                const totalFaltas = row.querySelector('td:nth-child(2)').textContent;
+                const faltasJustificadas = row.querySelector('td:nth-child(3)').textContent;
+                const frequencia = row.querySelector('td:nth-child(4) span').textContent;
+                const status = row.querySelector('td:nth-child(5) span').textContent;
+                
+                rows.push([name, totalFaltas, faltasJustificadas, frequencia, status]);
+            });
+            
+            let csvContent = "data:text/csv;charset=utf-8," 
+                + rows.map(e => e.join(",")).join("\n");
+            
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "relatorio_{{ turma.nome }}.csv");
+            document.body.appendChild(link);
+            link.click();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ErichEdu - Avisos da Turma</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: {{ primary_collor }};
+        }
+        
+        body {
+            background-color: rgb(243 244 246);
+        }
+        
+        #sidebar {
+            background-color: var(--primary-color);
+            z-index: 50;
+        }
+        
+        .sidebar-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+    </style>
+</head>
+<body>
+    <div class="flex min-h-screen relative">
+        <!-- Sidebar -->
+        <div id="sidebar" class="fixed top-0 left-0 bottom-0 w-64 text-white transform -translate-x-full transition-transform duration-300 ease-in-out md:translate-x-0 md:static">
+            <div class="p-5">
+                <div class="flex items-center mb-8">
+                    <i class="fas fa-graduation-cap text-3xl mr-3"></i>
+                    <h2 class="text-2xl font-bold">ErichEdu - Prof</h2>
+                </div>
+                
+                <nav>
+                    <ul class="space-y-3">
+                        <li>
+                            <a href="{{ url_for('prof.dashboard') }}" class="sidebar-link flex items-center p-3 rounded transition">
+                                <i class="fas fa-home mr-3"></i>Dashboard
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('prof.aulas') }}" class="sidebar-link flex items-center p-3 rounded transition">
+                                <i class="fas fa-book mr-3"></i>Minhas Aulas
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('prof.perfil') }}" class="sidebar-link flex items-center p-3 rounded transition">
+                                <i class="fas fa-user mr-3"></i>Perfil
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('prof.logout') }}" class="sidebar-link flex items-center p-3 rounded transition">
+                                <i class="fas fa-sign-out-alt mr-3"></i>Sair
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Conteúdo Principal -->
+        <main class="flex-1 p-4 md:p-8">
+            <!-- Botão Toggle Sidebar (Mobile) -->
+            <button id="sidebarToggle" class="md:hidden fixed top-4 left-4 z-50 bg-[var(--primary-color)] text-white p-3 rounded-full shadow-lg">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <!-- Cabeçalho -->
+            <header class="mb-8 mt-16 md:mt-0">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <img src="{{ professor.imagem_url or url_for('static', filename='default_profile.png') }}" 
+                             alt="Foto de Perfil" 
+                             class="w-16 h-16 rounded-full object-cover border-4 border-white shadow-lg">
+                        <div>
+                            <h1 class="text-3xl font-bold text-gray-800">Avisos da Turma</h1>
+                            <p class="text-gray-600">{{ turma.nome }} - Gerenciamento de Avisos</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-2xl font-bold text-gray-800" id="current-time">00:00</p>
+                        <p class="text-gray-600" id="current-date">00/00/0000</p>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Conteúdo dos Avisos -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Coluna da Esquerda - Formulário de Novo Aviso -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white rounded-xl shadow-md p-6 card-hover transition duration-300">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-xl font-semibold text-gray-800">Novo Aviso</h2>
+                            <i class="fas fa-bullhorn text-[var(--primary-color)]"></i>
+                        </div>
+                        
+                        <form action="{{ url_for('prof.avisos', turma_id=turma.id) }}" method="POST">
+                            <div class="space-y-4">
+                                <div>
+                                    <label for="titulo" class="block text-gray-700 mb-2">Título</label>
+                                    <input type="text" id="titulo" name="titulo" required 
+                                           class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]"
+                                           placeholder="Título do aviso">
+                                </div>
+                                <div>
+                                    <label for="conteudo" class="block text-gray-700 mb-2">Conteúdo</label>
+                                    <textarea id="conteudo" name="conteudo" required rows="6"
+                                           class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]"
+                                           placeholder="Escreva o conteúdo do aviso aqui..."></textarea>
+                                </div>
+                                <div class="flex justify-end">
+                                    <button type="submit" class="px-6 py-2 bg-[var(--primary-color)] text-white rounded-lg hover:opacity-90 transition">
+                                        <i class="fas fa-paper-plane mr-2"></i>Publicar
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <!-- Informações da Turma -->
+                    <div class="bg-white rounded-xl shadow-md p-6 card-hover transition duration-300 mt-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="text-xl font-semibold text-gray-800">Informações da Turma</h2>
+                            <i class="fas fa-info-circle text-[var(--primary-color)]"></i>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="flex items-center">
+                                <i class="fas fa-users text-[var(--primary-color)] mr-3"></i>
+                                <span class="text-gray-700">{{ turma.alunos|length }} Alunos</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-bullhorn text-[var(--primary-color)] mr-3"></i>
+                                <span class="text-gray-700">{{ avisos|length }} Avisos publicados</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-arrow-left text-[var(--primary-color)] mr-3"></i>
+                                <a href="{{ url_for('prof.turma_detalhes', turma_id=turma.id) }}" class="text-[var(--primary-color)] hover:underline">
+                                    Voltar para detalhes da turma
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Coluna da Direita - Lista de Avisos -->
+                <div class="lg:col-span-2">
+                    <div class="bg-white rounded-xl shadow-md p-6 card-hover transition duration-300">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-xl font-semibold text-gray-800">Avisos Publicados</h2>
+                            <span class="px-3 py-1 bg-[var(--primary-color)] text-white text-sm rounded-full">
+                                {{ avisos|length }} avisos
+                            </span>
+                        </div>
+                        
+                        {% if avisos %}
+                        <div class="space-y-6">
+                            {% for aviso in avisos %}
+                            <div class="border-l-4 border-[var(--primary-color)] pl-4 pb-4 {% if not loop.last %}border-b border-gray-200{% endif %}">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h3 class="text-lg font-semibold text-gray-800">{{ aviso.titulo }}</h3>
+                                    <span class="text-sm text-gray-500">{{ aviso.timestamp.strftime('%d/%m/%Y às %H:%M') }}</span>
+                                </div>
+                                <p class="text-gray-700 mb-2">{{ aviso.conteudo }}</p>
+                                <div class="flex items-center text-sm text-gray-500">
+                                    <i class="fas fa-user mr-1"></i>
+                                    <span>{{ aviso.autor }}</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="text-center py-8">
+                            <i class="fas fa-inbox text-gray-300 text-5xl mb-4"></i>
+                            <p class="text-gray-500">Nenhum aviso publicado ainda.</p>
+                            <p class="text-gray-500">Utilize o formulário ao lado para criar o primeiro aviso.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Atualização de data e hora
+        function updateDateTime() {
+            const now = new Date();
+            const timeElement = document.getElementById('current-time');
+            const dateElement = document.getElementById('current-date');
+            
+            timeElement.textContent = now.toLocaleTimeString('pt-BR', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            
+            dateElement.textContent = now.toLocaleDateString('pt-BR', { 
+                day: '2-digit', 
+                month: '2-digit', 
+                year: 'numeric' 
+            });
+        }
+
+        // Toggle Sidebar (Mobile)
+        document.getElementById('sidebarToggle').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('-translate-x-full');
+        });
+
+        // Inicialização
+        updateDateTime();
+        setInterval(updateDateTime, 1000);
+
+        // Fechar sidebar ao clicar fora (Mobile)
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            
+            if (!sidebar.contains(event.target) && 
+                !sidebarToggle.contains(event.target) && 
+                window.innerWidth < 768) {
+                sidebar.classList.add('-translate-x-full');
+            }
+        });
+    </script>
+</body>
+</html>

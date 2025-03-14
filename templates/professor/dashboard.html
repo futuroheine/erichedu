@@ -112,6 +112,64 @@
                         {% endfor %}
                     </div>
                 </div>
+                                <!-- Container de Avisos -->
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover transition duration-300 mt-6">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Avisos das Turmas</h2>
+
+                    <!-- Seletor de Turmas -->
+                    <label for="turmaSelecionada" class="block text-gray-700 font-medium mb-2">Selecione a Turma:</label>
+                    <select id="turmaSelecionada" class="w-full p-2 border rounded-lg">
+                        <option value="1">1001</option>
+                        <option value="2">1002</option>
+                        <option value="3">1003</option>
+                        <option value="4">1004</option>
+                        <option value="5">1005</option>
+                        <option value="6">2001</option>
+                        <option value="7">2002</option>
+                        <option value="8">2003</option>
+                        <option value="9">2004</option>
+                        <option value="10">2005</option>
+                        <option value="11">3001</option>
+                        <option value="12">3002</option>
+                        <option value="13">3003</option>
+                        <option value="14">3004</option>
+                        <option value="15">3005</option>
+                    </select>
+                
+                    <!-- Botão para Avisos -->
+                    <div class="flex justify-between mt-4">
+                        <button onclick="irParaAvisos()" class="bg-[var(--primary-color)] text-white px-4 py-2 rounded-lg shadow-md hover:bg-opacity-80 transition">
+                            Ver Avisos da Turma
+                        </button>
+                    
+                        <button onclick="turmaSeguinte()" class="bg-gray-700 text-white px-4 py-2 rounded-lg shadow-md hover:bg-gray-800 transition">
+                            Próxima Turma
+                        </button>
+                    </div>
+                </div>
+
+                <script>
+                    function irParaAvisos() {
+                        const turmaSelecionada = document.getElementById("turmaSelecionada").value;
+                        if (turmaSelecionada) {
+                            window.location.href = `/professor/avisos/${turmaSelecionada}`;
+                        }
+                    }
+                
+                    function turmaSeguinte() {
+                        const turmas = ["1001", "1002", "1003", "1004", "1005", "2001", "2002", "2003", "2004", "2005", "3001", "3002", "3003", "3004", "3005"];
+                        const turmaSelecionada = document.getElementById("turmaSelecionada").value;
+                        const indexAtual = turmas.indexOf(turmaSelecionada);
+
+                        if (indexAtual !== -1 && indexAtual < turmas.length - 1) {
+                            const proximaTurma = turmas[indexAtual + 1];
+                            window.location.href = `/professor/avisos/${proximaTurma}`;
+                        } else {
+                            alert("Não há próxima turma disponível.");
+                        }
+                    }
+                </script>
+
 
                 <!-- Turmas -->
                 <div class="bg-white rounded-xl shadow-md p-6 card-hover transition duration-300">

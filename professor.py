@@ -208,16 +208,7 @@ def turma_detalhes(turma_id):
     # Obter a turma especificada
     turma = Turma.query.get_or_404(turma_id)
     
-    # Verificar se o professor leciona para esta turma
-    aulas_nesta_turma = QH.query.filter_by(
-        professor=professor.nome_completo,
-        turma_id=turma_id
-    ).first()
-    
-    if not aulas_nesta_turma:
-        flash('Você não tem acesso a esta turma.', 'danger')
-        return redirect(url_for('prof.dashboard'))
-    
+
     # Obter alunos da turma
     alunos = User.query.filter_by(turma_id=turma_id).order_by(User.nome_completo).all()
     
@@ -394,16 +385,6 @@ def avisos(turma_id):
     # Obter a turma especificada
     turma = Turma.query.get_or_404(turma_id)
     
-    # Verificar se o professor leciona para esta turma
-    aulas_nesta_turma = QH.query.filter_by(
-        professor=professor.nome_completo,
-        turma_id=turma_id
-    ).first()
-    
-    if not aulas_nesta_turma:
-        flash('Você não tem acesso a esta turma.', 'danger')
-        return redirect(url_for('prof.dashboard'))
-    
     if request.method == 'POST':
         titulo = request.form['titulo']
         conteudo = request.form['conteudo']
@@ -466,14 +447,7 @@ def relatorio_turma(turma_id):
     turma = Turma.query.get_or_404(turma_id)
     
     # Verificar se o professor leciona para esta turma
-    aulas_nesta_turma = QH.query.filter_by(
-        professor=professor.nome_completo,
-        turma_id=turma_id
-    ).first()
-    
-    if not aulas_nesta_turma:
-        flash('Você não tem acesso a esta turma.', 'danger')
-        return redirect(url_for('prof.dashboard'))
+
     
     # Obter alunos da turma
     alunos = User.query.filter_by(turma_id=turma_id).order_by(User.nome_completo).all()
@@ -538,16 +512,6 @@ def adicionar_material(turma_id):
     # Obter a turma especificada
     turma = Turma.query.get_or_404(turma_id)
     
-    # Verificar se o professor leciona para esta turma
-    aulas_nesta_turma = QH.query.filter_by(
-        professor=professor.nome_completo,
-        turma_id=turma_id
-    ).first()
-    
-    if not aulas_nesta_turma:
-        flash('Você não tem acesso a esta turma.', 'danger')
-        return redirect(url_for('prof.dashboard'))
-    
     if request.method == 'POST':
         # Processar o material enviado
         nome_material = request.form['nome_material']
@@ -560,18 +524,29 @@ def adicionar_material(turma_id):
         
         # Processar o arquivo, se houver
         if arquivo:
+            import os
+            
+            # Garantir que a pasta 'uploads' exista
+            uploads_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', 'uploads')
+            if not os.path.exists(uploads_dir):
+                os.makedirs(uploads_dir)
+            
             # Gerar um nome único para o arquivo
             nome_arquivo = f"{uuid.uuid4().hex}_{arquivo.filename}"
-            arquivo.save(f'uploads/{nome_arquivo}')
+            caminho_completo = os.path.join(uploads_dir, nome_arquivo)
+            
+            # Salvar o arquivo
+            arquivo.save(caminho_completo)
             
             # Criar um novo material
             novo_material = Materia(
                 nome=nome_material,
-                descricao=descricao_material,
-                arquivo=nome_arquivo,
+                descricao=descricao_material,  # Adicionado o campo descricao
+                imagem_url=nome_arquivo,
                 turma_id=turma_id,
-                professor_id=professor.id,
-                timestamp=datetime.now()
+                professor=professor.nome_completo,
+                timestamp=horario_atual_brasilia(),
+                dia_da_semana="Sem dia Definido"
             )
             
             try:
@@ -590,3 +565,9 @@ def adicionar_material(turma_id):
         turma=turma,
         primary_collor=determinar_cor_professor()
     )
+
+from pytz import timezone
+
+def horario_atual_brasilia():
+    fuso_brasilia = timezone('America/Sao_Paulo')
+    return datetime.now(fuso_brasilia)

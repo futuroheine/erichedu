@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ErichEdu - Detalhes da Turma</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: {{ primary_collor }};
+        }
+        
+        body {
+            background-color: rgb(243 244 246);
+        }
+        
+        #sidebar {
+            background-color: var(--primary-color);
+            z-index: 50;
+        }
+        
+        .sidebar-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="flex min-h-screen relative">
+        <!-- Sidebar -->
+        <div id="sidebar" class="fixed top-0 left-0 bottom-0 w-64 text-white transform -translate-x-full transition-transform duration-300 ease-in-out md:translate-x-0 md:static">
+            <div class="p-5">
+                <div class="flex items-center mb-8">
+                    <i class="fas fa-graduation-cap text-3xl mr-3"></i>
+                    <h2 class="text-2xl font-bold">ErichEdu - Prof</h2>
+                </div>
+                
+                <nav>
+                    <ul class="space-y-3">
+                        <li>
+                            <a href="{{ url_for('prof.dashboard') }}" class="sidebar-link flex items-center p-3 rounded transition">
+                                <i class="fas fa-home mr-3"></i>Dashboard
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('prof.aulas') }}" class="sidebar-link flex items-center p-3 rounded transition">
+                                <i class="fas fa-book mr-3"></i>Minhas Aulas
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('prof.perfil') }}" class="sidebar-link flex items-center p-3 rounded transition">
+                                <i class="fas fa-user mr-3"></i>Perfil
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('prof.logout') }}" class="sidebar-link flex items-center p-3 rounded transition">
+                                <i class="fas fa-sign-out-alt mr-3"></i>Sair
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Conteúdo Principal -->
+        <main class="flex-1 p-4 md:p-8">
+            <!-- Botão Toggle Sidebar (Mobile) -->
+            <button id="sidebarToggle" class="md:hidden fixed top-4 left-4 z-50 bg-[var(--primary-color)] text-white p-3 rounded-full shadow-lg">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <!-- Cabeçalho -->
+            <header class="mb-8 mt-16 md:mt-0">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-800">{{ turma.nome }}</h1>
+                        <p class="text-gray-600">{{ turma.descricao }}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-2xl font-bold text-gray-800" id="current-time">00:00</p>
+                        <p class="text-gray-600" id="current-date">00/00/0000</p>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Navegação entre Tabs -->
+            <div class="flex flex-wrap gap-2 mb-6">
+                <a href="#" class="tab-button active bg-[var(--primary-color)] text-white px-4 py-2 rounded-md" data-tab="informacoes">
+                    <i class="fas fa-info-circle mr-2"></i>Informações
+                </a>
+                <a href="{{ url_for('prof.frequencia', turma_id=turma.id) }}" class="bg-white text-[var(--primary-color)] px-4 py-2 rounded-md shadow-md hover:bg-gray-50">
+                    <i class="fas fa-clipboard-check mr-2"></i>Frequência
+                </a>
+                <a href="{{ url_for('prof.avisos', turma_id=turma.id) }}" class="bg-white text-[var(--primary-color)] px-4 py-2 rounded-md shadow-md hover:bg-gray-50">
+                    <i class="fas fa-bullhorn mr-2"></i>Avisos
+                </a>
+                <a href="{{ url_for('prof.relatorio_turma', turma_id=turma.id) }}" class="bg-white text-[var(--primary-color)] px-4 py-2 rounded-md shadow-md hover:bg-gray-50">
+                    <i class="fas fa-chart-bar mr-2"></i>Relatório
+                </a>
+                <a href="{{ url_for('prof.adicionar_material', turma_id=turma.id) }}" class="bg-white text-[var(--primary-color)] px-4 py-2 rounded-md shadow-md hover:bg-gray-50">
+                    <i class="fas fa-file-upload mr-2"></i>Adicionar Material
+                </a>
+            </div>
+
+            <!-- Conteúdo da Tab Informações -->
+            <div id="informacoes" class="tab-content active">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Informações da Turma -->
+                    <div class="bg-white rounded-xl shadow-md p-6 card-hover transition duration-300">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="text-xl font-semibold text-gray-800">Informações da Turma</h2>
+                            <i class="fas fa-users text-[var(--primary-color)]"></i>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="flex gap-4">
+                                <div class="w-1/2">
+                                    <p class="text-sm text-gray-500">Nome da Turma</p>
+                                    <p class="font-medium">{{ turma.nome }}</p>
+                                </div>
+                                <div class="w-1/2">
+                                    <p class="text-sm text-gray-500">Total de Alunos</p>
+                                    <p class="font-medium">{{ alunos|length }}</p>
+                                </div>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Descrição</p>
+                                <p class="font-medium">{{ turma.descricao or "Sem descrição" }}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Período</p>
+                                <p class="font-medium">{{ turma.periodo or "Não especificado" }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lista de Alunos -->
+                    <div class="bg-white rounded-xl shadow-md p-6 card-hover transition duration-300">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="text-xl font-semibold text-gray-800">Alunos</h2>
+                            <i class="fas fa-user-graduate text-[var(--primary-color)]"></i>
+                        </div>
+                        <div class="space-y-2 max-h-64 overflow-y-auto">
+                            {% for aluno in alunos %}
+                            <div class="flex items-center p-2 hover:bg-gray-50 rounded-lg">
+                                <div class="flex-shrink-0 mr-3">
+                                    <img src="{{ aluno.imagem_url or url_for('static', filename='default_profile.png') }}" 
+                                        alt="Perfil" class="h-10 w-10 rounded-full object-cover">
+                                </div>
+                                <div>
+                                    <p class="font-medium">{{ aluno.nome_completo }}</p>
+                                    <p class="text-sm text-gray-500">{{ aluno.email }}</p>
+                                </div>
+                            </div>
+                            {% else %}
+                            <p class="text-gray-500 italic">Nenhum aluno matriculado nesta turma.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Materiais da Turma -->
+                <div class="mt-6 bg-white rounded-xl shadow-md p-6 card-hover transition duration-300">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-semibold text-gray-800">Materiais</h2>
+                        <a href="{{ url_for('prof.adicionar_material', turma_id=turma.id) }}" class="bg-[var(--primary-color)] text-white px-3 py-1 rounded-md text-sm">
+                            <i class="fas fa-plus mr-1"></i> Adicionar
+                        </a>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead>
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descrição</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Arquivo</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                {% for material in materiais %}
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="font-medium text-gray-900">{{ material.nome }}</div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="text-sm text-gray-500">{{ material.descricao }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-500">{{ material.timestamp.strftime('%d/%m/%Y') }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <a href="{{ url_for('static', filename='uploads/' + material.arquivo) }}" 
+                                           class="text-[var(--primary-color)] hover:underline" target="_blank">
+                                            <i class="fas fa-download mr-1"></i> Download
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="4" class="px-6 py-4 text-center text-gray-500 italic">
+                                        Nenhum material disponível para esta turma.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Atualização de data e hora
+        function updateDateTime() {
+            const now = new Date();
+            const timeElement = document.getElementById('current-time');
+            const dateElement = document.getElementById('current-date');
+            
+            timeElement.textContent = now.toLocaleTimeString('pt-BR', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            
+            dateElement.textContent = now.toLocaleDateString('pt-BR', { 
+                day: '2-digit', 
+                month: '2-digit', 
+                year: 'numeric' 
+            });
+        }
+
+        // Toggle Sidebar (Mobile)
+        document.getElementById('sidebarToggle').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('-translate-x-full');
+        });
+
+        // Inicialização
+        updateDateTime();
+        setInterval(updateDateTime, 1000);
+
+        // Fechar sidebar ao clicar fora (Mobile)
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            
+            if (!sidebar.contains(event.target) && 
+                !sidebarToggle.contains(event.target) && 
+                window.innerWidth < 768) {
+                sidebar.classList.add('-translate-x-full');
+            }
+        });
+    </script>
+</body>
+</html>

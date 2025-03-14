@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ErichEdu - Minhas Aulas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: {{ primary_collor }};
+        }
+        
+        body {
+            background-color: rgb(243 244 246);
+        }
+        
+        #sidebar {
+            background-color: var(--primary-color);
+            z-index: 50;
+        }
+        
+        .sidebar-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+    </style>
+</head>
+<body>
+    <div class="flex min-h-screen relative">
+        <!-- Sidebar -->
+        <div id="sidebar" class="fixed top-0 left-0 bottom-0 w-64 text-white transform -translate-x-full transition-transform duration-300 ease-in-out md:translate-x-0 md:static">
+            <div class="p-5">
+                <div class="flex items-center mb-8">
+                    <i class="fas fa-graduation-cap text-3xl mr-3"></i>
+                    <h2 class="text-2xl font-bold">ErichEdu - Prof</h2>
+                </div>
+                
+                <nav>
+                    <ul class="space-y-3">
+                        <li>
+                            <a href="{{ url_for('prof.dashboard') }}" class="sidebar-link flex items-center p-3 rounded transition">
+                                <i class="fas fa-home mr-3"></i>Dashboard
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('prof.aulas') }}" class="sidebar-link flex items-center p-3 rounded transition bg-white/10">
+                                <i class="fas fa-book mr-3"></i>Minhas Aulas
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('prof.perfil') }}" class="sidebar-link flex items-center p-3 rounded transition">
+                                <i class="fas fa-user mr-3"></i>Perfil
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('prof.logout') }}" class="sidebar-link flex items-center p-3 rounded transition">
+                                <i class="fas fa-sign-out-alt mr-3"></i>Sair
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Conteúdo Principal -->
+        <main class="flex-1 p-4 md:p-8">
+            <!-- Botão Toggle Sidebar (Mobile) -->
+            <button id="sidebarToggle" class="md:hidden fixed top-4 left-4 z-50 bg-[var(--primary-color)] text-white p-3 rounded-full shadow-lg">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <!-- Cabeçalho -->
+            <header class="mb-8 mt-16 md:mt-0">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-800">Minhas Aulas</h1>
+                        <p class="text-gray-600">Visualize sua programação semanal</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-2xl font-bold text-gray-800" id="current-time">00:00</p>
+                        <p class="text-gray-600" id="current-date">00/00/0000</p>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Conteúdo da Página -->
+            <div class="space-y-8">
+                {% for dia, nome_dia in dias_semana.items() %}
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover transition duration-300">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-semibold text-gray-800">{{ nome_dia }}</h2>
+                        <i class="fas fa-calendar-day text-[var(--primary-color)]"></i>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        {% for aula in aulas_por_dia[dia] %}
+                        <div class="border-l-4 border-[var(--primary-color)] pl-4 py-2">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <p class="font-semibold text-gray-800">{{ aula.horario.strftime('%H:%M') }}</p>
+                                    <p class="text-gray-600">{{ aula.turma.nome }}</p>
+                                </div>
+                                <div>
+                                    <a href="{{ url_for('prof.turma_detalhes', turma_id=aula.turma_id) }}" 
+                                       class="text-[var(--primary-color)] hover:underline">
+                                        <i class="fas fa-eye mr-1"></i> Ver turma
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="mt-2 text-sm text-gray-500">
+                                <p>Sala: {{ aula.sala }}</p>
+                                <p>Disciplina: {{ aula.materia }}</p>
+                            </div>
+                        </div>
+                        {% else %}
+                        <p class="text-gray-500 italic">Nenhuma aula neste dia</p>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Atualização de data e hora
+        function updateDateTime() {
+            const now = new Date();
+            const timeElement = document.getElementById('current-time');
+            const dateElement = document.getElementById('current-date');
+            
+            timeElement.textContent = now.toLocaleTimeString('pt-BR', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            
+            dateElement.textContent = now.toLocaleDateString('pt-BR', { 
+                day: '2-digit', 
+                month: '2-digit', 
+                year: 'numeric' 
+            });
+        }
+
+        // Toggle Sidebar (Mobile)
+        document.getElementById('sidebarToggle').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('-translate-x-full');
+        });
+
+        // Inicialização
+        updateDateTime();
+        setInterval(updateDateTime, 1000);
+
+        // Fechar sidebar ao clicar fora (Mobile)
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            
+            if (!sidebar.contains(event.target) && 
+                !sidebarToggle.contains(event.target) && 
+                window.innerWidth < 768) {
+                sidebar.classList.add('-translate-x-full');
+            }
+        });
+    </script>
+</body>
+</html>

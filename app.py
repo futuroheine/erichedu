@@ -164,6 +164,7 @@ class Materia(db.Model):
     turma_id = db.Column(db.Integer, db.ForeignKey('turma.id'), nullable=False)
     dia_da_semana = db.Column(db.String(20), nullable=False)
     professor = db.Column(db.String(100), nullable=False)
+    descricao = db.Column(db.String(255), nullable=False)
     imagem_url = db.Column(db.String(255), nullable=True)  # Campo para armazenar o link da imagem da matéria
     timestamp = db.Column(db.DateTime, default=lambda: datetime.now(timezone('America/Sao_Paulo')))  # Campo de timestamp
     turma = db.relationship('Turma', back_populates='materias')

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ErichEdu - Perfil do Professor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: {{ primary_collor }};
+        }
+        
+        body {
+            background-color: rgb(243 244 246);
+        }
+        
+        #sidebar {
+            background-color: var(--primary-color);
+            z-index: 50;
+        }
+        
+        .sidebar-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+    </style>
+</head>
+<body>
+    <div class="flex min-h-screen relative">
+        <!-- Sidebar -->
+        <div id="sidebar" class="fixed top-0 left-0 bottom-0 w-64 text-white transform -translate-x-full transition-transform duration-300 ease-in-out md:translate-x-0 md:static">
+            <div class="p-5">
+                <div class="flex items-center mb-8">
+                    <i class="fas fa-graduation-cap text-3xl mr-3"></i>
+                    <h2 class="text-2xl font-bold">ErichEdu - Prof</h2>
+                </div>
+                
+                <nav>
+                    <ul class="space-y-3">
+                        <li>
+                            <a href="{{ url_for('prof.dashboard') }}" class="sidebar-link flex items-center p-3 rounded transition">
+                                <i class="fas fa-home mr-3"></i>Dashboard
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('prof.aulas') }}" class="sidebar-link flex items-center p-3 rounded transition">
+                                <i class="fas fa-book mr-3"></i>Minhas Aulas
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('prof.perfil') }}" class="sidebar-link flex items-center p-3 rounded transition bg-white bg-opacity-20">
+                                <i class="fas fa-user mr-3"></i>Perfil
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('prof.logout') }}" class="sidebar-link flex items-center p-3 rounded transition">
+                                <i class="fas fa-sign-out-alt mr-3"></i>Sair
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Conteúdo Principal -->
+        <main class="flex-1 p-4 md:p-8">
+            <!-- Botão Toggle Sidebar (Mobile) -->
+            <button id="sidebarToggle" class="md:hidden fixed top-4 left-4 z-50 bg-[var(--primary-color)] text-white p-3 rounded-full shadow-lg">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <!-- Cabeçalho -->
+            <header class="mb-8 mt-16 md:mt-0">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <img src="{{ professor.imagem_url or url_for('static', filename='default_profile.png') }}" 
+                             alt="Foto de Perfil" 
+                             class="w-16 h-16 rounded-full object-cover border-4 border-white shadow-lg">
+                        <div>
+                            <h1 class="text-3xl font-bold text-gray-800">Meu Perfil</h1>
+                            <p class="text-gray-600">Gerencie suas informações pessoais</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-2xl font-bold text-gray-800" id="current-time">00:00</p>
+                        <p class="text-gray-600" id="current-date">00/00/0000</p>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Conteúdo do Perfil -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Coluna da Esquerda - Foto e Informações Básicas -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white rounded-xl shadow-md p-6 card-hover transition duration-300 mb-6">
+                        <div class="flex flex-col items-center mb-6">
+                            <img src="{{ professor.imagem_url or url_for('static', filename='default_profile.png') }}" 
+                                 alt="Foto de Perfil" 
+                                 class="w-32 h-32 rounded-full object-cover border-4 border-[var(--primary-color)] shadow-lg mb-4">
+                            <h2 class="text-xl font-semibold text-gray-800">{{ professor.nome_completo }}</h2>
+                            <p class="text-gray-600">Professor</p>
+                        </div>
+                        
+                        <div class="border-t pt-4">
+                            <div class="flex items-center mb-3">
+                                <i class="fas fa-envelope text-[var(--primary-color)] mr-3"></i>
+                                <span class="text-gray-700">{{ professor.email }}</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-user-check text-[var(--primary-color)] mr-3"></i>
+                                <span class="text-gray-700">Conta ativa</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Coluna da Direita - Formulário de Edição -->
+                <div class="lg:col-span-2">
+                    <div class="bg-white rounded-xl shadow-md p-6 card-hover transition duration-300">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-xl font-semibold text-gray-800">Editar Informações</h2>
+                            <i class="fas fa-user-edit text-[var(--primary-color)]"></i>
+                        </div>
+                        
+                        <form action="{{ url_for('prof.perfil') }}" method="POST" enctype="multipart/form-data">
+                            <!-- Informações Básicas -->
+                            <div class="mb-6">
+                                <h3 class="text-lg font-medium text-gray-700 mb-4">Informações Básicas</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label for="nome_completo" class="block text-gray-700 mb-2">Nome Completo</label>
+                                        <input type="text" id="nome_completo" name="nome_completo" value="{{ professor.nome_completo }}" 
+                                               class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]">
+                                    </div>
+                                    <div>
+                                        <label for="email" class="block text-gray-700 mb-2">Email</label>
+                                        <input type="email" id="email" name="email" value="{{ professor.email }}" 
+                                               class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Foto de Perfil -->
+                            <div class="mb-6">
+                                <h3 class="text-lg font-medium text-gray-700 mb-4">Foto de Perfil</h3>
+                                <div class="flex items-center">
+                                    <input type="file" id="imagem_perfil" name="imagem_perfil" accept="image/*" 
+                                           class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]">
+                                </div>
+                                <p class="text-sm text-gray-500 mt-2">Formatos aceitos: JPG, PNG. Tamanho máximo: 5MB</p>
+                            </div>
+                            
+                            <!-- Alteração de Senha -->
+                            <div class="mb-6">
+                                <h3 class="text-lg font-medium text-gray-700 mb-4">Alteração de Senha</h3>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label for="senha_atual" class="block text-gray-700 mb-2">Senha Atual</label>
+                                        <input type="password" id="senha_atual" name="senha_atual" 
+                                               class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]">
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label for="nova_senha" class="block text-gray-700 mb-2">Nova Senha</label>
+                                            <input type="password" id="nova_senha" name="nova_senha" 
+                                                   class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]">
+                                        </div>
+                                        <div>
+                                            <label for="confirmar_senha" class="block text-gray-700 mb-2">Confirmar Nova Senha</label>
+                                            <input type="password" id="confirmar_senha" name="confirmar_senha" 
+                                                   class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]">
+                                        </div>
+                                    </div>
+                                    <p class="text-sm text-gray-500">Deixe em branco para manter a senha atual</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Botões de Ação -->
+                            <div class="flex justify-end space-x-4">
+                                <button type="reset" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
+                                    Cancelar
+                                </button>
+                                <button type="submit" class="px-6 py-2 bg-[var(--primary-color)] text-white rounded-lg hover:opacity-90 transition">
+                                    Salvar Alterações
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Atualização de data e hora
+        function updateDateTime() {
+            const now = new Date();
+            const timeElement = document.getElementById('current-time');
+            const dateElement = document.getElementById('current-date');
+            
+            timeElement.textContent = now.toLocaleTimeString('pt-BR', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            
+            dateElement.textContent = now.toLocaleDateString('pt-BR', { 
+                day: '2-digit', 
+                month: '2-digit', 
+                year: 'numeric' 
+            });
+        }
+
+        // Toggle Sidebar (Mobile)
+        document.getElementById('sidebarToggle').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('-translate-x-full');
+        });
+
+        // Inicialização
+        updateDateTime();
+        setInterval(updateDateTime, 1000);
+
+        // Fechar sidebar ao clicar fora (Mobile)
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            
+            if (!sidebar.contains(event.target) && 
+                !sidebarToggle.contains(event.target) && 
+                window.innerWidth < 768) {
+                sidebar.classList.add('-translate-x-full');
+            }
+        });
+    </script>
+</body>
+</html>
