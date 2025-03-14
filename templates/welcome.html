@@ -61,7 +61,7 @@
             height: 2px;
             bottom: -2px;
             left: 0;
-            background-color: #d40000;
+            background-color: linear-gradient(135deg, #0284c7 0%, #004a87 100%);
             transition: width 0.3s ease;
         }
 
@@ -83,6 +83,7 @@
                 <div class="hidden md:flex space-x-8">
                     <a href="#" class="nav-link text-white hover:text-gray-200">Início</a>
                     <a href="#" class="nav-link text-white hover:text-gray-200">Funcionalidades</a>
+                    <a href="{{ url_for('prof.login') }}" class="nav-link text-white hover:text-gray-200">Professores</a>
                     <a href="{{ url_for('signup') }}" class="nav-link text-white hover:text-gray-200">Cadastre-se</a>
                     <a href="{{ url_for('login') }}" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-full transition-colors">Login</a>
                 </div>

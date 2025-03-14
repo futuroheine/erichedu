@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ErichEDU - Prof</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+    <!-- Manifest -->
+    <link rel="manifest" href="/manifest.json">
+
+    <!-- Metadados para instalação no Android -->
+    <meta name="theme-color" content="#0284c7">
+
+    <!-- Metadados para iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="ErichEDU - Prof">
+    <link rel="apple-touch-icon" href="/static/erichedu-icon.png">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8fafc;
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #004a87 0%, #0284c7 100%);
+        }
+
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+
+        .banner {
+            background: linear-gradient(rgba(0, 74, 135, 0.8), rgba(0, 74, 135, 0.8)), 
+                        url('{{ url_for('static', filename='banner.png') }}') no-repeat center center;
+            background-size: cover;
+            color: white;
+            text-align: center;
+            padding: 50px 15px;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-link {
+            position: relative;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -2px;
+            left: 0;
+            background-color: #d40000;
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .hero-pattern {
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M54.627 0l.83.828-1.415 1.415L51.8 0h2.827zM5.373 0l-.83.828L5.96 2.243 8.2 0H5.374zM48.97 0l3.657 3.657-1.414 1.414L46.143 0h2.828zM11.03 0L7.372 3.657 8.787 5.07 13.857 0H11.03zm32.284 0L49.8 6.485 48.384 7.9l-7.9-7.9h2.83zM16.686 0L10.2 6.485 11.616 7.9l7.9-7.9h-2.83zM22.344 0L13.858 8.485 15.272 9.9l7.9-7.9h-.828zm5.656 0L17.515 10.485 18.93 11.9l7.9-7.9h-2.83zM3.515 0L0 3.515 1.414 4.93 4.93 1.414 3.515 0zM56.485 0L60 3.515 58.586 4.93 55.07 1.414 56.485 0zM4.929 0L0 4.929l2.828 2.828.707-.707L7.07 3.515 4.929 0zM55.071 0L60 4.929l-2.828 2.828-.707-.707L52.93 3.515 55.071 0z' fill='%23ffffff' fill-opacity='0.05'/%3E%3C/svg%3E");
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="gradient-bg sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="text-white font-bold text-xl">ErichEDU - Prof</div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#" class="nav-link text-white hover:text-gray-200">Início</a>
+                    <a href="#" class="nav-link text-white hover:text-gray-200">Ferramentas Educacionais</a>
+                    <a href="{{ url_for('prof.cadastro') }}" class="nav-link text-white hover:text-gray-200">Cadastre-se</a>
+                    <a href="{{ url_for('prof.login') }}" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-full transition-colors">Login</a>
+                </div>
+                <button class="md:hidden text-white">
+                    <i class="fas fa-bars text-2xl"></i>
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="banner">
+        <div class="container mx-auto px-6 py-24 text-center">
+            <h1 class="text-4xl md:text-6xl font-bold text-white mb-6">
+                Revolucione seu Ensino com o
+            </h1>
+            <h1 class="text-4xl md:text-6xl font-bold text-white mb-6">
+                ErichEDU - Prof
+            </h1>
+            <p class="text-xl text-gray-200 mb-8 max-w-2xl mx-auto">
+                Uma plataforma inovadora que facilita o gerenciamento de aulas, interação com alunos e otimização do aprendizado.
+            </p>
+            <div class="flex flex-col md:flex-row gap-4 justify-center">
+                <a href="{{ url_for('prof.cadastro') }}" class="bg-white text-blue-600 px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition-colors">
+                    Começar Agora
+                </a>
+                <a href="{{ url_for('prof.login') }}" class="border-2 border-white text-white px-8 py-3 rounded-full font-semibold hover:bg-white hover:text-blue-600 transition-colors">
+                    Já Tenho uma Conta
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-20 bg-white">
+        <div class="container mx-auto px-6">
+            <h2 class="text-3xl font-bold text-center text-gray-800 mb-16">
+                Ferramentas para Professores
+            </h2>
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Feature Card 1 -->
+                <div class="card-hover bg-gray-50 rounded-xl p-8">
+                    <div class="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center mb-6">
+                        <i class="fas fa-calendar-alt text-2xl text-blue-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">Planejamento de Aulas</h3>
+                    <p class="text-gray-600">
+                        Organize suas aulas de forma eficiente, criando cronogramas e acompanhando o progresso dos alunos.
+                    </p>
+                </div>
+
+                <!-- Feature Card 2 -->
+                <div class="card-hover bg-gray-50 rounded-xl p-8">
+                    <div class="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center mb-6">
+                        <i class="fas fa-comments text-2xl text-blue-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">Interação em Tempo Real</h3>
+                    <p class="text-gray-600">
+                        Converse com alunos e colegas de forma instantânea, compartilhe materiais e tire dúvidas.
+                    </p>
+                </div>
+
+                <!-- Feature Card 3 -->
+                <div class="card-hover bg-gray-50 rounded-xl p-8">
+                    <div class="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center mb-6">
+                        <i class="fas fa-chart-line text-2xl text-blue-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">Acompanhamento de Desempenho</h3>
+                    <p class="text-gray-600">
+                        Avalie o progresso dos alunos com relatórios detalhados e gráficos de desempenho.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-6">
+        <div class="container mx-auto text-center">
+            <p>&copy; 2025 ErichEDU - Todos os direitos reservados</p>
+        </div>
+    </footer>
+</body>
+</html>

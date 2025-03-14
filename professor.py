@@ -519,6 +519,11 @@ def relatorio_turma(turma_id):
         estatisticas=estatisticas,
         primary_collor=determinar_cor_professor()
     )
+
+@prof_bp.route('/')
+def index():
+    return render_template('professor/welcome.html')
+
 @prof_bp.route('/materiais/adicionar/<int:turma_id>', methods=['GET', 'POST'])
 @login_required
 def adicionar_material(turma_id):

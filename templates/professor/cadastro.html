@@ -1,81 +1,157 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ErichEdu - Cadastro Professor</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-  <style>
-      :root {
-          --primary-color: #083888;
-          --secondary-color: #89d156;
-          --accent-color: #ffe458;
-          --error-color: #ff3131;
-      }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ErichEdu - Cadastro Professor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: rgb(243 244 246);
+        }
+        
+        .cadastro-container {
+            background: linear-gradient(135deg, #083888 0%, #0a4cb3 100%);
+        }
+        
+        .form-container {
+            backdrop-filter: blur(10px);
+            background-color: rgba(255, 255, 255, 0.95);
+        }
+    </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
-  <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-md">
-    <!-- Logo -->
-    <div class="flex justify-center mb-6">
-      <img src="{{ url_for('static', filename='erichedu-icon.png') }}" alt="ErichEdu Logo" class="w-32 h-32 object-contain rounded-full">
-    </div>
-    
-    <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">Cadastro de Professor</h1>
-
-    <!-- Exibição de mensagens -->
-    {% with messages = get_flashed_messages(with_categories=True) %}
-      {% if messages %}
-        <div class="space-y-2">
-          {% for category, message in messages %}
-            <div class="{{ 'bg-red-100 text-red-800' if category == 'error' else 'bg-green-100 text-green-800' }} p-3 rounded-lg">
-              {{ message }}
+<body>
+    <div class="min-h-screen flex items-center justify-center p-4">
+        <div class="cadastro-container w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row">
+            <!-- Seção de Boas-vindas -->
+            <div class="w-full md:w-1/2 p-8 text-white flex flex-col justify-center items-center text-center">
+                <i class="fas fa-chalkboard-teacher text-6xl mb-6"></i>
+                <h1 class="text-3xl font-bold mb-4">Junte-se ao ErichEdu</h1>
+                <p class="mb-6">Crie sua conta de professor</p>
+                <div class="space-y-4">
+                    <p>Já tem uma conta?</p>
+                    <a href="{{ url_for('prof.login') }}" 
+                       class="block px-6 py-2 border-2 border-white rounded-full hover:bg-white hover:text-[#083888] transition duration-300">
+                        Fazer Login
+                    </a>
+                </div>
             </div>
-          {% endfor %}
+
+            <!-- Formulário de Cadastro -->
+            <div class="w-full md:w-1/2">
+                <div class="form-container p-8 h-full">
+                    <h2 class="text-2xl font-bold text-[#083888] mb-8">Cadastro</h2>
+                    
+                    <!-- Mensagens Flash -->
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="mb-4 p-4 rounded-lg {% if category == 'success' %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <form method="POST" class="space-y-6">
+                        <div>
+                            <label for="nome_completo" class="block text-sm font-medium text-gray-700 mb-2">Nome Completo</label>
+                            <div class="relative">
+                                <i class="fas fa-user absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                <input type="text" 
+                                       id="nome_completo" 
+                                       name="nome_completo" 
+                                       required 
+                                       class="pl-10 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#083888] focus:border-transparent"
+                                       placeholder="Digite seu nome completo">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                            <div class="relative">
+                                <i class="fas fa-envelope absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                <input type="email" 
+                                       id="email" 
+                                       name="email" 
+                                       required 
+                                       class="pl-10 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#083888] focus:border-transparent"
+                                       placeholder="seu@email.com">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="senha" class="block text-sm font-medium text-gray-700 mb-2">Senha</label>
+                            <div class="relative">
+                                <i class="fas fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                <input type="password" 
+                                       id="senha" 
+                                       name="senha" 
+                                       required 
+                                       class="pl-10 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#083888] focus:border-transparent"
+                                       placeholder="Crie uma senha forte">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="confirmar_senha" class="block text-sm font-medium text-gray-700 mb-2">Confirmar Senha</label>
+                            <div class="relative">
+                                <i class="fas fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                <input type="password" 
+                                       id="confirmar_senha" 
+                                       name="confirmar_senha" 
+                                       required 
+                                       class="pl-10 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#083888] focus:border-transparent"
+                                       placeholder="Confirme sua senha">
+                            </div>
+                        </div>
+
+                        <div class="flex items-center">
+                            <input type="checkbox" 
+                                   id="termos" 
+                                   required
+                                   class="h-4 w-4 text-[#083888] focus:ring-[#083888] border-gray-300 rounded">
+                            <label for="termos" class="ml-2 block text-sm text-gray-700">
+                                Li e concordo com os <a href="/termos" class="text-[#083888] hover:underline">termos de uso</a>
+                            </label>
+                        </div>
+
+                        <button type="submit" 
+                                class="w-full bg-[#083888] text-white py-3 px-4 rounded-lg hover:bg-[#0a4cb3] transition duration-300 flex items-center justify-center">
+                            <i class="fas fa-user-plus mr-2"></i>
+                            Criar Conta
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
-      {% endif %}
-    {% endwith %}
+    </div>
 
-    <!-- Formulário de Cadastro -->
-    <form method="POST" class="space-y-4">
-      <div>
-        <label for="nome_completo" class="block text-sm font-medium text-gray-700 mb-2">Nome Completo</label>
-        <input type="text" name="nome_completo" required 
-               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-      </div>
-      <div>
-        <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email</label>
-        <input type="email" name="email" required 
-               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-      </div>
-      <div>
-        <label for="senha" class="block text-sm font-medium text-gray-700 mb-2">Senha</label>
-        <input type="password" name="senha" required 
-               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-      </div>
-      <div>
-        <label for="confirmar_senha" class="block text-sm font-medium text-gray-700 mb-2">Confirmar Senha</label>
-        <input type="password" name="confirmar_senha" required 
-               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-      </div>
-      <button type="submit" 
-              class="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition duration-300">
-        Cadastrar
-      </button>
-    </form>
+    <!-- Link para voltar à página inicial -->
+    <div class="fixed bottom-4 left-4">
+        <a href="{{ url_for('home') }}" 
+           class="flex items-center text-[#083888] hover:underline">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Voltar à página inicial
+        </a>
+    </div>
 
-    <!-- Link para login -->
-    <p class="text-center text-sm text-gray-600 mt-4">
-      Já tem uma conta? 
-      <a href="{{ url_for('prof.login') }}" class="text-blue-500 hover:underline">Faça login aqui</a>
-    </p>
-    
-    {% if message %}
-      <div class="text-center text-red-500 mt-4">
-        {{ message }}
-      </div>
-    {% endif %}
-  </div>
+    <script>
+        // Validação de senha em tempo real
+        const senha = document.getElementById('senha');
+        const confirmarSenha = document.getElementById('confirmar_senha');
+
+        function validatePassword() {
+            if (senha.value != confirmarSenha.value) {
+                confirmarSenha.setCustomValidity('As senhas não coincidem');
+            } else {
+                confirmarSenha.setCustomValidity('');
+            }
+        }
+
+        senha.onchange = validatePassword;
+        confirmarSenha.onkeyup = validatePassword;
+    </script>
 </body>
 </html>

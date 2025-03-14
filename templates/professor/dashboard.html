@@ -9,67 +9,190 @@
     <style>
         :root {
             --primary-color: {{ primary_collor }};
-            --primary-color-hover: {{ primary_collor }}dd;
-            --primary-color-light: {{ primary_collor }}22;
         }
+        
         body {
             background-color: rgb(243 244 246);
         }
+        
         #sidebar {
             background-color: var(--primary-color);
+            z-index: 50;
         }
+        
         .sidebar-link:hover {
-            background-color: var(--primary-color-hover);
+            background-color: rgba(255, 255, 255, 0.1);
         }
-        .section-title {
-            color: var(--primary-color);
+        
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
     </style>
 </head>
 <body>
-    <div class="flex min-h-screen">
+    <div class="flex min-h-screen relative">
         <!-- Sidebar -->
-        <div id="sidebar" class="w-64 h-screen text-white p-5 flex flex-col">
-            <h2 class="text-2xl font-bold mb-6">ErichEdu</h2>
-            <ul class="flex-1">
-                <li><a href="{{ url_for('prof.dashboard') }}" class="sidebar-link block p-2 rounded transition"><i class="fas fa-home mr-3"></i>Início</a></li>
-                <li><a href="{{ url_for('prof.perfil') }}" class="sidebar-link block p-2 rounded transition"><i class="fas fa-user mr-3"></i>Perfil</a></li>
-                <li><a href="{{ url_for('prof.turma_detalhes', turma_id=7) }}" class="sidebar-link block p-2 rounded transition"><i class="fas fa-book mr-3"></i>Minhas Turmas</a></li>
-                <li><a href="{{ url_for('prof.aulas') }}" class="sidebar-link block p-2 rounded transition"><i class="fas fa-calendar-alt mr-3"></i>Agenda</a></li>
-            </ul>
-            <a href="{{ url_for('logout') }}" class="sidebar-link block p-2 rounded transition"><i class="fas fa-sign-out-alt mr-3"></i>Logout</a>
+        <div id="sidebar" class="fixed top-0 left-0 bottom-0 w-64 text-white transform -translate-x-full transition-transform duration-300 ease-in-out md:translate-x-0 md:static">
+            <div class="p-5">
+                <div class="flex items-center mb-8">
+                    <i class="fas fa-graduation-cap text-3xl mr-3"></i>
+                    <h2 class="text-2xl font-bold">ErichEdu - Prof</h2>
+                </div>
+                
+                <nav>
+                    <ul class="space-y-3">
+                        <li>
+                            <a href="{{ url_for('prof.dashboard') }}" class="sidebar-link flex items-center p-3 rounded transition">
+                                <i class="fas fa-home mr-3"></i>Dashboard
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('prof.aulas') }}" class="sidebar-link flex items-center p-3 rounded transition">
+                                <i class="fas fa-book mr-3"></i>Minhas Aulas
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('prof.perfil') }}" class="sidebar-link flex items-center p-3 rounded transition">
+                                <i class="fas fa-user mr-3"></i>Perfil
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('prof.logout') }}" class="sidebar-link flex items-center p-3 rounded transition">
+                                <i class="fas fa-sign-out-alt mr-3"></i>Sair
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
         </div>
 
-        <!-- Conteúdo -->
-        <main class="flex-1 p-8">
-            <header class="mb-6 flex items-center space-x-4">
-                <img src="{{ professor.foto_perfil }}" alt="Foto de Perfil" class="w-12 h-12 rounded-full object-cover">
-                <div>
-                    <h1 class="text-3xl font-bold">Olá, {{ professor.nome_completo }}!</h1>
-                    <p class="text-gray-600">Bem-vindo de volta ao seu painel</p>
+        <!-- Conteúdo Principal -->
+        <main class="flex-1 p-4 md:p-8">
+            <!-- Botão Toggle Sidebar (Mobile) -->
+            <button id="sidebarToggle" class="md:hidden fixed top-4 left-4 z-50 bg-[var(--primary-color)] text-white p-3 rounded-full shadow-lg">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <!-- Cabeçalho -->
+            <header class="mb-8 mt-16 md:mt-0">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <img src="{{ professor.imagem_url or url_for('static', filename='default_profile.png') }}" 
+                             alt="Foto de Perfil" 
+                             class="w-16 h-16 rounded-full object-cover border-4 border-white shadow-lg">
+                        <div>
+                            <h1 class="text-3xl font-bold text-gray-800">Olá, {{ professor.nome_completo }}!</h1>
+                            <p class="text-gray-600">Bem-vindo ao seu dashboard</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-2xl font-bold text-gray-800" id="current-time">00:00</p>
+                        <p class="text-gray-600" id="current-date">00/00/0000</p>
+                    </div>
                 </div>
             </header>
-            
-            <!-- Cartões -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div class="bg-white p-5 rounded-lg shadow-md">
-                    <h2 class="text-xl font-semibold section-title"><i class="fas fa-clock mr-2"></i>Próxima Aula</h2>
-                    {% if proximas_aulas %}
-                        <p>{{ proximas_aulas[0].materia }} - {{ proximas_aulas[0].horario }}</p>
-                    {% else %}
-                        <p>Sem aulas agendadas</p>
-                    {% endif %}
+
+            <!-- Grid de Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Próximas Aulas -->
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover transition duration-300">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-semibold text-gray-800">Próximas Aulas</h2>
+                        <i class="fas fa-clock text-[var(--primary-color)]"></i>
+                    </div>
+                    <div class="space-y-4">
+                        {% for aula in proximas_aulas %}
+                        <div class="border-l-4 border-[var(--primary-color)] pl-4">
+                            <p class="font-semibold">{{ aula.horario.strftime('%H:%M') }}</p>
+                            <p class="text-gray-600">{{ aula.turma.nome }} - Sala {{ aula.sala }}</p>
+                        </div>
+                        {% else %}
+                        <p class="text-gray-500 italic">Não há mais aulas hoje</p>
+                        {% endfor %}
+                    </div>
                 </div>
-                <div class="bg-white p-5 rounded-lg shadow-md">
-                    <h2 class="text-xl font-semibold section-title"><i class="fas fa-users mr-2"></i>Minhas Turmas</h2>
-                    <p>{{ total_turmas }} turmas ativas</p>
+
+                <!-- Turmas -->
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover transition duration-300">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-semibold text-gray-800">Minhas Turmas</h2>
+                        <i class="fas fa-users text-[var(--primary-color)]"></i>
+                    </div>
+                    <div class="space-y-4">
+                        {% for turma in turmas %}
+                        <a href="{{ url_for('prof.turma_detalhes', turma_id=turma.id) }}" 
+                           class="block p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition">
+                            <p class="font-semibold">{{ turma.nome }}</p>
+                            <p class="text-sm text-gray-600">{{ turma.alunos|length }} alunos</p>
+                        </a>
+                        {% endfor %}
+                    </div>
                 </div>
-                <div class="bg-white p-5 rounded-lg shadow-md">
-                    <h2 class="text-xl font-semibold section-title"><i class="fas fa-calendar-check mr-2"></i>Compromissos</h2>
-                    <p>{{ compromissos_pendentes }} pendentes</p>
+
+                <!-- Ações Rápidas -->
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover transition duration-300">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-semibold text-gray-800">Ações Rápidas</h2>
+                        <i class="fas fa-bolt text-[var(--primary-color)]"></i>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <a href="{{ url_for('prof.aulas') }}" 
+                           class="flex flex-col items-center p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition text-center">
+                            <i class="fas fa-calendar-alt text-[var(--primary-color)] text-2xl mb-2"></i>
+                            <span>Ver Horários</span>
+                        </a>
+                        <a href="{{ url_for('prof.perfil') }}" 
+                           class="flex flex-col items-center p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition text-center">
+                            <i class="fas fa-user-edit text-[var(--primary-color)] text-2xl mb-2"></i>
+                            <span>Editar Perfil</span>
+                        </a>
+                    </div>
                 </div>
             </div>
         </main>
     </div>
+
+    <script>
+        // Atualização de data e hora
+        function updateDateTime() {
+            const now = new Date();
+            const timeElement = document.getElementById('current-time');
+            const dateElement = document.getElementById('current-date');
+            
+            timeElement.textContent = now.toLocaleTimeString('pt-BR', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            
+            dateElement.textContent = now.toLocaleDateString('pt-BR', { 
+                day: '2-digit', 
+                month: '2-digit', 
+                year: 'numeric' 
+            });
+        }
+
+        // Toggle Sidebar (Mobile)
+        document.getElementById('sidebarToggle').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('-translate-x-full');
+        });
+
+        // Inicialização
+        updateDateTime();
+        setInterval(updateDateTime, 1000);
+
+        // Fechar sidebar ao clicar fora (Mobile)
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            
+            if (!sidebar.contains(event.target) && 
+                !sidebarToggle.contains(event.target) && 
+                window.innerWidth < 768) {
+                sidebar.classList.add('-translate-x-full');
+            }
+        });
+    </script>
 </body>
 </html>
