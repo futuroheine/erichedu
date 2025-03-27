@@ -20,6 +20,11 @@ from datetime import datetime, timedelta
 import pytz, os
 import mimetypes
 from io import BytesIO
+from flask_wtf import FlaskForm
+from wtforms import SelectMultipleField
+from wtforms.validators import DataRequired
+from flask_migrate import Migrate
+
 
 # Criar instância do SQLAlchemy SEM passar app ainda
 db = SQLAlchemy()
@@ -34,8 +39,11 @@ db.init_app(app)
 
 login_manager = LoginManager(app)
 socketio = SocketIO(app)
+migrate = Migrate(app, db)
 
-
+import logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 cred = credentials.Certificate("serviceAccountKey.json")
 if not firebase_admin._apps:
@@ -213,6 +221,518 @@ class Teacher(db.Model, UserMixin):
     # O método get_id() inclui um prefixo para diferenciar dos alunos
     def get_id(self):
         return f"teacher-{self.id}"
+    
+
+from datetime import datetime, timedelta
+from enum import Enum
+from sqlalchemy.orm import relationship
+from flask_login import current_user
+
+class CleaningModelType(Enum):
+    GROUPS = 'groups'
+    PAIRS = 'pairs'
+
+class CleaningGroup(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    turma_id = db.Column(db.Integer, db.ForeignKey('turma.id'), nullable=False)
+    nome = db.Column(db.String(100), nullable=False)  # Group name or identifier
+    modelo = db.Column(db.Enum(CleaningModelType), nullable=False)
+    
+    # Relationships
+    turma = db.relationship('Turma', back_populates='cleaning_groups')
+    membros = db.relationship('User', secondary='cleaning_group_member', back_populates='cleaning_groups')
+    schedule_entries = db.relationship('CleaningScheduleEntry', back_populates='grupo')
+
+
+
+class CleaningEntryStatus(Enum):
+    PENDING = 'pendente'
+    COMPLETED = 'concluido'
+    PARTIAL = 'parcial'
+    MISSED = 'nao_cumprido'
+
+class CleaningScheduleEntry(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    turma_id = db.Column(db.Integer, db.ForeignKey('turma.id'), nullable=False)
+    grupo_id = db.Column(db.Integer, db.ForeignKey('cleaning_group.id'), nullable=False)
+    data_limpeza = db.Column(db.Date, nullable=False)
+    status = db.Column(db.String(20), default='pendente')  # pendente, concluido, reagendado
+    
+    # Relationships
+    turma = db.relationship('Turma', back_populates='cleaning_schedules')
+    grupo = db.relationship('CleaningGroup', back_populates='schedule_entries')
+    membros_presentes = db.relationship('User', secondary='cleaning_entry_present_members')
+    confirmacao_status = db.Column(db.Enum(CleaningEntryStatus), default=CleaningEntryStatus.PENDING)
+    confirmacao_data = db.Column(db.DateTime, nullable=True)
+    confirmado_por_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    
+    # Relationship
+    confirmado_por = db.relationship('User', foreign_keys=[confirmado_por_id])
+    
+    def pode_confirmar(self, confirmador):
+        """
+        Verifica se o usuário pode confirmar a limpeza
+        Apenas o representante da turma pode confirmar
+        """
+        return confirmador.is_representante and confirmador.turma_id == self.turma_id
+
+    def confirmar_limpeza(self, confirmador, status):
+        """
+        Confirma o status da limpeza
+        """
+        if not self.pode_confirmar(confirmador):
+            raise ValueError("Apenas o representante pode confirmar a limpeza")
+        
+        self.confirmacao_status = status
+        self.confirmacao_data = datetime.now()
+        self.confirmado_por = confirmador
+        
+        # Se a limpeza não foi completamente cumprida, gera uma nova entrada
+        if status != CleaningEntryStatus.COMPLETED:
+            self._gerar_nova_entrada_para_grupo_nao_cumprido()
+    
+    def _gerar_nova_entrada_para_grupo_nao_cumprido(self):
+        """
+        Gera uma nova entrada de limpeza para o próximo dia útil
+        """
+        from datetime import timedelta
+        
+        # Encontra o próximo dia útil
+        proxima_data = self.data_limpeza + timedelta(days=1)
+        while proxima_data.weekday() >= 5 or DiaSemAula.query.filter_by(data=proxima_data).first():
+            proxima_data += timedelta(days=1)
+        
+        # Cria uma nova entrada para o mesmo grupo
+        nova_entrada = CleaningScheduleEntry(
+            turma_id=self.turma_id,
+            grupo_id=self.grupo_id,
+            data_limpeza=proxima_data,
+            status='pendente',
+            confirmacao_status=CleaningEntryStatus.PENDING
+        )
+        db.session.add(nova_entrada)
+
+# Association tables
+cleaning_group_member = db.Table('cleaning_group_member',
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
+    db.Column('cleaning_group_id', db.Integer, db.ForeignKey('cleaning_group.id'), primary_key=True)
+)
+
+cleaning_entry_present_members = db.Table('cleaning_entry_present_members',
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
+    db.Column('cleaning_schedule_entry_id', db.Integer, db.ForeignKey('cleaning_schedule_entry.id'), primary_key=True)
+)
+
+# Add relationships to existing User model
+User.cleaning_groups = db.relationship('CleaningGroup', secondary='cleaning_group_member', back_populates='membros')
+Turma.cleaning_groups = db.relationship('CleaningGroup', back_populates='turma')
+Turma.cleaning_schedules = db.relationship('CleaningScheduleEntry', back_populates='turma')
+
+# Flask route for checking cleaning assignment
+@app.route('/cleaning/today', methods=['GET'])
+@login_required
+def get_todays_cleaning_assignment():
+    """
+    Check today's cleaning assignment for the current user's class
+    """
+    today = datetime.now().date()
+    
+    # Find the user's class
+    turma = current_user.turma
+    
+    # Find today's cleaning schedule entry for the class
+    cleaning_entry = CleaningScheduleEntry.query.filter(
+        CleaningScheduleEntry.turma_id == turma.id,
+        CleaningScheduleEntry.data_limpeza == today
+    ).first()
+    
+    if not cleaning_entry:
+        return jsonify({
+            'has_assignment': False,
+            'message': 'No cleaning assignment for today'
+        })
+    
+    # Check if current user is in the assigned group
+    is_user_in_group = current_user in cleaning_entry.grupo.membros
+    
+    return jsonify({
+        'has_assignment': is_user_in_group,
+        'group_name': cleaning_entry.grupo.nome,
+        'cleaning_date': today.isoformat(),
+        'group_members': [user.nome_completo for user in cleaning_entry.grupo.membros]
+    })
+def generate_monthly_cleaning_schedule(turma, cleaning_groups, model_type):
+    """
+    Generate a monthly cleaning schedule with proper rotation
+    
+    :param turma: Turma object
+    :param cleaning_groups: List of CleaningGroup objects
+    :param model_type: CleaningModelType (groups or pairs)
+    """
+    today = datetime.now().date()
+    month_start = today.replace(day=1)
+    month_end = (month_start + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+    
+    current_date = month_start
+    group_index = 0
+    
+    # Remove existing schedule entries for this month and turma
+    CleaningScheduleEntry.query.filter(
+        CleaningScheduleEntry.turma_id == turma.id,
+        CleaningScheduleEntry.data_limpeza.between(month_start, month_end)
+    ).delete()
+    
+    while current_date <= month_end:
+        # Skip weekends
+        if current_date.weekday() >= 5:
+            current_date += timedelta(days=1)
+            continue
+        
+        # Skip holidays
+        if DiaSemAula.query.filter_by(data=current_date).first():
+            current_date += timedelta(days=1)
+            continue
+        
+        # Create schedule entry for this group
+        schedule_entry = CleaningScheduleEntry(
+            turma_id=turma.id,
+            grupo_id=cleaning_groups[group_index].id,
+            data_limpeza=current_date,
+            confirmacao_status=CleaningEntryStatus.PENDING
+        )
+        db.session.add(schedule_entry)
+        
+        # If there's only one group, it cleans every day
+        if len(cleaning_groups) == 1:
+            group_index = 0
+        else:
+            # Rotate between the groups
+            group_index = (group_index + 1) % len(cleaning_groups)
+        
+        current_date += timedelta(days=1)
+    
+    db.session.commit()
+
+
+# Form for creating cleaning groups
+class CleaningGroupForm(FlaskForm):
+    nome = StringField('Nome do Grupo', validators=[DataRequired()])
+    modelo = SelectField('Modelo de Limpeza', 
+        choices=[(model.value, model.name) for model in CleaningModelType], 
+        validators=[DataRequired()]
+    )
+    membros = SelectMultipleField('Membros do Grupo', coerce=int, validators=[DataRequired()])
+    submit = SubmitField('Criar Grupo de Limpeza')
+
+from werkzeug.exceptions import BadRequest
+
+@app.route('/confirmar_limpeza/<int:cleaning_entry_id>', methods=['POST'])
+@login_required
+def confirmar_limpeza(cleaning_entry_id):
+    """Versão 2.0 da rota de confirmação de limpeza com:
+    - Validação reforçada
+    - Logging detalhado
+    - Tratamento de erros granular
+    """
+    logger.info(f"Iniciando confirmação para entrada {cleaning_entry_id}")
+    
+    try:
+        # 1. Obter entrada com tratamento seguro
+        cleaning_entry = CleaningScheduleEntry.query.get(cleaning_entry_id)
+        if not cleaning_entry:
+            logger.warning(f"Entrada {cleaning_entry_id} não encontrada")
+            return jsonify({
+                "error": "not_found",
+                "message": "Registro de limpeza não existe"
+            }), 404
+
+        # 2. Verificar permissões com log
+        logger.debug(f"Verificando permissões para {current_user.id}")
+        if not cleaning_entry.pode_confirmar(current_user):
+            logger.warning(f"Acesso negado para usuário {current_user.id}")
+            return jsonify({
+                "error": "forbidden",
+                "message": "Acesso não autorizado"
+            }), 403
+
+        # 3. Parser universal de dados
+        data = {}
+        if request.content_type == 'application/json':
+            data = request.get_json() or {}
+        else:
+            data = request.form.to_dict()
+
+        logger.debug(f"Dados recebidos: {data}")
+
+        # 4. Validação do status
+        if 'status' not in data:
+            logger.error("Campo 'status' ausente")
+            raise BadRequest("Campo 'status' é obrigatório")
+            
+        raw_status = data['status'].upper()
+        try:
+            status = CleaningEntryStatus[raw_status]
+        except KeyError:
+            valid_statuses = [s.name for s in CleaningEntryStatus]
+            logger.error(f"Status inválido: {raw_status}. Válidos: {valid_statuses}")
+            return jsonify({
+                "error": "invalid_status",
+                "message": "Status inválido",
+                "allowed_values": valid_statuses
+            }), 400
+
+        # 5. Execução da operação
+        logger.info(f"Atualizando status para {status.name}")
+        cleaning_entry.confirmar_limpeza(current_user, status)
+        
+        db.session.commit()
+        logger.info("Alterações confirmadas no banco")
+
+        # 6. Resposta de sucesso
+        return jsonify({
+            "success": True,
+            "new_status": status.name,
+            "entry_id": cleaning_entry.id,
+            "group": cleaning_entry.grupo.nome,
+            "date": cleaning_entry.data_limpeza.isoformat()
+        })
+
+    except BadRequest as e:
+        logger.error(f"Erro de requisição: {str(e)}")
+        return jsonify({
+            "error": "bad_request",
+            "message": str(e)
+        }), 400
+        
+    except Exception as e:
+        db.session.rollback()
+        logger.critical(f"Erro interno: {str(e)}", exc_info=True)
+        return jsonify({
+            "error": "server_error",
+            "message": "Erro interno no processamento"
+        }), 500
+
+# Route for creating cleaning groups
+@app.route('/cleaning/create-group', methods=['GET', 'POST'])
+@login_required
+def create_cleaning_group():
+    form = CleaningGroupForm()
+    
+    # Populate members dropdown with users from the same class
+    form.membros.choices = [(user.id, user.nome_completo) for user in current_user.turma.alunos]
+    
+    if form.validate_on_submit():
+        new_group = CleaningGroup(
+            turma_id=current_user.turma.id,
+            nome=form.nome.data,
+            modelo=CleaningModelType(form.modelo.data)
+        )
+        db.session.add(new_group)
+        
+        # Add members to the group
+        for user_id in form.membros.data:
+            user = User.query.get(user_id)
+            new_group.membros.append(user)
+        
+        db.session.commit()
+        
+        # Generate schedule for the new group
+        generate_monthly_cleaning_schedule(
+            current_user.turma, 
+            [new_group], 
+            CleaningModelType(form.modelo.data)
+        )
+        
+        flash('Grupo de limpeza criado com sucesso!', 'success')
+        return redirect(url_for('cleaning_groups'))
+    
+    return render_template('create_cleaning_group.html', form=form)
+
+from flask import render_template, redirect, url_for, flash
+from flask_login import login_required, current_user
+from wtforms import StringField, SelectMultipleField, SubmitField
+from wtforms.validators import DataRequired
+
+class CriarGrupoLimpezaForm(FlaskForm):
+    nome = StringField('Nome do Grupo', validators=[DataRequired()])
+    modelo = SelectField('Modelo de Limpeza', 
+        choices=[
+            ('groups', 'Por Grupos'), 
+            ('pairs', 'Por Duplas')
+        ], 
+        validators=[DataRequired()]
+    )
+    membros = SelectMultipleField('Membros do Grupo', 
+        coerce=int, 
+        validators=[DataRequired()]
+    )
+    submit = SubmitField('Criar Grupo')
+
+@app.route('/grupos_limpeza', methods=['GET'])
+@login_required
+def grupos_limpeza():
+    # Verifica se o usuário é representante
+    if not current_user.is_representante:
+        flash('Apenas representantes podem acessar esta página.', 'error')
+        return redirect(url_for('home'))
+    
+    # Busca todos os grupos de limpeza da turma do usuário
+    grupos_limpeza = CleaningGroup.query.filter_by(turma_id=current_user.turma_id).all()
+    
+    # Busca entradas de limpeza para o mês atual
+    hoje = datetime.now().date()
+    primeiro_dia_mes = hoje.replace(day=1)
+    ultimo_dia_mes = (primeiro_dia_mes + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+    
+    entradas_limpeza = CleaningScheduleEntry.query.filter(
+        CleaningScheduleEntry.turma_id == current_user.turma_id,
+        CleaningScheduleEntry.data_limpeza.between(primeiro_dia_mes, ultimo_dia_mes)
+    ).order_by(CleaningScheduleEntry.data_limpeza).all()
+    
+    return render_template('grupos_limpeza.html', 
+                           grupos_limpeza=grupos_limpeza, 
+                           entradas_limpeza=entradas_limpeza,
+                           primary_collor=determinar_cor_primaria(current_user.turma_id))
+
+@app.route('/criar_grupo_limpeza', methods=['GET', 'POST'])
+@login_required
+def criar_grupo_limpeza():
+    # Verifica se o usuário é representante
+    if not current_user.is_representante:
+        flash('Apenas representantes podem criar grupos de limpeza.', 'error')
+        return redirect(url_for('home'))
+    
+    form = CriarGrupoLimpezaForm()
+    
+    # Popula o campo de membros com alunos da turma
+    form.membros.choices = [
+        (aluno.id, aluno.nome_completo) 
+        for aluno in current_user.turma.alunos
+    ]
+    
+    if form.validate_on_submit():
+        # Cria um novo grupo de limpeza
+        novo_grupo = CleaningGroup(
+            turma_id=current_user.turma_id,
+            nome=form.nome.data,
+            modelo=CleaningModelType(form.modelo.data)
+        )
+        db.session.add(novo_grupo)
+        
+        # Adiciona membros ao grupo
+        for user_id in form.membros.data:
+            user = User.query.get(user_id)
+            novo_grupo.membros.append(user)
+        
+        try:
+            db.session.commit()
+            flash('Grupo de limpeza criado com sucesso!', 'success')
+            
+            # Gera o cronograma de limpeza para o novo grupo
+            generate_monthly_cleaning_schedule(
+                current_user.turma, 
+                [novo_grupo], 
+                CleaningModelType(form.modelo.data)
+            )
+            
+            return redirect(url_for('grupos_limpeza'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Erro ao criar grupo: {str(e)}', 'error')
+    
+    return render_template('criar_grupo_limpeza.html', 
+                           form=form, 
+                           primary_collor=determinar_cor_primaria(current_user.turma_id))
+
+@app.route('/editar_grupo_limpeza/<int:grupo_id>', methods=['GET', 'POST'])
+@login_required
+def editar_grupo_limpeza(grupo_id):
+    # Verifica se o usuário é representante
+    if not current_user.is_representante:
+        flash('Apenas representantes podem editar grupos de limpeza.', 'error')
+        return redirect(url_for('home'))
+    
+    grupo = CleaningGroup.query.get_or_404(grupo_id)
+    
+    # Verifica se o grupo pertence à turma do usuário
+    if grupo.turma_id != current_user.turma_id:
+        flash('Você não tem permissão para editar este grupo.', 'error')
+        return redirect(url_for('grupos_limpeza'))
+    
+    form = CriarGrupoLimpezaForm(obj=grupo)
+    
+    # Popula o campo de membros com alunos da turma
+    form.membros.choices = [
+        (aluno.id, aluno.nome_completo) 
+        for aluno in current_user.turma.alunos
+    ]
+    
+    # Pré-seleciona os membros atuais do grupo
+    form.membros.data = [membro.id for membro in grupo.membros]
+    
+    if form.validate_on_submit():
+        # Atualiza as informações do grupo
+        grupo.nome = form.nome.data
+        grupo.modelo = CleaningModelType(form.modelo.data)
+        
+        # Limpa os membros atuais
+        grupo.membros.clear()
+        
+        # Adiciona novos membros
+        for user_id in form.membros.data:
+            user = User.query.get(user_id)
+            grupo.membros.append(user)
+        
+        try:
+            db.session.commit()
+            flash('Grupo de limpeza atualizado com sucesso!', 'success')
+            
+            # Regenera o cronograma de limpeza
+            generate_monthly_cleaning_schedule(
+                current_user.turma, 
+                [grupo], 
+                CleaningModelType(form.modelo.data)
+            )
+            
+            return redirect(url_for('grupos_limpeza'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Erro ao atualizar grupo: {str(e)}', 'error')
+    
+    return render_template('criar_grupo_limpeza.html', 
+                           form=form, 
+                           editing=True, 
+                           primary_collor=determinar_cor_primaria(current_user.turma_id))
+
+@app.route('/excluir_grupo_limpeza/<int:grupo_id>')
+@login_required
+def excluir_grupo_limpeza(grupo_id):
+    # Verifica se o usuário é representante
+    if not current_user.is_representante:
+        flash('Apenas representantes podem excluir grupos de limpeza.', 'error')
+        return redirect(url_for('home'))
+    
+    grupo = CleaningGroup.query.get_or_404(grupo_id)
+    
+    # Verifica se o grupo pertence à turma do usuário
+    if grupo.turma_id != current_user.turma_id:
+        flash('Você não tem permissão para excluir este grupo.', 'error')
+        return redirect(url_for('grupos_limpeza'))
+    
+    try:
+        # Exclui entradas de cronograma de limpeza relacionadas
+        CleaningScheduleEntry.query.filter_by(grupo_id=grupo_id).delete()
+        
+        # Exclui o grupo
+        db.session.delete(grupo)
+        db.session.commit()
+        
+        flash('Grupo de limpeza excluído com sucesso!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Erro ao excluir grupo: {str(e)}', 'error')
+    
+    return redirect(url_for('grupos_limpeza'))
 
 # Configurações do Firebase Storage
 storage_client = storage.Client.from_service_account_json("serviceAccountKey.json")
@@ -484,7 +1004,6 @@ def inject_user():
         user = db.session.get(User, user_id)  # Método atualizado
         return {'user': user}  # Variável user disponível em todos os templates
     return {'user': None}  # Caso o usuário não esteja logado
-
 @app.route('/home')
 @login_required
 def home():
@@ -520,9 +1039,31 @@ def home():
 
     # Buscar apenas os avisos relacionados à turma do usuário
     avisos = Aviso.query.join(aviso_turma).filter(aviso_turma.c.turma_id == turma_id).order_by(Aviso.timestamp.desc()).all()
-    
-    return render_template('home.html', user=user, proxima_aula=proxima_aula, avisos=avisos, primary_collor=cor_primaria, hour=horario_atual)
 
+    # Buscar a tarefa de limpeza para o dia de hoje
+    today = datetime.now().date()
+    cleaning_entry = CleaningScheduleEntry.query.filter(
+        CleaningScheduleEntry.turma_id == current_user.turma_id,
+        CleaningScheduleEntry.data_limpeza == today
+    ).first()
+
+    cleaning_assignment = None
+    if cleaning_entry:
+        cleaning_assignment = {
+            'grupo_nome': cleaning_entry.grupo.nome,
+            'membros': [member.nome_completo for member in cleaning_entry.grupo.membros],
+            'data': cleaning_entry.data_limpeza,
+            'is_current_user_assigned': current_user in cleaning_entry.grupo.membros
+        }
+
+    return render_template('home.html', 
+        user=user, 
+        proxima_aula=proxima_aula, 
+        avisos=avisos, 
+        primary_collor=cor_primaria, 
+        hour=horario_atual,
+        cleaning_assignment=cleaning_assignment
+    )
 
 @app.route('/logout')
 def logout():

@@ -129,6 +129,37 @@
         {% endif %}
     </div>
 </div>
+<!-- Limpeza de Sala -->
+<div class="bg-white p-5 rounded-lg shadow-md hover:shadow-lg transition">
+    <h2 class="text-xl font-semibold mb-3 section-title">
+        <i class="fas fa-broom mr-2"></i>Limpeza de Sala
+    </h2>
+    <div class="text-gray-700">
+        {% if cleaning_assignment %}
+            <div class="flex items-center justify-between mb-3">
+                <div>
+                    <p><strong>Grupo: {{ cleaning_assignment.grupo_nome }}</strong></p>
+                    <p>Membros:</p>
+                    <ul class="list-disc pl-5">
+                        {% for membro in cleaning_assignment.membros %}
+                            <li>{{ membro }}</li>
+                        {% endfor %}
+                    </ul>
+                    <p class="mt-2 text-sm">Data: {{ cleaning_assignment.data.strftime('%d/%m/%Y') }}</p>
+                </div>
+                <div class="bg-green-100 text-green-800 font-bold px-4 py-2 rounded-lg">
+                    {% if cleaning_assignment.is_current_user_assigned %}
+                        Sua vez!
+                    {% else %}
+                        Outro grupo
+                    {% endif %}
+                </div>
+            </div>
+        {% else %}
+            <p>Nenhuma atribuição de limpeza encontrada</p>
+        {% endif %}
+    </div>
+</div>
 
 <script>
     // Variável de hora do backend
@@ -215,6 +246,11 @@
                             <a href="{{ url_for('marcar_faltas',  turma_id=user.turma_id) }}" class="quick-action p-3 rounded text-center hover:opacity-80 transition">
                                 <i class="fas fa-calendar-alt block mb-2"></i>Ver Faltas
                             </a>
+                                        <!-- New link for managing cleaning groups -->
+                            <a href="{{ url_for('grupos_limpeza') }}" class="quick-action p-3 rounded text-center hover:opacity-80 transition">
+                                <i class="fas fa-broom block mb-2"></i>Grupos de Limpeza
+                            </a>
+                            
                         {% endif %}
                         
                         {% if current_user.is_gremio %}

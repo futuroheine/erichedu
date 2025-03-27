@@ -68,6 +68,12 @@
             object-fit: contain;
         }
 
+        .modal-document {
+            width: 100%;
+            height: 70vh;
+            border: none;
+        }
+
         .modal-info {
             background-color: white;
             padding: 1rem;
@@ -107,6 +113,34 @@
         .action-button:hover {
             background-color: var(--primary-color-hover);
         }
+
+        .document-card {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            background-color: #f8f9fa;
+            margin-top: 0.75rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .document-card:hover {
+            background-color: #e9ecef;
+        }
+
+        .document-icon {
+            font-size: 1.5rem;
+        }
+
+        .document-info {
+            flex: 1;
+        }
+
+        .pdf-icon { color: #e53935; }
+        .doc-icon { color: #1565c0; }
+        .ppt-icon { color: #e64a19; }
     </style>
 </head>
 <body>
@@ -171,9 +205,46 @@
                                      data-subject="{{ materia.nome }}"
                                      data-professor="{{ materia.professor }}"
                                      data-day="{{ materia.dia_da_semana }}"
+                                     data-type="image"
                                      onclick="openModal(this)">
                             {% else %}
                                 <p class="mt-3 text-gray-500">Imagem não disponível.</p>
+                            {% endif %}
+                            
+                            <!-- Documents Section -->
+                            {% if materia.documentos %}
+                                <div class="mt-4">
+                                    <h3 class="font-semibold text-gray-700 mb-2">Documentos:</h3>
+                                    {% for doc in materia.documentos %}
+                                        <div class="document-card" 
+                                             data-url="{{ doc.url }}"
+                                             data-filename="{{ doc.nome }}"
+                                             data-filetype="{{ doc.tipo }}"
+                                             data-subject="{{ materia.nome }}"
+                                             data-professor="{{ materia.professor }}"
+                                             data-day="{{ materia.dia_da_semana }}"
+                                             onclick="openDocumentModal(this)">
+                                            <div class="document-icon">
+                                                {% if doc.tipo == 'pdf' %}
+                                                    <i class="fas fa-file-pdf pdf-icon"></i>
+                                                {% elif doc.tipo == 'docx' or doc.tipo == 'doc' %}
+                                                    <i class="fas fa-file-word doc-icon"></i>
+                                                {% elif doc.tipo == 'pptx' or doc.tipo == 'ppt' %}
+                                                    <i class="fas fa-file-powerpoint ppt-icon"></i>
+                                                {% else %}
+                                                    <i class="fas fa-file"></i>
+                                                {% endif %}
+                                            </div>
+                                            <div class="document-info">
+                                                <div class="font-medium">{{ doc.nome }}</div>
+                                                <div class="text-xs text-gray-500">{{ doc.tamanho }}</div>
+                                            </div>
+                                            <div>
+                                                <i class="fas fa-download text-gray-500"></i>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
                             {% endif %}
                         </div>
                     </div>
@@ -188,7 +259,7 @@
         </main>
     </div>
 
-    <!-- Modal -->
+    <!-- Image Modal -->
     <div id="imageModal" class="modal" onclick="closeModal()">
         <span class="close-modal" onclick="closeModal()">&times;</span>
         <div class="modal-content" onclick="event.stopPropagation()">
@@ -198,11 +269,34 @@
                 <p id="modalProfessor" class="text-gray-700"></p>
                 <p id="modalDay" class="text-gray-700"></p>
                 <div class="action-buttons">
-                    <button onclick="downloadImage()" class="action-button">
+                    <button onclick="downloadMedia()" class="action-button">
                         <i class="fas fa-download"></i>
                         Baixar
                     </button>
-                    <button onclick="shareImage()" class="action-button">
+                    <button onclick="shareMedia()" class="action-button">
+                        <i class="fas fa-share-alt"></i>
+                        Compartilhar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Document Modal -->
+    <div id="documentModal" class="modal" onclick="closeModal()">
+        <span class="close-modal" onclick="closeModal()">&times;</span>
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <iframe id="documentViewer" class="modal-document" src=""></iframe>
+            <div class="modal-info">
+                <h2 id="docModalTitle" class="text-2xl font-bold mb-2"></h2>
+                <p id="docModalFilename" class="text-gray-700"></p>
+                <p id="docModalProfessor" class="text-gray-700"></p>
+                <div class="action-buttons">
+                    <button onclick="downloadDocument()" class="action-button">
+                        <i class="fas fa-download"></i>
+                        Baixar
+                    </button>
+                    <button onclick="shareDocument()" class="action-button">
                         <i class="fas fa-share-alt"></i>
                         Compartilhar
                     </button>
@@ -230,109 +324,15 @@
             }
         });
 
-        // Modal functionality
+        // Variables to store current media information
+        let currentMediaUrl = '';
+        let currentMediaFilename = '';
+        let currentMediaType = '';
+
+        // Image Modal functionality
         function openModal(imageElement) {
             const modal = document.getElementById('imageModal');
             const modalImage = document.getElementById('modalImage');
             const modalTitle = document.getElementById('modalTitle');
             const modalProfessor = document.getElementById('modalProfessor');
-            const modalDay = document.getElementById('modalDay');
-
-            modalImage.src = imageElement.src;
-            modalImage.alt = imageElement.alt;
-            modalTitle.textContent = imageElement.dataset.subject;
-            modalProfessor.textContent = `Professor: ${imageElement.dataset.professor}`;
-            modalDay.textContent = `Dia da Semana: ${imageElement.dataset.day}`;
-
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeModal() {
-            const modal = document.getElementById('imageModal');
-            modal.classList.remove('active');
-            document.body.style.overflow = 'auto';
-        }
-
-        // Download image function
-        async function downloadImage() {
-            const image = document.getElementById('modalImage');
-            const imageUrl = image.src;
-            const fileName = `materia-${document.getElementById('modalTitle').textContent.toLowerCase().replace(/\s+/g, '-')}.jpg`;
-
-            try {
-                const response = await fetch(imageUrl);
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = fileName;
-                document.body.appendChild(a);
-                a.click();
-                window.URL.revokeObjectURL(url);
-                document.body.removeChild(a);
-            } catch (error) {
-                console.error('Erro ao baixar a imagem:', error);
-                alert('Não foi possível baixar a imagem. Por favor, tente novamente.');
-            }
-        }
-
-        // Share image function
-     // Updated Share image function
-     async function shareImage() {
-            const image = document.getElementById('modalImage');
-            const title = document.getElementById('modalTitle').textContent;
-            
-            try {
-                if (navigator.share) {
-                    // Fetch the image
-                    const response = await fetch(image.src);
-                    const blob = await response.blob();
-                    
-                    // Create a File object with proper name and type
-                    const file = new File([blob], 'subject-image.jpg', { type: blob.type });
-                    
-                    // Create array with the file
-                    const filesArray = [file];
-                    
-                    // Share data object
-                    const shareData = {
-                        title: title,
-                        text: `Matéria: ${title}`,
-                    };
-
-                    // Check if we can share files (try-catch because iOS might throw)
-                    try {
-                        shareData.files = filesArray;
-                        await navigator.share(shareData);
-                    } catch (error) {
-                        // If sharing with files fails, try without files (fallback for iOS)
-                        delete shareData.files;
-                        shareData.url = image.src; // Add the image URL instead
-                        await navigator.share(shareData);
-                    }
-                } else {
-                    // Fallback for browsers that don't support Web Share API
-                    const fallbackUrl = image.src;
-                    const textArea = document.createElement('textarea');
-                    textArea.value = fallbackUrl;
-                    document.body.appendChild(textArea);
-                    textArea.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(textArea);
-                    alert('Link da imagem copiado para a área de transferência!');
-                }
-            } catch (error) {
-                console.error('Erro ao compartilhar:', error);
-                alert('Não foi possível compartilhar a imagem. Por favor, tente novamente.');
-            }
-        }
-        // Close modal with Escape key
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                closeModal();
-            }
-        });
-    </script>
-</body>
-</html>
+            const modalDay =

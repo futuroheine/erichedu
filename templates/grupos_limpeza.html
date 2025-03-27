@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grupos de Limpeza - ErichEdu</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: {{ primary_collor }};
+            --primary-color-hover: {{ primary_collor }}dd;
+            --primary-color-light: {{ primary_collor }}22;
+        }
+        
+        .calendar {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .calendar th {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px;
+            text-align: center;
+        }
+        
+        .calendar td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            height: 100px;
+            vertical-align: top;
+        }
+        
+        .calendar .date-number {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .calendar .other-month {
+            background-color: #f8f8f8;
+            color: #aaa;
+        }
+        
+        .calendar .today {
+            background-color: var(--primary-color-light);
+        }
+        
+        .calendar .cleaning-event {
+            padding: 6px;
+            margin-top: 8px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .calendar .cleaning-event:hover {
+            filter: brightness(0.95);
+        }
+        
+        .calendar .status-pendente {
+            background-color: #fef3c7;
+            border-left: 3px solid #f59e0b;
+        }
+        
+        .calendar .status-concluido {
+            background-color: #d1fae5;
+            border-left: 3px solid #10b981;
+        }
+        
+        .calendar .status-nao_cumprido {
+            background-color: #fee2e2;
+            border-left: 3px solid #ef4444;
+        }
+        
+        .calendar .event-tooltip {
+            display: none;
+            position: absolute;
+            background: white;
+            border: 1px solid #ddd;
+            padding: 8px;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            z-index: 100;
+            width: 200px;
+        }
+        
+        .pulse-animation {
+            animation: pulse 0.5s;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            display: inline-block;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        
+        @media (max-width: 768px) {
+            .calendar th, .calendar td {
+                padding: 4px;
+                font-size: 0.8rem;
+            }
+            
+            .calendar td {
+                height: 80px;
+            }
+            
+            .calendar .date-number {
+                margin-bottom: 2px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container mx-auto px-4 py-8">
+    <div class="bg-white shadow-md rounded-lg">
+        <div class="bg-gray-200 p-4 rounded-t-lg flex justify-between items-center" style="background-color: {{ primary_collor }};">
+            <h1 class="text-2xl font-bold text-white">
+                <i class="fas fa-broom mr-3" style="color: #FFFFFF;"></i>Grupos de Limpeza
+            </h1>
+            
+            <a href="{{ url_for('criar_grupo_limpeza') }}" class="bg-{{ primary_collor }} text-white px-4 py-2 rounded hover:opacity-90 transition">
+                <i class="fas fa-plus mr-2"></i>Criar Novo Grupo
+            </a>
+        </div>
+
+        <div class="p-6">
+            <!-- Cleaning Groups Section -->
+            <div class="mb-8">
+                <h2 class="text-xl font-semibold mb-4 text-{{ primary_collor }}">Meus Grupos</h2>
+                {% if grupos_limpeza %}
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {% for grupo in grupos_limpeza %}
+                        <div class="bg-gray-50 border rounded-lg p-4 shadow-sm">
+                            <div class="flex justify-between items-center mb-4">
+                                <h2 class="text-xl font-semibold text-{{ primary_collor }}">{{ grupo.nome }}</h2>
+                                <span class="badge bg-{{ primary_collor }} text-white px-2 py-1 rounded text-sm">
+                                    {{ grupo.modelo.value.capitalize() }}
+                                </span>
+                            </div>
+
+                            <div class="mb-4">
+                                <h3 class="font-medium mb-2">Membros ({{ grupo.membros|length }}):</h3>
+                                <ul class="space-y-1">
+                                    {% for membro in grupo.membros %}
+                                    <li class="flex items-center">
+                                        <i class="fas fa-user mr-2 text-gray-500"></i>
+                                        {{ membro.nome_completo }}
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+
+                            <div class="border-t pt-3 flex justify-between">
+                                <a href="{{ url_for('editar_grupo_limpeza', grupo_id=grupo.id) }}" 
+                                   class="text-{{ primary_collor }} hover:underline">
+                                    <i class="fas fa-edit mr-2"></i>Editar
+                                </a>
+                                <button onclick="confirmDelete({{ grupo.id }})" 
+                                        class="text-red-500 hover:underline">
+                                    <i class="fas fa-trash mr-2"></i>Excluir
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-8">
+                        <i class="fas fa-broom text-6xl text-gray-300 mb-4"></i>
+                        <p class="text-xl text-gray-600">Nenhum grupo de limpeza criado ainda</p>
+                        <p class="text-gray-500 mb-6">Comece criando seu primeiro grupo</p>
+                        <a href="{{ url_for('criar_grupo_limpeza') }}" 
+                           class="bg-{{ primary_collor }} text-white px-6 py-3 rounded hover:opacity-90 transition">
+                            <i class="fas fa-plus mr-2"></i>Criar Primeiro Grupo
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+
+
+    <!-- Modal de Confirmação de Exclusão -->
+    <div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+        <div class="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+            <h3 class="text-xl font-semibold mb-4">Confirmar Exclusão</h3>
+            <p class="mb-6">Tem certeza que deseja excluir este grupo de limpeza? Esta ação não pode ser desfeita.</p>
+            <div class="flex justify-end space-x-4">
+                <button onclick="closeDeleteModal()" class="bg-gray-300 hover:bg-gray-400 px-4 py-2 rounded">
+                    Cancelar
+                </button>
+                <button id="confirmDeleteBtn" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">
+                    Excluir
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Event Details Tooltip -->
+    <div id="eventTooltip" class="event-tooltip">
+        <div id="tooltipContent"></div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Current date
+        let currentDate = new Date();
+        let currentMonth = currentDate.getMonth();
+        let currentYear = currentDate.getFullYear();
+        
+        // Get all cleaning entries from Jinja and convert to JavaScript objects
+        const cleaningEntries = [
+            {% for entrada in entradas_limpeza %}
+            {
+                id: {{ entrada.id }},
+                date: new Date('{{ entrada.data_limpeza.strftime("%Y-%m-%d") }}'),
+                groupName: '{{ entrada.grupo.nome }}',
+                status: '{{ entrada.confirmacao_status }}',
+                membros: [
+                    {% for membro in entrada.grupo.membros %}
+                    '{{ membro.nome_completo }}',
+                    {% endfor %}
+                ]
+            },
+            {% endfor %}
+        ];
+        
+        // Status cycle order
+        const statusCycle = ['pendente', 'concluido', 'nao_cumprido'];
+        
+        // Status labels for display
+        const statusLabels = {
+            'pendente': 'Pendente',
+            'concluido': 'Concluído',
+            'nao_cumprido': 'Não Cumprido'
+        };
+        
+        // Status colors for message display
+        const statusColors = {
+            'pendente': 'bg-yellow-100 text-yellow-800 border-yellow-500',
+            'concluido': 'bg-green-100 text-green-800 border-green-500',
+            'nao_cumprido': 'bg-red-100 text-red-800 border-red-500'
+        };
+        
+        // Generate calendar for current month
+        generateCalendar(currentMonth, currentYear);
+        
+        // Event listeners for buttons
+        document.getElementById('prevMonth').addEventListener('click', function() {
+            currentMonth--;
+            if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            }
+            generateCalendar(currentMonth, currentYear);
+        });
+        
+        document.getElementById('nextMonth').addEventListener('click', function() {
+            currentMonth++;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            }
+            generateCalendar(currentMonth, currentYear);
+        });
+        
+        // Function to generate the calendar
+        function generateCalendar(month, year) {
+            const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 
+                               'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+            
+            document.getElementById('currentMonthYear').textContent = `${monthNames[month]} ${year}`;
+            
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            const startingDay = firstDay.getDay(); // 0 = Sunday, 1 = Monday, etc.
+            
+            const calendarBody = document.getElementById('calendarBody');
+            calendarBody.innerHTML = '';
+            
+            let date = 1;
+            
+            // Create calendar rows
+            for (let i = 0; i < 6; i++) {
+                // Stop if we've gone past the last day of the month
+                if (date > daysInMonth) break;
+                
+                const row = document.createElement('tr');
+                
+                // Create cells for each day of the week
+                for (let j = 0; j < 7; j++) {
+                    const cell = document.createElement('td');
+                    
+                    if (i === 0 && j < startingDay) {
+                        // Empty cells before the first day of the month
+                        cell.classList.add('other-month');
+                        const prevMonth = month === 0 ? 11 : month - 1;
+                        const prevYear = month === 0 ? year - 1 : year;
+                        const daysInPrevMonth = new Date(prevYear, prevMonth + 1, 0).getDate();
+                        const prevDate = daysInPrevMonth - (startingDay - j - 1);
+                        
+                        cell.innerHTML = `<div class="date-number text-gray-400">${prevDate}</div>`;
+                        row.appendChild(cell);
+                    } else if (date > daysInMonth) {
+                        // Empty cells after the last day of the month
+                        cell.classList.add('other-month');
+                        const nextDate = date - daysInMonth;
+                        cell.innerHTML = `<div class="date-number text-gray-400">${nextDate}</div>`;
+                        date++;
+                        row.appendChild(cell);
+                    } else {
+                        // Regular day cell
+                        const cellDate = new Date(year, month, date);
+                        
+                        // Check if it's today
+                        const today = new Date();
+                        if (date === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
+                            cell.classList.add('today');
+                        }
+                        
+                        // Add date number
+                        cell.innerHTML = `<div class="date-number">${date}</div>`;
+                        
+                        // Check for cleaning events on this date
+                        const eventsForDay = cleaningEntries.filter(entry => {
+                            return entry.date.getDate() === date && 
+                                   entry.date.getMonth() === month && 
+                                   entry.date.getFullYear() === year;
+                        });
+                        
+                        if (eventsForDay.length > 0) {
+                            eventsForDay.forEach(event => {
+                                const eventDiv = document.createElement('div');
+                                eventDiv.classList.add('cleaning-event', `status-${event.status}`);
+                                eventDiv.setAttribute('data-event-id', event.id);
+                                
+                                // Create event content
+                                const membrosText = event.membros.length > 2 
+                                    ? `${event.membros.slice(0, 2).join(', ')} +${event.membros.length - 2}`
+                                    : event.membros.join(', ');
+                                
+                                eventDiv.innerHTML = `
+                                    <div class="font-medium">${event.groupName}</div>
+                                    <div class="text-sm mt-1">${statusLabels[event.status]}</div>
+                                `;
+                                
+                                // Add click event to cycle through statuses
+                                eventDiv.addEventListener('click', function(e) {
+                                    e.stopPropagation();
+                                    cycleStatus(event);
+                                });
+                                
+                                // Add hover event to show tooltip with more details
+                                eventDiv.addEventListener('mouseover', function(e) {
+                                    showTooltip(e, event);
+                                });
+                                
+                                eventDiv.addEventListener('mouseout', function() {
+                                    hideTooltip();
+                                });
+                                
+                                cell.appendChild(eventDiv);
+                            });
+                        }
+                        
+                        date++;
+                        row.appendChild(cell);
+                    }
+                }
+                
+                calendarBody.appendChild(row);
+            }
+        }
+        
+        // Function to cycle through statuses
+        function cycleStatus(event) {
+            const currentStatusIndex = statusCycle.indexOf(event.status);
+            const nextStatusIndex = (currentStatusIndex + 1) % statusCycle.length;
+            const newStatus = statusCycle[nextStatusIndex];
+            
+            const oldStatus = event.status;
+            event.status = newStatus;
+            
+            // Update the UI
+            const eventElement = document.querySelector(`[data-event-id="${event.id}"]`);
+            if (eventElement) {
+                eventElement.classList.remove(`status-${oldStatus}`);
+                eventElement.classList.add(`status-${newStatus}`);
+                
+                // Update status text
+                const statusElem = eventElement.querySelector('.text-sm');
+                if (statusElem) {
+                    statusElem.textContent = statusLabels[newStatus];
+                }
+                
+                // Add pulse animation
+                eventElement.classList.add('pulse-animation');
+                setTimeout(() => {
+                    eventElement.classList.remove('pulse-animation');
+                }, 500);
+            }
+            
+            // Show feedback message
+            showStatusMessage(`Status alterado para: ${statusLabels[newStatus]}`, newStatus);
+            
+            // Save to server via AJAX
+            saveStatusToServer(event.id, newStatus);
+        }
+        
+        // Function to show status change message
+        function showStatusMessage(message, status) {
+            const statusMessage = document.getElementById('statusMessage');
+            statusMessage.textContent = message;
+            statusMessage.className = `mb-4 p-3 rounded text-center border ${statusColors[status]}`;
+            statusMessage.classList.remove('hidden');
+            
+            // Hide after 3 seconds
+            setTimeout(() => {
+                statusMessage.classList.add('hidden');
+            }, 3000);
+        }
+        
+        // Function to save status to server
+        function saveStatusToServer(entradaId, status) {
+            const statusMap = {
+                'pendente': 'PENDING',
+                'concluido': 'COMPLETED',
+                'nao_cumprido': 'MISSED'
+            };
+            
+            const formData = new FormData();
+            formData.append('status', statusMap[status]);
+            
+            fetch(`/confirmar_limpeza/${entradaId}`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Falha ao salvar status');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Status atualizado com sucesso:', data);
+            })
+            .catch(error => {
+                console.error('Erro ao atualizar status:', error);
+                showStatusMessage('Erro ao salvar alteração. Tente novamente.', 'pendente');
+            });
+        }
+        
+        // Function to show tooltip with event details
+        function showTooltip(event, cleaningEvent) {
+            const tooltip = document.getElementById('eventTooltip');
+            const tooltipContent = document.getElementById('tooltipContent');
+            
+            tooltipContent.innerHTML = `
+                <div class="font-medium mb-2">${cleaningEvent.groupName}</div>
+                <div class="mb-2">
+                    <span class="font-medium">Status:</span> ${statusLabels[cleaningEvent.status]}
+                </div>
+                <div>
+                    <span class="font-medium">Membros:</span>
+                    <ul class="pl-4 mt-1">
+                        ${cleaningEvent.membros.map(membro => `<li>${membro}</li>`).join('')}
+                    </ul>
+                </div>
+                <div class="mt-2 text-xs text-gray-500">Clique para alterar o status</div>
+            `;
+            
+            // Position the tooltip
+            const rect = event.target.getBoundingClientRect();
+            tooltip.style.left = `${rect.left + window.scrollX}px`;
+            tooltip.style.top = `${rect.bottom + window.scrollY + 5}px`;
+            
+            // Show the tooltip
+            tooltip.style.display = 'block';
+        }
+        
+        // Function to hide tooltip
+        function hideTooltip() {
+            const tooltip = document.getElementById('eventTooltip');
+            tooltip.style.display = 'none';
+        }
+    });
+
+    function confirmDelete(grupoId) {
+        const deleteModal = document.getElementById('deleteModal');
+        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+        deleteModal.classList.remove('hidden');
+        deleteModal.classList.add('flex');
+        
+        confirmDeleteBtn.onclick = function() {
+            window.location.href = `/excluir_grupo_limpeza/${grupoId}`;
+        };
+    }
+
+    function closeDeleteModal() {
+        const deleteModal = document.getElementById('deleteModal');
+        deleteModal.classList.add('hidden');
+        deleteModal.classList.remove('flex');
+    }
+</script>
+
+</body>
+</html>

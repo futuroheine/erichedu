@@ -156,7 +156,7 @@
                             {% for aluno in alunos %}
                             <div class="flex items-center p-2 hover:bg-gray-50 rounded-lg">
                                 <div class="flex-shrink-0 mr-3">
-                                    <img src="{{ aluno.imagem_url or url_for('static', filename='default_profile.png') }}" 
+                                    <img src="{{ aluno.foto_perfil or url_for('static', filename='default_profile.png') }}" 
                                         alt="Perfil" class="h-10 w-10 rounded-full object-cover">
                                 </div>
                                 <div>
@@ -202,7 +202,7 @@
                                         <div class="text-sm text-gray-500">{{ material.timestamp.strftime('%d/%m/%Y') }}</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <a href="{{ url_for('static', filename='uploads/' + material.arquivo) }}" 
+                                        <a href="{{material.imagem_url}}" 
                                            class="text-[var(--primary-color)] hover:underline" target="_blank">
                                             <i class="fas fa-download mr-1"></i> Download
                                         </a>

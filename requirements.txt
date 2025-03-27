@@ -21,3 +21,4 @@ Pillow
 reportlab
 svgpathtools
 pusher
+enum

@@ -5,9 +5,11 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
 import uuid
 from pytz import timezone
+from google.cloud import storage
+import hashlib
 
 # Importando modelos da aplicação principal
-from app import db, Teacher, Turma, Materia, QH, Falta, User, ChatMessage, Aviso, aviso_turma
+from app import db, Teacher, Turma, Materia, QH, Falta, User, ChatMessage, Aviso, aviso_turma, horario_atual_brasilia
 
 # Inicializando o Blueprint
 prof_bp = Blueprint('prof', __name__, url_prefix='/professor')
@@ -16,6 +18,25 @@ prof_bp = Blueprint('prof', __name__, url_prefix='/professor')
 def horario_atual_brasilia():
     fuso_brasilia = timezone('America/Sao_Paulo')
     return datetime.now(fuso_brasilia)
+
+def upload_materia(foto):
+    if foto:
+        # Criptografar o nome do arquivo
+        nome_arquivo = hashlib.sha256(foto.filename.encode()).hexdigest() + '.jpg'
+        
+        # Configurar o cliente do Firebase Storage
+        client = storage.Client()
+        bucket = client.get_bucket('app-erichedu.appspot.com')
+
+        # Fazer upload da imagem
+        blob = bucket.blob(nome_arquivo)
+        blob.upload_from_file(foto)
+
+        # Retornar o caminho da imagem
+        return f"https://storage.googleapis.com/app-erichedu.appspot.com/{nome_arquivo}"
+
+    
+    return None
 
 # Função para determinar a cor primária baseada no tipo de usuário professor
 def determinar_cor_professor():
@@ -111,7 +132,7 @@ def dashboard():
     
     # Obter turmas de todas as aulas
     turmas_ids = set(aula.turma_id for aula in aulas)
-    turmas = Turma.query.filter(Turma.id.in_(turmas_ids)).all()
+    turmas = Turma.query.all()
 
     # Obter as próximas aulas do professor
     hoje = datetime.now().strftime('%A').lower()
@@ -501,19 +522,14 @@ def index():
 @prof_bp.route('/materiais/adicionar/<int:turma_id>', methods=['GET', 'POST'])
 @login_required
 def adicionar_material(turma_id):
-    # Verificar se o usuário é um professor
     if not session.get('professor_id'):
         flash('Acesso negado. Esta área é restrita para professores.', 'danger')
         return redirect(url_for('login'))
     
-    # Obter o professor atual
     professor = Teacher.query.get(session['professor_id'])
-    
-    # Obter a turma especificada
     turma = Turma.query.get_or_404(turma_id)
     
     if request.method == 'POST':
-        # Processar o material enviado
         nome_material = request.form['nome_material']
         descricao_material = request.form['descricao_material']
         arquivo = request.files.get('arquivo')
@@ -522,42 +538,32 @@ def adicionar_material(turma_id):
             flash('Por favor, preencha todos os campos obrigatórios.', 'danger')
             return redirect(url_for('prof.adicionar_material', turma_id=turma_id))
         
-        # Processar o arquivo, se houver
+        imagem_url = None
         if arquivo:
-            import os
-            
-            # Garantir que a pasta 'uploads' exista
-            uploads_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', 'uploads')
-            if not os.path.exists(uploads_dir):
-                os.makedirs(uploads_dir)
-            
-            # Gerar um nome único para o arquivo
-            nome_arquivo = f"{uuid.uuid4().hex}_{arquivo.filename}"
-            caminho_completo = os.path.join(uploads_dir, nome_arquivo)
-            
-            # Salvar o arquivo
-            arquivo.save(caminho_completo)
-            
-            # Criar um novo material
-            novo_material = Materia(
-                nome=nome_material,
-                descricao=descricao_material,  # Adicionado o campo descricao
-                imagem_url=nome_arquivo,
-                turma_id=turma_id,
-                professor=professor.nome_completo,
-                timestamp=horario_atual_brasilia(),
-                dia_da_semana="Sem dia Definido"
-            )
-            
-            try:
-                db.session.add(novo_material)
-                db.session.commit()
-                flash('Material adicionado com sucesso!', 'success')
-                return redirect(url_for('prof.turma_detalhes', turma_id=turma_id))
-            except Exception as e:
-                db.session.rollback()
-                flash(f'Erro ao adicionar material: {str(e)}', 'danger')
+            imagem_url = upload_materia(arquivo)
+            if not imagem_url:
+                flash('Erro ao fazer upload do arquivo.', 'danger')
                 return redirect(url_for('prof.adicionar_material', turma_id=turma_id))
+        
+        novo_material = Materia(
+            nome=nome_material,
+            descricao=descricao_material,
+            imagem_url=imagem_url,
+            turma_id=turma_id,
+            professor=professor.nome_completo,
+            timestamp=horario_atual_brasilia(),
+            dia_da_semana="Sem dia Definido"
+        )
+        
+        try:
+            db.session.add(novo_material)
+            db.session.commit()
+            flash('Material adicionado com sucesso!', 'success')
+            return redirect(url_for('prof.turma_detalhes', turma_id=turma_id))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Erro ao adicionar material: {str(e)}', 'danger')
+            return redirect(url_for('prof.adicionar_material', turma_id=turma_id))
     
     return render_template(
         'professor/adicionar_material.html',
@@ -565,6 +571,7 @@ def adicionar_material(turma_id):
         turma=turma,
         primary_collor=determinar_cor_professor()
     )
+
 
 from pytz import timezone
 
