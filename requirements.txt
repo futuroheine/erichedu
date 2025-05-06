@@ -21,5 +21,4 @@ Pillow
 reportlab
 svgpathtools
 pusher
-enum
 Flask-Migrate
