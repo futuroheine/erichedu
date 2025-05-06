@@ -13,69 +13,128 @@
             --primary-color-light: {{ primary_collor }}22;
         }
         
-        .calendar {
-            width: 100%;
-            border-collapse: collapse;
+        .calendar-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
         }
         
-        .calendar th {
+        .calendar-header {
             background-color: var(--primary-color);
             color: white;
-            padding: 10px;
-            text-align: center;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         
-        .calendar td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            height: 100px;
-            vertical-align: top;
-        }
-        
-        .calendar .date-number {
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        
-        .calendar .other-month {
-            background-color: #f8f8f8;
-            color: #aaa;
-        }
-        
-        .calendar .today {
-            background-color: var(--primary-color-light);
-        }
-        
-        .calendar .cleaning-event {
-            padding: 6px;
-            margin-top: 8px;
-            border-radius: 4px;
-            font-size: 0.9rem;
+        .calendar-nav-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
             transition: all 0.2s;
         }
         
-        .calendar .cleaning-event:hover {
-            filter: brightness(0.95);
+        .calendar-nav-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
         }
         
-        .calendar .status-pendente {
+        .calendar-weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            background-color: #f8fafc;
+            padding: 0.5rem 0;
+            text-align: center;
+            font-weight: 600;
+            color: #64748b;
+        }
+        
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background-color: #f1f5f9;
+        }
+        
+        .calendar-day {
+            background: white;
+            min-height: 100px;
+            padding: 0.5rem;
+            position: relative;
+            transition: all 0.2s;
+        }
+        
+        .calendar-day:hover {
+            background-color: #f8fafc;
+        }
+        
+        .calendar-day.other-month {
+            background-color: #f8fafc;
+            color: #94a3b8;
+        }
+        
+        .calendar-day.today {
+            background-color: var(--primary-color-light);
+        }
+        
+        .calendar-day-number {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            text-align: right;
+        }
+        
+        .calendar-day.today .calendar-day-number {
+            background-color: var(--primary-color);
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .calendar-event {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            margin-bottom: 0.25rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            position: relative;
+        }
+        
+        .calendar-event:hover {
+            transform: translateX(2px);
+        }
+        
+        .status-pendente {
             background-color: #fef3c7;
             border-left: 3px solid #f59e0b;
         }
         
-        .calendar .status-concluido {
+        .status-concluido {
             background-color: #d1fae5;
             border-left: 3px solid #10b981;
         }
         
-        .calendar .status-nao_cumprido {
+        .status-nao_cumprido {
             background-color: #fee2e2;
             border-left: 3px solid #ef4444;
         }
         
-        .calendar .event-tooltip {
-            display: none;
+        .event-tooltip {
             position: absolute;
             background: white;
             border: 1px solid #ddd;
@@ -84,6 +143,7 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             z-index: 100;
             width: 200px;
+            display: none;
         }
         
         .pulse-animation {
@@ -105,17 +165,44 @@
         }
         
         @media (max-width: 768px) {
-            .calendar th, .calendar td {
-                padding: 4px;
-                font-size: 0.8rem;
+            .calendar-day {
+                min-height: 80px;
+                padding: 0.25rem;
             }
             
-            .calendar td {
-                height: 80px;
+            .calendar-day-number {
+                font-size: 0.75rem;
+                margin-bottom: 0.25rem;
             }
             
-            .calendar .date-number {
-                margin-bottom: 2px;
+            .calendar-event {
+                font-size: 0.65rem;
+                padding: 0.15rem 0.3rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .calendar-day {
+                min-height: 60px;
+            }
+            
+            .calendar-day-number {
+                font-size: 0.7rem;
+            }
+            
+            .calendar-event {
+                display: none;
+            }
+            
+            .calendar-day.has-events::after {
+                content: '';
+                position: absolute;
+                bottom: 2px;
+                right: 2px;
+                width: 6px;
+                height: 6px;
+                border-radius: 50%;
+                background-color: var(--primary-color);
             }
         }
     </style>
@@ -134,71 +221,53 @@
         </div>
 
         <div class="p-6">
-            <!-- Cleaning Groups Section -->
+            <!-- Modern Calendar Section -->
             <div class="mb-8">
-                <h2 class="text-xl font-semibold mb-4 text-{{ primary_collor }}">Meus Grupos</h2>
-                {% if grupos_limpeza %}
-                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {% for grupo in grupos_limpeza %}
-                        <div class="bg-gray-50 border rounded-lg p-4 shadow-sm">
-                            <div class="flex justify-between items-center mb-4">
-                                <h2 class="text-xl font-semibold text-{{ primary_collor }}">{{ grupo.nome }}</h2>
-                                <span class="badge bg-{{ primary_collor }} text-white px-2 py-1 rounded text-sm">
-                                    {{ grupo.modelo.value.capitalize() }}
-                                </span>
-                            </div>
-
-                            <div class="mb-4">
-                                <h3 class="font-medium mb-2">Membros ({{ grupo.membros|length }}):</h3>
-                                <ul class="space-y-1">
-                                    {% for membro in grupo.membros %}
-                                    <li class="flex items-center">
-                                        <i class="fas fa-user mr-2 text-gray-500"></i>
-                                        {{ membro.nome_completo }}
-                                    </li>
-                                    {% endfor %}
-                                </ul>
-                            </div>
-
-                            <div class="border-t pt-3 flex justify-between">
-                                <a href="{{ url_for('editar_grupo_limpeza', grupo_id=grupo.id) }}" 
-                                   class="text-{{ primary_collor }} hover:underline">
-                                    <i class="fas fa-edit mr-2"></i>Editar
-                                </a>
-                                <button onclick="confirmDelete({{ grupo.id }})" 
-                                        class="text-red-500 hover:underline">
-                                    <i class="fas fa-trash mr-2"></i>Excluir
-                                </button>
-                            </div>
-                        </div>
-                        {% endfor %}
+                <h2 class="text-xl font-semibold mb-4 text-{{ primary_collor }}">Calendário de Limpeza</h2>
+                
+                <div class="calendar-container">
+                    <div class="calendar-header">
+                        <button id="prevMonth" class="calendar-nav-btn">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <h3 id="currentMonthYear" class="text-lg font-medium"></h3>
+                        <button id="nextMonth" class="calendar-nav-btn">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
                     </div>
-                {% else %}
-                    <div class="text-center py-8">
-                        <i class="fas fa-broom text-6xl text-gray-300 mb-4"></i>
-                        <p class="text-xl text-gray-600">Nenhum grupo de limpeza criado ainda</p>
-                        <p class="text-gray-500 mb-6">Comece criando seu primeiro grupo</p>
-                        <a href="{{ url_for('criar_grupo_limpeza') }}" 
-                           class="bg-{{ primary_collor }} text-white px-6 py-3 rounded hover:opacity-90 transition">
-                            <i class="fas fa-plus mr-2"></i>Criar Primeiro Grupo
-                        </a>
+                    
+                    <!-- Dias da semana corrigidos - Domingo é o primeiro dia -->
+                    <div class="calendar-weekdays">
+                        <div>Dom</div>
+                        <div>Seg</div>
+                        <div>Ter</div>
+                        <div>Qua</div>
+                        <div>Qui</div>
+                        <div>Sex</div>
+                        <div>Sáb</div>
                     </div>
-                {% endif %}
-            </div>
-
-
-    <!-- Modal de Confirmação de Exclusão -->
-    <div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
-        <div class="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
-            <h3 class="text-xl font-semibold mb-4">Confirmar Exclusão</h3>
-            <p class="mb-6">Tem certeza que deseja excluir este grupo de limpeza? Esta ação não pode ser desfeita.</p>
-            <div class="flex justify-end space-x-4">
-                <button onclick="closeDeleteModal()" class="bg-gray-300 hover:bg-gray-400 px-4 py-2 rounded">
-                    Cancelar
-                </button>
-                <button id="confirmDeleteBtn" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">
-                    Excluir
-                </button>
+                    
+                    <div class="calendar-grid" id="calendarGrid"></div>
+                </div>
+                
+                <!-- Status Message -->
+                <div id="statusMessage" class="hidden mt-4 p-3 rounded text-center"></div>
+                
+                <!-- Status Legend -->
+                <div class="flex justify-center gap-4 mt-4 flex-wrap">
+                    <div class="flex items-center">
+                        <span class="status-indicator status-pendente mr-2"></span>
+                        <span class="text-sm">Pendente</span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="status-indicator status-concluido mr-2"></span>
+                        <span class="text-sm">Concluído</span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="status-indicator status-nao_cumprido mr-2"></span>
+                        <span class="text-sm">Não Cumprido</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -210,6 +279,7 @@
 </div>
 
 <script>
+    
     document.addEventListener('DOMContentLoaded', function() {
         // Current date
         let currentDate = new Date();
@@ -238,11 +308,16 @@
         
         // Status labels for display
         const statusLabels = {
-            'pendente': 'Pendente',
-            'concluido': 'Concluído',
-            'nao_cumprido': 'Não Cumprido'
+            'PENDING': 'Pendente',
+            'COMPLETED': 'Concluído',
+            'MISSED': 'Não Cumprido'
         };
-        
+        const statusClassMap = {
+    'PENDING': 'pendente',
+    'COMPLETED': 'concluido',
+    'MISSED': 'nao_cumprido'
+};
+
         // Status colors for message display
         const statusColors = {
             'pendente': 'bg-yellow-100 text-yellow-800 border-yellow-500',
@@ -282,103 +357,110 @@
             const firstDay = new Date(year, month, 1);
             const lastDay = new Date(year, month + 1, 0);
             const daysInMonth = lastDay.getDate();
-            const startingDay = firstDay.getDay(); // 0 = Sunday, 1 = Monday, etc.
             
-            const calendarBody = document.getElementById('calendarBody');
-            calendarBody.innerHTML = '';
+            // Corrigindo o dia inicial - 0=Dom, 1=Seg, etc.
+            let startingDay = firstDay.getDay();
+            
+            const calendarGrid = document.getElementById('calendarGrid');
+            calendarGrid.innerHTML = '';
             
             let date = 1;
+            let totalCells = 42; // 6 weeks * 7 days
             
-            // Create calendar rows
-            for (let i = 0; i < 6; i++) {
-                // Stop if we've gone past the last day of the month
-                if (date > daysInMonth) break;
+            // Create calendar cells
+            for (let i = 0; i < totalCells; i++) {
+                const dayCell = document.createElement('div');
+                dayCell.className = 'calendar-day';
                 
-                const row = document.createElement('tr');
-                
-                // Create cells for each day of the week
-                for (let j = 0; j < 7; j++) {
-                    const cell = document.createElement('td');
+                if (i < startingDay || date > daysInMonth) {
+                    // Days from previous or next month
+                    dayCell.classList.add('other-month');
                     
-                    if (i === 0 && j < startingDay) {
-                        // Empty cells before the first day of the month
-                        cell.classList.add('other-month');
+                    if (i < startingDay) {
+                        // Previous month days
                         const prevMonth = month === 0 ? 11 : month - 1;
                         const prevYear = month === 0 ? year - 1 : year;
                         const daysInPrevMonth = new Date(prevYear, prevMonth + 1, 0).getDate();
-                        const prevDate = daysInPrevMonth - (startingDay - j - 1);
+                        const prevDate = daysInPrevMonth - (startingDay - i - 1);
                         
-                        cell.innerHTML = `<div class="date-number text-gray-400">${prevDate}</div>`;
-                        row.appendChild(cell);
-                    } else if (date > daysInMonth) {
-                        // Empty cells after the last day of the month
-                        cell.classList.add('other-month');
-                        const nextDate = date - daysInMonth;
-                        cell.innerHTML = `<div class="date-number text-gray-400">${nextDate}</div>`;
-                        date++;
-                        row.appendChild(cell);
+                        dayCell.innerHTML = `<div class="calendar-day-number">${prevDate}</div>`;
                     } else {
-                        // Regular day cell
-                        const cellDate = new Date(year, month, date);
-                        
-                        // Check if it's today
-                        const today = new Date();
-                        if (date === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
-                            cell.classList.add('today');
-                        }
-                        
-                        // Add date number
-                        cell.innerHTML = `<div class="date-number">${date}</div>`;
-                        
-                        // Check for cleaning events on this date
-                        const eventsForDay = cleaningEntries.filter(entry => {
-                            return entry.date.getDate() === date && 
-                                   entry.date.getMonth() === month && 
-                                   entry.date.getFullYear() === year;
-                        });
-                        
-                        if (eventsForDay.length > 0) {
-                            eventsForDay.forEach(event => {
-                                const eventDiv = document.createElement('div');
-                                eventDiv.classList.add('cleaning-event', `status-${event.status}`);
-                                eventDiv.setAttribute('data-event-id', event.id);
-                                
-                                // Create event content
-                                const membrosText = event.membros.length > 2 
-                                    ? `${event.membros.slice(0, 2).join(', ')} +${event.membros.length - 2}`
-                                    : event.membros.join(', ');
-                                
-                                eventDiv.innerHTML = `
-                                    <div class="font-medium">${event.groupName}</div>
-                                    <div class="text-sm mt-1">${statusLabels[event.status]}</div>
-                                `;
-                                
-                                // Add click event to cycle through statuses
-                                eventDiv.addEventListener('click', function(e) {
-                                    e.stopPropagation();
-                                    cycleStatus(event);
-                                });
-                                
-                                // Add hover event to show tooltip with more details
-                                eventDiv.addEventListener('mouseover', function(e) {
-                                    showTooltip(e, event);
-                                });
-                                
-                                eventDiv.addEventListener('mouseout', function() {
-                                    hideTooltip();
-                                });
-                                
-                                cell.appendChild(eventDiv);
-                            });
-                        }
-                        
+                        // Next month days
+                        const nextDate = date - daysInMonth;
+                        dayCell.innerHTML = `<div class="calendar-day-number">${nextDate}</div>`;
                         date++;
-                        row.appendChild(cell);
                     }
+                } else {
+                    // Current month days
+                    const cellDate = new Date(year, month, date);
+                    
+                    // Check if it's today
+                    const today = new Date();
+                    if (date === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
+                        dayCell.classList.add('today');
+                    }
+                    
+                    dayCell.innerHTML = `<div class="calendar-day-number">${date}</div>`;
+                    
+                    // Check for cleaning events on this date
+                    const eventsForDay = cleaningEntries.filter(entry => {
+                        const entryDate = new Date(entry.date);
+                        return entryDate.getDate() === date && 
+                               entryDate.getMonth() === month && 
+                               entryDate.getFullYear() === year;
+                    });
+                    
+                    // Removendo duplicatas - agrupar por grupoName
+                    const uniqueEvents = [];
+                    const seenGroups = new Set();
+                    
+                    for (const event of eventsForDay) {
+                        if (!seenGroups.has(event.groupName)) {
+                            seenGroups.add(event.groupName);
+                            uniqueEvents.push(event);
+                        }
+                    }
+                    
+                    if (uniqueEvents.length > 0) {
+                        dayCell.classList.add('has-events');
+                        
+                        uniqueEvents.forEach(event => {
+                            const eventDiv = document.createElement('div');
+                            const cssStatus = statusClassMap[event.status] || 'pendente'; // fallback caso algo venha inválido
+                            eventDiv.className = `calendar-event status-${cssStatus}`;
+                            eventDiv.setAttribute('data-event-id', event.id);
+                            
+                            eventDiv.innerHTML = `
+                                <span class="status-indicator status-${event.status}"></span>
+                                ${event.groupName}
+                            `;
+                            
+                            // Add click event to cycle through statuses
+                            eventDiv.addEventListener('click', function(e) {
+                                e.stopPropagation();
+                                cycleStatus(event);
+                            });
+                            
+                            // Add hover event to show tooltip with more details
+                            eventDiv.addEventListener('mouseover', function(e) {
+                                showTooltip(e, event);
+                            });
+                            
+                            eventDiv.addEventListener('mouseout', function() {
+                                hideTooltip();
+                            });
+                            
+                            dayCell.appendChild(eventDiv);
+                        });
+                    }
+                    
+                    date++;
                 }
                 
-                calendarBody.appendChild(row);
+                calendarGrid.appendChild(dayCell);
             }
+            console.log('Evento:', event);
+
         }
         
         // Function to cycle through statuses
@@ -393,13 +475,13 @@
             // Update the UI
             const eventElement = document.querySelector(`[data-event-id="${event.id}"]`);
             if (eventElement) {
-                eventElement.classList.remove(`status-${oldStatus}`);
-                eventElement.classList.add(`status-${newStatus}`);
-                
-                // Update status text
-                const statusElem = eventElement.querySelector('.text-sm');
-                if (statusElem) {
-                    statusElem.textContent = statusLabels[newStatus];
+                eventElement.classList.remove(`status-${statusClassMap[oldStatus]}`);
+                eventElement.classList.add(`status-${statusClassMap[newStatus]}`);                
+                // Update status indicator
+                const indicator = eventElement.querySelector('.status-indicator');
+                if (indicator) {
+                    indicator.classList.remove(`status-${statusClassMap[oldStatus]}`);
+                    indicator.classList.add(`status-${statusClassMap[newStatus]}`);
                 }
                 
                 // Add pulse animation
@@ -420,7 +502,7 @@
         function showStatusMessage(message, status) {
             const statusMessage = document.getElementById('statusMessage');
             statusMessage.textContent = message;
-            statusMessage.className = `mb-4 p-3 rounded text-center border ${statusColors[status]}`;
+            statusMessage.className = `hidden mt-4 p-3 rounded text-center border ${statusColors[status]}`;
             statusMessage.classList.remove('hidden');
             
             // Hide after 3 seconds
@@ -470,20 +552,24 @@
             tooltipContent.innerHTML = `
                 <div class="font-medium mb-2">${cleaningEvent.groupName}</div>
                 <div class="mb-2">
-                    <span class="font-medium">Status:</span> ${statusLabels[cleaningEvent.status]}
+                    <span class="font-medium">Status:</span> 
+                    <span class="inline-flex items-center">
+                        <span class="status-indicator status-${cleaningEvent.status} mr-1"></span>
+                        ${statusLabels[cleaningEvent.status]}
+                    </span>
                 </div>
                 <div>
                     <span class="font-medium">Membros:</span>
-                    <ul class="pl-4 mt-1">
-                        ${cleaningEvent.membros.map(membro => `<li>${membro}</li>`).join('')}
+                    <ul class="pl-4 mt-1 space-y-1">
+                        ${cleaningEvent.membros.map(membro => `<li class="text-sm">• ${membro}</li>`).join('')}
                     </ul>
                 </div>
-                <div class="mt-2 text-xs text-gray-500">Clique para alterar o status</div>
+                <div class="mt-3 text-xs text-gray-500">Clique para alterar o status</div>
             `;
             
             // Position the tooltip
             const rect = event.target.getBoundingClientRect();
-            tooltip.style.left = `${rect.left + window.scrollX}px`;
+            tooltip.style.left = `${rect.left + window.scrollX - 100}px`;
             tooltip.style.top = `${rect.bottom + window.scrollY + 5}px`;
             
             // Show the tooltip
@@ -495,24 +581,12 @@
             const tooltip = document.getElementById('eventTooltip');
             tooltip.style.display = 'none';
         }
-    });
-
-    function confirmDelete(grupoId) {
-        const deleteModal = document.getElementById('deleteModal');
-        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
-        deleteModal.classList.remove('hidden');
-        deleteModal.classList.add('flex');
         
-        confirmDeleteBtn.onclick = function() {
-            window.location.href = `/excluir_grupo_limpeza/${grupoId}`;
-        };
-    }
-
-    function closeDeleteModal() {
-        const deleteModal = document.getElementById('deleteModal');
-        deleteModal.classList.add('hidden');
-        deleteModal.classList.remove('flex');
-    }
+        // Close tooltip when clicking anywhere
+        document.addEventListener('click', function() {
+            hideTooltip();
+        });
+    });
 </script>
 
 </body>

@@ -361,20 +361,18 @@ def get_todays_cleaning_assignment():
         'cleaning_date': today.isoformat(),
         'group_members': [user.nome_completo for user in cleaning_entry.grupo.membros]
     })
+
 def generate_monthly_cleaning_schedule(turma, cleaning_groups, model_type):
     """
     Generate a monthly cleaning schedule with proper rotation
     
     :param turma: Turma object
-    :param cleaning_groups: List of CleaningGroup objects
+    :param cleaning_groups: List of CleaningGroup objects (todos os grupos existentes)
     :param model_type: CleaningModelType (groups or pairs)
     """
     today = datetime.now().date()
     month_start = today.replace(day=1)
     month_end = (month_start + timedelta(days=32)).replace(day=1) - timedelta(days=1)
-    
-    current_date = month_start
-    group_index = 0
     
     # Remove existing schedule entries for this month and turma
     CleaningScheduleEntry.query.filter(
@@ -382,37 +380,30 @@ def generate_monthly_cleaning_schedule(turma, cleaning_groups, model_type):
         CleaningScheduleEntry.data_limpeza.between(month_start, month_end)
     ).delete()
     
+    # Get all school days in the month (excluding weekends and holidays)
+    school_days = []
+    current_date = month_start
     while current_date <= month_end:
-        # Skip weekends
-        if current_date.weekday() >= 5:
-            current_date += timedelta(days=1)
-            continue
-        
-        # Skip holidays
-        if DiaSemAula.query.filter_by(data=current_date).first():
-            current_date += timedelta(days=1)
-            continue
-        
-        # Create schedule entry for this group
-        schedule_entry = CleaningScheduleEntry(
-            turma_id=turma.id,
-            grupo_id=cleaning_groups[group_index].id,
-            data_limpeza=current_date,
-            confirmacao_status=CleaningEntryStatus.PENDING
-        )
-        db.session.add(schedule_entry)
-        
-        # If there's only one group, it cleans every day
-        if len(cleaning_groups) == 1:
-            group_index = 0
-        else:
-            # Rotate between the groups
-            group_index = (group_index + 1) % len(cleaning_groups)
-        
+        if current_date.weekday() < 5 and not DiaSemAula.query.filter_by(data=current_date).first():
+            school_days.append(current_date)
         current_date += timedelta(days=1)
     
+    # Only proceed if we have groups and school days
+    if cleaning_groups and school_days:
+        # Assign groups to school days with proper rotation
+        for i, day in enumerate(school_days):
+            group_index = i % len(cleaning_groups)
+            assigned_group = cleaning_groups[group_index]
+            
+            schedule_entry = CleaningScheduleEntry(
+                turma_id=turma.id,
+                grupo_id=assigned_group.id,
+                data_limpeza=day,
+                confirmacao_status=CleaningEntryStatus.PENDING
+            )
+            db.session.add(schedule_entry)
+    
     db.session.commit()
-
 
 # Form for creating cleaning groups
 class CleaningGroupForm(FlaskForm):
@@ -597,21 +588,14 @@ def grupos_limpeza():
 @app.route('/criar_grupo_limpeza', methods=['GET', 'POST'])
 @login_required
 def criar_grupo_limpeza():
-    # Verifica se o usuário é representante
     if not current_user.is_representante:
         flash('Apenas representantes podem criar grupos de limpeza.', 'error')
         return redirect(url_for('home'))
     
     form = CriarGrupoLimpezaForm()
-    
-    # Popula o campo de membros com alunos da turma
-    form.membros.choices = [
-        (aluno.id, aluno.nome_completo) 
-        for aluno in current_user.turma.alunos
-    ]
+    form.membros.choices = [(aluno.id, aluno.nome_completo) for aluno in current_user.turma.alunos]
     
     if form.validate_on_submit():
-        # Cria um novo grupo de limpeza
         novo_grupo = CleaningGroup(
             turma_id=current_user.turma_id,
             nome=form.nome.data,
@@ -619,7 +603,6 @@ def criar_grupo_limpeza():
         )
         db.session.add(novo_grupo)
         
-        # Adiciona membros ao grupo
         for user_id in form.membros.data:
             user = User.query.get(user_id)
             novo_grupo.membros.append(user)
@@ -628,10 +611,13 @@ def criar_grupo_limpeza():
             db.session.commit()
             flash('Grupo de limpeza criado com sucesso!', 'success')
             
-            # Gera o cronograma de limpeza para o novo grupo
+            # Obter TODOS os grupos da turma (incluindo o novo)
+            todos_grupos = CleaningGroup.query.filter_by(turma_id=current_user.turma_id).all()
+            
+            # Gerar cronograma com todos os grupos
             generate_monthly_cleaning_schedule(
                 current_user.turma, 
-                [novo_grupo], 
+                todos_grupos, 
                 CleaningModelType(form.modelo.data)
             )
             
@@ -641,8 +627,8 @@ def criar_grupo_limpeza():
             flash(f'Erro ao criar grupo: {str(e)}', 'error')
     
     return render_template('criar_grupo_limpeza.html', 
-                           form=form, 
-                           primary_collor=determinar_cor_primaria(current_user.turma_id))
+                         form=form, 
+                         primary_collor=determinar_cor_primaria(current_user.turma_id))
 
 @app.route('/editar_grupo_limpeza/<int:grupo_id>', methods=['GET', 'POST'])
 @login_required
@@ -1607,89 +1593,96 @@ def marcar_faltas(turma_id):
     user = User.query.get(session['user_id'])
     cor_primaria = determinar_cor_primaria(user.turma_id)
 
-    # Verifica se o usuário é um representante
     if not current_user.is_representante:
         flash('Apenas representantes podem gerenciar as faltas.', 'danger')
         return redirect(url_for('index'))
 
-    # Obtém a turma que está sendo acessada
     turma = Turma.query.get_or_404(turma_id)
 
-    # Verifica se a turma do representante logado é a mesma que a turma acessada
     if turma.id != current_user.turma_id:
         flash('Você não tem permissão para gerenciar faltas nesta turma.', 'danger')
         return redirect(url_for('contagem_faltas'))
 
     alunos = User.query.filter_by(turma_id=turma.id).all()
 
-    # Corrige a criação dos dias do mês utilizando calendar.monthrange
     ano_atual = datetime.now().year
     mes_atual = datetime.now().month
     ultimo_dia = calendar.monthrange(ano_atual, mes_atual)[1]
     dias_do_mes = [datetime(ano_atual, mes_atual, dia) for dia in range(1, ultimo_dia + 1)]
 
-    # Nomes dos meses em português
     meses_pt = [
         "Janeiro 2025", "Fevereiro 2025", "Março 2025", "Abril 2025", "Maio 2025", "Junho 2025",
         "Julho 2025", "Agosto 2025", "Setembro 2025", "Outubro 2025", "Novembro 2025", "Dezembro 2025"
     ]
     mes_nome = meses_pt[mes_atual - 1]
 
-    # Dias da semana em português
     dias_semana_pt = [
         "Segunda-Feira", "Terça-Feira", "Quarta-Feira", "Quinta-Feira",
         "Sexta-Feira", "Sábado", "Domingo"
     ]
 
-    # Dicionário para armazenar o status atual das faltas
+    # --- OTIMIZAÇÃO: carrega todas as faltas da turma para o mês de uma vez
+    faltas_raw = Falta.query.filter(
+        Falta.turma_id == turma.id,
+        db.extract('year', Falta.data) == ano_atual,
+        db.extract('month', Falta.data) == mes_atual
+    ).all()
+
+    # Indexa para acesso rápido
+    faltas_dict = {(f.user_id, f.data.day): f for f in faltas_raw}
+
     faltas = {}
     for aluno in alunos:
         faltas[aluno.id] = {}
         for dia in dias_do_mes:
-            falta_existente = Falta.query.filter_by(user_id=aluno.id, data=dia, turma_id=turma.id).first()
-            if falta_existente:
-                if falta_existente.presente:
+            falta = faltas_dict.get((aluno.id, dia.day))
+            if falta:
+                if falta.presente:
                     faltas[aluno.id][dia.day] = 'presente'
-                elif falta_existente.falta_justificada:
+                elif falta.falta_justificada:
                     faltas[aluno.id][dia.day] = 'falta_justificada'
                 else:
                     faltas[aluno.id][dia.day] = 'falta'
             else:
                 faltas[aluno.id][dia.day] = 'sem_aula'
 
+    # --- POST otimizado: atualiza faltas com base no dicionário já carregado
     if request.method == 'POST':
         for aluno in alunos:
             for dia in dias_do_mes:
                 status = request.form.get(f'presente_{aluno.id}_{dia.day}')
-                falta_existente = Falta.query.filter_by(user_id=aluno.id, data=dia, turma_id=turma.id).first()
+                falta = faltas_dict.get((aluno.id, dia.day))
 
                 if status == 'presente':
-                    if falta_existente:
-                        falta_existente.presente = True
-                        falta_existente.falta_justificada = False
+                    if falta:
+                        if not falta.presente or falta.falta_justificada:
+                            falta.presente = True
+                            falta.falta_justificada = False
                     else:
                         nova_falta = Falta(user_id=aluno.id, data=dia, presente=True, turma_id=turma.id)
                         db.session.add(nova_falta)
 
                 elif status == 'falta':
-                    if falta_existente:
-                        falta_existente.presente = False
-                        falta_existente.falta_justificada = False
+                    if falta:
+                        if falta.presente or falta.falta_justificada:
+                            falta.presente = False
+                            falta.falta_justificada = False
                     else:
                         nova_falta = Falta(user_id=aluno.id, data=dia, presente=False, turma_id=turma.id)
                         db.session.add(nova_falta)
 
                 elif status == 'falta_justificada':
-                    if falta_existente:
-                        falta_existente.presente = False
-                        falta_existente.falta_justificada = True
+                    if falta:
+                        if falta.presente or not falta.falta_justificada:
+                            falta.presente = False
+                            falta.falta_justificada = True
                     else:
                         nova_falta = Falta(user_id=aluno.id, data=dia, presente=False, falta_justificada=True, turma_id=turma.id)
                         db.session.add(nova_falta)
 
                 elif status == 'sem_aula':
-                    if falta_existente:
-                        db.session.delete(falta_existente)
+                    if falta:
+                        db.session.delete(falta)
 
         db.session.commit()
         flash('Faltas atualizadas com sucesso!', 'success')
