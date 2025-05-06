@@ -10,10 +10,8 @@
     <!-- Manifest -->
     <link rel="manifest" href="/manifest.json">
 
-    <!-- Metadados para instalação no Android -->
+    <!-- Metadados para instalação -->
     <meta name="theme-color" content="#0284c7">
-
-    <!-- Metadados para iOS -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="ErichEDU">
@@ -61,7 +59,7 @@
             height: 2px;
             bottom: -2px;
             left: 0;
-            background-color: linear-gradient(135deg, #0284c7 0%, #004a87 100%);
+            background-image: linear-gradient(135deg, #0284c7 0%, #004a87 100%);
             transition: width 0.3s ease;
         }
 
@@ -75,21 +73,38 @@
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <header class="gradient-bg sticky top-0 z-50">
-        <nav class="container mx-auto px-6 py-4">
-            <div class="flex items-center justify-between">
+    <!-- Header Corrigido -->
+    <header class="gradient-bg sticky top-0 z-50 shadow-lg">
+        <nav class="container mx-auto px-4 sm:px-6 py-3">
+            <div class="flex items-center justify-between h-14">
                 <div class="text-white font-bold text-xl">ErichEDU</div>
-                <div class="hidden md:flex space-x-8">
+                
+                <!-- Desktop Navigation -->
+                <div class="hidden md:flex space-x-8 items-center">
                     <a href="#" class="nav-link text-white hover:text-gray-200">Início</a>
                     <a href="#" class="nav-link text-white hover:text-gray-200">Funcionalidades</a>
                     <a href="{{ url_for('prof.login') }}" class="nav-link text-white hover:text-gray-200">Professores</a>
                     <a href="{{ url_for('signup') }}" class="nav-link text-white hover:text-gray-200">Cadastre-se</a>
                     <a href="{{ url_for('login') }}" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-full transition-colors">Login</a>
                 </div>
-                <button class="md:hidden text-white">
-                    <i class="fas fa-bars text-2xl"></i>
-                </button>
+
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden flex items-center">
+                    <button class="text-white">
+                        <i class="fas fa-bars text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile Menu -->
+            <div class="md:hidden absolute top-full left-0 right-0 bg-blue-800 overflow-hidden transition-all duration-300 max-h-0">
+                <div class="px-4 py-4 space-y-4">
+                    <a href="#" class="block text-white">Início</a>
+                    <a href="#" class="block text-white">Funcionalidades</a>
+                    <a href="{{ url_for('prof.login') }}" class="block text-white">Professores</a>
+                    <a href="{{ url_for('signup') }}" class="block text-white">Cadastre-se</a>
+                    <a href="{{ url_for('login') }}" class="block bg-red-600 text-white px-4 py-2 rounded">Login</a>
+                </div>
             </div>
         </nav>
     </header>
@@ -221,14 +236,18 @@
             </div>
         </div>
     </footer>
+    
 
     <script>
-        // Mobile menu toggle
+        // Mobile Menu Controller
         const menuButton = document.querySelector('button');
-        const nav = document.querySelector('.md\\:flex');
-        
+        const mobileMenu = document.querySelector('.absolute');
+
         menuButton.addEventListener('click', () => {
-            nav.classList.toggle('hidden');
+            const isOpen = mobileMenu.classList.contains('max-h-0');
+            mobileMenu.classList.toggle('max-h-0', !isOpen);
+            mobileMenu.classList.toggle('max-h-96', isOpen);
+            mobileMenu.classList.toggle('py-4', isOpen);
         });
     </script>
 </body>
