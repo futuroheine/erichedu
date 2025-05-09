@@ -139,7 +139,7 @@ class DiaSemAula(db.Model):
     descricao = db.Column(db.String(255), nullable=True)
 
 class Aviso(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     titulo = db.Column(db.String(255), nullable=False)
     mensagem = db.Column(db.Text, nullable=False)
     tipo_aviso = db.Column(db.String(50), nullable=False)

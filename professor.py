@@ -9,7 +9,7 @@ from google.cloud import storage
 import hashlib
 
 # Importando modelos da aplicação principal
-from app import db, Teacher, Turma, Materia, QH, Falta, User, ChatMessage, Aviso, aviso_turma, horario_atual_brasilia
+from app import db, Teacher, Turma, Materia, QH, Falta, User, ChatMessage, Aviso, aviso_turma, horario_atual_brasilia, Suporte
 
 # Inicializando o Blueprint
 prof_bp = Blueprint('prof', __name__, url_prefix='/professor')
@@ -395,56 +395,56 @@ def perfil():
 @prof_bp.route('/avisos/<int:turma_id>', methods=['GET', 'POST'])
 @login_required
 def avisos(turma_id):
-    # Verificar se o usuário é um professor
     if not session.get('professor_id'):
         flash('Acesso negado. Esta área é restrita para professores.', 'danger')
         return redirect(url_for('login'))
     
-    # Obter o professor atual
     professor = Teacher.query.get(session['professor_id'])
-    
-    # Obter a turma especificada
     turma = Turma.query.get_or_404(turma_id)
-    
+
     if request.method == 'POST':
         titulo = request.form['titulo']
         conteudo = request.form['conteudo']
         
         if titulo and conteudo:
-            # Criar novo aviso
             novo_aviso = Aviso(
                 titulo=titulo,
-                conteudo=conteudo,
-                autor=professor.nome_completo,
+                mensagem=conteudo,
+                tipo_aviso='turma',        # sempre 'turma'
+                geral=False,               # não é geral
+                serie=None,                # não se aplica
                 timestamp=horario_atual_brasilia()
             )
-            
+
             try:
                 db.session.add(novo_aviso)
-                db.session.flush()  # Para obter o ID do aviso
-                
-                # Associar o aviso à turma
+                db.session.flush()  # agora o ID deve funcionar certinho!
+
+                print("Novo aviso ID:", novo_aviso.id)
+
+                # Associar o aviso à turma específica da URL
                 associacao = aviso_turma.insert().values(
                     aviso_id=novo_aviso.id,
                     turma_id=turma_id
                 )
                 db.session.execute(associacao)
-                
+
                 db.session.commit()
                 flash('Aviso publicado com sucesso!', 'success')
-                return redirect(url_for('prof.avisos', turma_id=turma_id))
+                return redirect(url_for('prof.avisos', turma_id=turma_id)) 
             except Exception as e:
                 db.session.rollback()
                 flash(f'Erro ao publicar aviso: {str(e)}', 'danger')
     
-    # Obter avisos da turma
     avisos = db.session.query(Aviso).join(
         aviso_turma,
         Aviso.id == aviso_turma.c.aviso_id
     ).filter(
         aviso_turma.c.turma_id == turma_id
     ).order_by(Aviso.timestamp.desc()).all()
+
     
+
     return render_template(
         'professor/avisos.html',
         professor=professor,
@@ -515,6 +515,30 @@ def relatorio_turma(turma_id):
         primary_collor=determinar_cor_professor()
     )
 
+@prof_bp.route('/suporte', methods=['GET', 'POST'])
+@login_required
+def suporte():
+    if request.method == 'POST':
+        nome = request.form.get('nome')
+        numero = request.form.get('numero')
+        assunto = request.form.get('assunto')
+        mensagem = request.form.get('mensagem')
+        
+        # Criar um novo registro na tabela de Suporte
+        nova_mensagem = Suporte(nome=nome, numero=numero, assunto=assunto, mensagem=mensagem, usuario_id=current_user.id)
+        
+        # Salvar a mensagem no banco de dados
+        db.session.add(nova_mensagem)
+        db.session.commit()
+
+        flash('Sua mensagem foi enviada com sucesso! Em breve entraremos em contato.', 'success')
+        return redirect(url_for('prof.suporte'))
+    
+    return render_template('professor/suporte.html', 
+                           user=current_user,
+                           primary_collor=determinar_cor_professor())
+
+
 @prof_bp.route('/')
 def index():
     return render_template('professor/welcome.html')
@@ -537,7 +561,7 @@ def adicionar_material(turma_id):
         if not nome_material or not descricao_material:
             flash('Por favor, preencha todos os campos obrigatórios.', 'danger')
             return redirect(url_for('prof.adicionar_material', turma_id=turma_id))
-        
+        add_a
         imagem_url = None
         if arquivo:
             imagem_url = upload_materia(arquivo)
