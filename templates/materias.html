@@ -141,6 +141,22 @@
         .pdf-icon { color: #e53935; }
         .doc-icon { color: #1565c0; }
         .ppt-icon { color: #e64a19; }
+        
+        .download-button {
+            display: none;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            margin-top: 0.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .download-button:hover {
+            background-color: var(--primary-color-hover);
+        }
     </style>
 </head>
 <body>
@@ -242,6 +258,13 @@
                                                 <i class="fas fa-download text-gray-500"></i>
                                             </div>
                                         </div>
+                                        <!-- Download button (only shown for non-image files) -->
+                                        <div class="download-button" 
+                                             data-url="{{ doc.url }}"
+                                             data-filename="{{ doc.nome }}"
+                                             onclick="event.stopPropagation(); downloadFile(this)">
+                                            <i class="fas fa-download mr-2"></i>Baixar Arquivo
+                                        </div>
                                     {% endfor %}
                                 </div>
                             {% endif %}
@@ -334,4 +357,134 @@
             const modalImage = document.getElementById('modalImage');
             const modalTitle = document.getElementById('modalTitle');
             const modalProfessor = document.getElementById('modalProfessor');
-            const modalDay =
+            const modalDay = document.getElementById('modalDay');
+
+            currentMediaUrl = imageElement.src;
+            currentMediaFilename = imageElement.alt;
+            currentMediaType = 'image';
+
+            modalImage.src = currentMediaUrl;
+            modalTitle.textContent = imageElement.dataset.subject;
+            modalProfessor.textContent = `Professor: ${imageElement.dataset.professor}`;
+            modalDay.textContent = `Dia da semana: ${imageElement.dataset.day}`;
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Document Modal functionality
+        function openDocumentModal(docElement) {
+            const modal = document.getElementById('documentModal');
+            const docViewer = document.getElementById('documentViewer');
+            const docModalTitle = document.getElementById('docModalTitle');
+            const docModalFilename = document.getElementById('docModalFilename');
+            const docModalProfessor = document.getElementById('docModalProfessor');
+
+            currentMediaUrl = docElement.dataset.url;
+            currentMediaFilename = docElement.dataset.filename;
+            currentMediaType = docElement.dataset.filetype;
+
+            // Check if it's an image to show in image modal instead
+            const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+            const fileExt = currentMediaUrl.split('.').pop().toLowerCase();
+            
+            if (imageExtensions.includes(fileExt)) {
+                // Create a temporary image element to use the image modal
+                const tempImg = document.createElement('img');
+                tempImg.src = currentMediaUrl;
+                tempImg.alt = currentMediaFilename;
+                tempImg.dataset.subject = docElement.dataset.subject;
+                tempImg.dataset.professor = docElement.dataset.professor;
+                tempImg.dataset.day = docElement.dataset.day;
+                tempImg.dataset.type = 'image';
+                openModal(tempImg);
+                return;
+            }
+
+            // For non-image files, use the document modal
+            docViewer.src = `https://docs.google.com/viewer?url=${encodeURIComponent(currentMediaUrl)}&embedded=true`;
+            docModalTitle.textContent = docElement.dataset.subject;
+            docModalFilename.textContent = `Arquivo: ${currentMediaFilename}`;
+            docModalProfessor.textContent = `Professor: ${docElement.dataset.professor}`;
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            document.getElementById('imageModal').classList.remove('active');
+            document.getElementById('documentModal').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        function downloadMedia() {
+            if (!currentMediaUrl) return;
+            
+            const a = document.createElement('a');
+            a.href = currentMediaUrl;
+            a.download = currentMediaFilename || 'download';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        function downloadDocument() {
+            downloadMedia(); // Reuse the same function
+        }
+
+        function shareMedia() {
+            if (navigator.share) {
+                navigator.share({
+                    title: currentMediaFilename,
+                    text: `Matéria: ${document.getElementById('modalTitle').textContent}`,
+                    url: currentMediaUrl
+                }).catch(err => {
+                    console.log('Error sharing:', err);
+                });
+            } else {
+                // Fallback for browsers that don't support Web Share API
+                alert('Seu navegador não suporta a função de compartilhamento nativo. Copie o link manualmente.');
+            }
+        }
+
+        function shareDocument() {
+            shareMedia(); // Reuse the same function
+        }
+        
+        // Function to download file directly from the download button
+        function downloadFile(buttonElement) {
+            const url = buttonElement.dataset.url;
+            const filename = buttonElement.dataset.filename;
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename || 'download';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+        
+        // Show download buttons only for non-image files
+        document.addEventListener('DOMContentLoaded', function() {
+            const downloadButtons = document.querySelectorAll('.download-button');
+            const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+            
+            downloadButtons.forEach(button => {
+                const url = button.dataset.url;
+                const fileExt = url.split('.').pop().toLowerCase();
+                
+                if (!imageExtensions.includes(fileExt)) {
+                    button.style.display = 'block';
+                }
+            });
+        });
+
+        // Close modal when pressing Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>

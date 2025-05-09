@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 import uuid
 from pytz import timezone
 from google.cloud import storage
+from google.oauth2 import service_account
 import hashlib
 
 # Importando modelos da aplicação principal
@@ -19,24 +20,42 @@ def horario_atual_brasilia():
     fuso_brasilia = timezone('America/Sao_Paulo')
     return datetime.now(fuso_brasilia)
 
+import mimetypes
+import hashlib
+import os
+from google.cloud import storage
+
 def upload_materia(foto):
     if foto:
-        # Criptografar o nome do arquivo
-        nome_arquivo = hashlib.sha256(foto.filename.encode()).hexdigest() + '.jpg'
-        
+        # Obter extensão do arquivo original
+        _, ext = os.path.splitext(foto.filename)
+        ext = ext.lower()
+
+        # Extensões e tipos MIME permitidos
+        extensoes_permitidas = ['.jpg', '.jpeg', '.png', '.gif', '.pdf', '.doc', '.docx', '.ppt', '.pptx', '.xls', '.xlsx']
+        if ext not in extensoes_permitidas:
+            return None  # Bloqueia extensões não permitidas
+
+        # Criptografar nome com hash + manter extensão original
+        nome_arquivo = hashlib.sha256(foto.filename.encode()).hexdigest() + ext
+
+        # Descobrir o tipo MIME (se possível)
+        content_type = mimetypes.guess_type(foto.filename)[0] or foto.content_type or 'application/octet-stream'
+
         # Configurar o cliente do Firebase Storage
-        client = storage.Client()
+        credenciais = service_account.Credentials.from_service_account_file("/home/andrew/erichedu/erichedu/serviceAccountKey.json")
+        client = storage.Client(credentials=credenciais, project='app-erichedu')
         bucket = client.get_bucket('app-erichedu.appspot.com')
 
-        # Fazer upload da imagem
+        # Upload
         blob = bucket.blob(nome_arquivo)
-        blob.upload_from_file(foto)
+        blob.upload_from_file(foto, content_type=content_type)
+        blob.make_public()
 
-        # Retornar o caminho da imagem
-        return f"https://storage.googleapis.com/app-erichedu.appspot.com/{nome_arquivo}"
+        return blob.public_url
 
-    
     return None
+
 
 # Função para determinar a cor primária baseada no tipo de usuário professor
 def determinar_cor_professor():
@@ -561,7 +580,7 @@ def adicionar_material(turma_id):
         if not nome_material or not descricao_material:
             flash('Por favor, preencha todos os campos obrigatórios.', 'danger')
             return redirect(url_for('prof.adicionar_material', turma_id=turma_id))
-        add_a
+        
         imagem_url = None
         if arquivo:
             imagem_url = upload_materia(arquivo)
