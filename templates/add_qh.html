@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Adicionar Quadro de Horários - ErichEDU</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#4CAF50"> <!-- Cor da barra de endereço no Android -->
@@ -17,95 +19,158 @@
     <link rel="icon" type="image/png" sizes="192x192" href="{{ url_for('static', filename='erichedu-icon.png') }}">
     <link rel="icon" type="image/png" sizes="512x512" href="{{ url_for('static', filename='erichedu-icon.png') }}">
     
-    <!-- Estilos -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    
-    <!-- JQuery -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
     <style>
-        .form-group {
-            margin-bottom: 20px; /* Espaço entre os elementos do formulário */
+        :root {
+            --primary-color: {{ primary_collor }};
+            --primary-color-hover: {{ primary_collor }}dd;
+            --primary-color-light: {{ primary_collor }}22;
         }
-
-        .login-input {
-            width: 100%;
-            padding: 15px;
-            margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            font-size: 16px;
-            outline: none;
-            box-sizing: border-box;
+        
+        body {
+            --tw-bg-opacity: 1;
+            background-color: rgb(243 244 246 / var(--tw-bg-opacity));
         }
-
-        .login-input:focus {
-            border-color: var(--secondary-color); /* Verde no foco */
+        
+        #sidebar {
+            background-color: var(--primary-color);
+            z-index: 50;
+        }
+        
+        .sidebar-link:hover {
+            background-color: var(--primary-color-hover);
+        }
+        
+        .section-title {
+            color: var(--primary-color);
+        }
+        
+        .quick-action {
+            background-color: var(--primary-color-light);
+            color: var(--primary-color);
+        }
+        
+        .quick-action:hover {
+            background-color: var(--primary-color-hover)22;
+        }
+        
+        #sidebarToggle {
+            background-color: var(--primary-color);
+            z-index: 60;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Barra lateral -->
-        <div class="sidebar" id="sidebar">
-            <button class="toggle-btn" id="toggle-btn">☰</button>
-            <h2 class="sidebar-title"><span class="menu-text">Menu</span></h2>
-            <ul class="sidebar-menu">
-                <li><a href="{{ url_for('home') }}">INÍCIO</a></li>
-                <li><a href="{{ url_for('profile') }}">EU</a></li>
-                <li><a href="{{ url_for('materias') }}">MATÉRIAS</a></li>
-                <li><a href="{{ url_for('chat', turma_id=user.turma_id) }}">CHAT</a></li>
-                <li><a href="{{ url_for('cardapio') }}">CARDÁPIO</a></li>
-                {% if current_user.is_admin %}
-                    <li><a href="{{ url_for('admin') }}">ÁREA DO ADMINISTRADOR</a></li>
-                {% endif %}
-                <li><a href="{{ url_for('logout') }}">LOGOUT</a></li>
-            </ul>
+    <div class="flex min-h-screen relative">
+        <!-- Sidebar Mobile-Friendly -->
+        <div id="sidebar" class="fixed top-0 bottom-0 left-0 z-50 w-64 text-white transform -translate-x-full transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:block overflow-y-auto">
+            <div class="p-5">
+                <h2 class="text-2xl font-bold mb-6">ErichEdu</h2>
+                <nav>
+                    <ul class="space-y-3">
+                        <li><a href="{{ url_for('home') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-home mr-3"></i>Início</a></li>
+                        <li><a href="{{ url_for('profile') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-user mr-3"></i>Perfil</a></li>
+                        <li><a href="{{ url_for('materias') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-book mr-3"></i>Matérias</a></li>
+                        <li><a href="{{ url_for('cardapio') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-utensils mr-3"></i>Cardápio</a></li>
+                        <li><a href="{{ url_for('suporte') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-headset mr-3"></i>Suporte</a></li>
+                        <li><a href="{{ url_for('criadores') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-users mr-3"></i>Criadores</a></li>
+                        <li><a href="{{ url_for('projetos') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-project-diagram mr-3"></i>Projetos</a></li>
+                        {% if current_user.is_admin %}
+                        <li><a href="{{ url_for('admin') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-cogs mr-3"></i>Admin</a></li>
+                        {% endif %}
+                        <li><a href="{{ url_for('logout') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                            <i class="fas fa-sign-out-alt mr-3"></i>Logout</a></li>
+                    </ul>
+                </nav>
+            </div>
         </div>
 
-        <!-- Conteúdo principal -->
-        <div class="content">
-            <h1>Adicionar Quadro de Horários</h1>
-            <form method="POST">
-                {{ form.hidden_tag() }}
-                
-                <div class="form-group">
-                    {{ form.materia.label }} 
-                    {{ form.materia(class="login-input") }} <!-- Aplicando a classe de estilo -->
-                </div>
-                
-                <div class="form-group">
-                    {{ form.professor.label }} 
-                    {{ form.professor(class="login-input") }} <!-- Aplicando a classe de estilo -->
-                </div>
-                
-                <div class="form-group">
-                    {{ form.horario.label }} 
-                    {{ form.horario(class="login-input") }} <!-- Aplicando a classe de estilo -->
-                </div>
-                
-                <div class="form-group">
-                    {{ form.dia_da_semana.label }} 
-                    {{ form.dia_da_semana(class="login-input") }}  <!-- Novo campo para o dia da semana, aplicando a classe -->
-                </div>
-                
-                <div class="form-group">
-                    {{ form.turma_id.label }} 
-                    {{ form.turma_id(class="login-input") }} <!-- Aplicando a classe de estilo -->
-                </div>
-                
-                <div class="form-group">
-                    {{ form.submit(class="login-input") }} <!-- Aplicando a mesma classe para o botão de submit -->
-                </div>
-            </form>
-        </div>
+        <!-- Conteúdo Principal -->
+        <main class="flex-1 pt-16 p-4 md:p-8 transition-all duration-300 ease-in-out">
+            <!-- Botão Mobile Toggle Sidebar -->
+            <button id="sidebarToggle" class="md:hidden fixed top-4 left-4 z-60 text-white p-2 rounded-full shadow-lg">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <!-- Cabeçalho -->
+            <header class="mb-6">
+                <h1 class="text-3xl font-bold text-gray-800 flex items-center">
+                    <i class="fas fa-calendar-alt mr-3"></i>Adicionar Quadro de Horários
+                </h1>
+                <p class="text-gray-600">Preencha os campos abaixo para adicionar um novo horário</p>
+            </header>
+
+            <!-- Formulário -->
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <form method="POST" class="space-y-6">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="form-group">
+                        <label for="{{ form.materia.id }}" class="block text-sm font-medium text-gray-700 mb-1">
+                            <i class="fas fa-book mr-2"></i>{{ form.materia.label.text }}
+                        </label>
+                        {{ form.materia(class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent") }}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.professor.id }}" class="block text-sm font-medium text-gray-700 mb-1">
+                            <i class="fas fa-chalkboard-teacher mr-2"></i>{{ form.professor.label.text }}
+                        </label>
+                        {{ form.professor(class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent") }}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.horario.id }}" class="block text-sm font-medium text-gray-700 mb-1">
+                            <i class="fas fa-clock mr-2"></i>{{ form.horario.label.text }}
+                        </label>
+                        {{ form.horario(class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent") }}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.dia_da_semana.id }}" class="block text-sm font-medium text-gray-700 mb-1">
+                            <i class="fas fa-calendar-day mr-2"></i>{{ form.dia_da_semana.label.text }}
+                        </label>
+                        {{ form.dia_da_semana(class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent") }}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.turma_id.id }}" class="block text-sm font-medium text-gray-700 mb-1">
+                            <i class="fas fa-users mr-2"></i>{{ form.turma_id.label.text }}
+                        </label>
+                        {{ form.turma_id(class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent") }}
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ form.submit(class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50") }}
+                    </div>
+                </form>
+            </div>
+        </main>
     </div>
 
     <script>
-        $(document).ready(function() {
-            $('#toggle-btn').click(function() {
-                $('#sidebar').toggleClass('collapsed');
-            });
+        document.getElementById('sidebarToggle').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('-translate-x-full');
+        });
+
+        // Adicionar overlay para fechar sidebar ao clicar fora
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const isClickInsideSidebar = sidebar.contains(event.target);
+            const isClickOnToggle = sidebarToggle.contains(event.target);
+
+            if (!isClickInsideSidebar && !isClickOnToggle && !sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.add('-translate-x-full');
+            }
         });
     </script>
 </body>
