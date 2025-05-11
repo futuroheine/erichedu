@@ -391,5 +391,84 @@ setInterval(fetchWeather, 1800000);    // Atualiza o clima a cada 30 minutos
             }
         });
     </script>
+<script>
+    document.addEventListener("DOMContentLoaded", async () => {
+        const lastSeenAviso = localStorage.getItem("lastAvisoSeen") || 0;
+        const novosAvisos = {{ avisos|length }};
+        const avisoMaisRecente = {{ avisos[0].id if avisos else 0 }};
+    
+        // Mostra aviso se tiver algum novo não visto
+        if (avisoMaisRecente > lastSeenAviso) {
+            const aviso = {
+                id: {{ avisos[0].id }},
+                titulo: "{{ avisos[0].titulo|escape|replace('\n', ' ') }}",
+                mensagem: "{{ avisos[0].mensagem|escape|replace('\n', ' ') }}",
+                timestamp: "{{ avisos[0].timestamp.strftime('%d/%m/%Y %H:%M') }}"
+            };
+
+            const reg = await navigator.serviceWorker.getRegistration();
+            if (reg) {
+                reg.active.postMessage({
+                    type: 'SHOW_NOTIFICATION',
+                    title: aviso.titulo,
+                    body: aviso.mensagem
+                });
+                localStorage.setItem("lastAvisoSeen", aviso.id);
+            }
+        }
+    });
+    function urlBase64ToUint8Array(base64String) {
+  try {
+    // Adicionar padding, se necessário
+    base64String = base64String.replace(/-/g, '+').replace(/_/g, '/');
+    const paddedBase64 = base64String.padEnd(base64String.length + (4 - base64String.length % 4) % 4, '=');
+    return new Uint8Array(atob(paddedBase64).split('').map(c => c.charCodeAt(0)));
+  } catch (e) {
+    console.error("Erro ao decodificar Base64", e);
+    throw e;
+  }
+}
+
+    // Registrar Service Worker e solicitar permissão de notificações
+    if ('serviceWorker' in navigator && 'Notification' in window) {
+        navigator.serviceWorker.register('/sw.js').then(reg => {
+            Notification.requestPermission().then(permission => {
+                if (permission === 'granted') {
+                    console.log('Notificações permitidas');
+                    
+                    // Solicitar a assinatura de push quando a permissão for concedida
+                    reg.pushManager.subscribe({
+                        userVisibleOnly: true,
+                        applicationServerKey: urlBase64ToUint8Array('BNJ997ZbLlkj0v5eyGFAEt5k4Lafkoqj3frN7MjH6DcW-IJQrYzP2bcnViMAfYlG3TkXV-8Ksdch8cNGZ1VfyoA') // Coloque a sua chave pública VAPID aqui
+                    }).then(subscription => {
+                        // Envie a assinatura para o backend salvar
+                        fetch('/save-subscription', {
+                            method: 'POST',
+                            body: JSON.stringify(subscription),
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                        });
+                    });
+                }
+            });
+        });
+    }
+    
+    // Função para converter a chave pública VAPID
+    function urlBase64ToUint8Array(base64String) {
+        const padding = '='.repeat((4 - base64String.length % 4) % 4);
+        const base64 = (base64String + padding)
+            .replace(/-/g, '+')
+            .replace(/_/g, '/');
+        const rawData = window.atob(base64);
+        const outputArray = new Uint8Array(rawData.length);
+        for (let i = 0; i < rawData.length; ++i) {
+            outputArray[i] = rawData.charCodeAt(i);
+        }
+        return outputArray;
+    }
+</script>
+ 
 </body>
 </html>

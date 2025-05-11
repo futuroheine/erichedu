@@ -94,6 +94,7 @@ class Turma(db.Model):
 
     alunos = db.relationship('User', back_populates='turma')
     faltas = db.relationship('Falta', back_populates='turma')
+    push_subscriptions = db.relationship("PushSubscription", back_populates="turma")
 
     # Relacionamento muitos para muitos com avisos
     avisos = db.relationship('Aviso', secondary='aviso_turma', back_populates='turmas')
@@ -152,6 +153,35 @@ class Aviso(db.Model):
 
     def __repr__(self):
         return f'Aviso {self.titulo}'
+
+class PushSubscription(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    endpoint = db.Column(db.String(512), nullable=False)
+    p256dh = db.Column(db.String(512), nullable=False)
+    auth = db.Column(db.String(512), nullable=False)
+    turma_id = db.Column(db.Integer, db.ForeignKey('turma.id'))
+
+    user = db.relationship('User', backref='push_subscriptions')
+    turma = db.relationship('Turma', backref='push_subscriptions-rel')
+
+
+@app.route('/save-subscription', methods=['POST'])
+@login_required
+def save_subscription():
+    subscription = request.get_json()
+
+    # Salve a assinatura de Push no banco
+    push_subscription = PushSubscription(
+        user_id=current_user.id,
+        endpoint=subscription['endpoint'],
+        p256dh=subscription['keys']['p256dh'],
+        auth=subscription['keys']['auth']
+    )
+    db.session.add(push_subscription)
+    db.session.commit()
+
+    return '', 201
 
 
 class ChatMessage(db.Model):
@@ -1432,14 +1462,20 @@ def projetos():
     # Renderiza o template de projetos
     return render_template('projetos.html', user=current_user, primary_collor=cor_primaria)
 
-@app.route('/add_aviso', methods=['POST'])
+from pywebpush import webpush, WebPushException
+import json
+
 def add_aviso():
     titulo = request.form.get('titulo')
     mensagem = request.form.get('mensagem')
     tipo_aviso = request.form.get('tipo_aviso')  # Pode ser 'geral', 'turma' ou 'serie'
     turmas_ids = request.form.getlist('turmas_ids')  # Lista de IDs das turmas selecionadas
     serie = request.form.get('serie')  # Série selecionada (1, 2 ou 3)
-    geral = request.form.get('geral') == 'on'  # Checkbox para aviso geral
+    
+    # Inicialize a variável 'geral' com False por padrão
+    geral = False
+    if tipo_aviso == 'geral':
+        geral = request.form.get('geral') == 'on'  # Checkbox para aviso geral
 
     # Mapeamento de séries para IDs de turmas
     series_para_turmas = {
@@ -1470,10 +1506,11 @@ def add_aviso():
 
         elif tipo_aviso == 'turma' and turmas_ids:
             # Garantir que `turmas_ids` é uma lista de inteiros
-            turmas_ids = [int(turma_id) for turma_id in turmas_ids]
-            turmas = Turma.query.filter(Turma.id.in_(turmas_ids)).all()
-            for turma in turmas:
-                aviso.turmas.append(turma)
+            turmas_ids = [int(turma_id) for turma_id in turmas_ids if turma_id.isdigit()]  # Filtra apenas números válidos
+            if turmas_ids:  # Verifica se turmas_ids não está vazio
+                turmas = Turma.query.filter(Turma.id.in_(turmas_ids)).all()
+                for turma in turmas:
+                    aviso.turmas.append(turma)
 
         elif tipo_aviso == 'serie' and serie in series_para_turmas:
             # Selecionar os IDs das turmas correspondentes à série
@@ -1483,10 +1520,41 @@ def add_aviso():
                 aviso.turmas.append(turma)
 
         db.session.commit()
-        return "Aviso adicionado com sucesso!"
+
+        # Agora que o aviso foi criado, vamos enviar as notificações push para os alunos
+        assinaturas = PushSubscription.query.filter(PushSubscription.turma_id.in_([turma.id for turma in aviso.turmas])).all()
+
+        for assinatura in assinaturas:
+            enviar_push_notification(assinatura.endpoint, assinatura.p256dh, assinatura.auth, aviso.titulo, aviso.mensagem)
+
+        return "Aviso adicionado com sucesso e notificações enviadas!"
     except Exception as e:
         db.session.rollback()
         return f"Erro ao adicionar aviso: {str(e)}", 400
+
+
+def enviar_push_notification(endpoint, p256dh, auth, title, message):
+    try:
+        response = webpush(
+            subscription_info={
+                "endpoint": endpoint,
+                "keys": {
+                    "p256dh": p256dh,
+                    "auth": auth
+                }
+            },
+            data=json.dumps({
+                "title": title,
+                "message": message
+            }),
+            vapid_private_key="PMaNHDzR_8s9Q7HxDrgKn3r7DSXRw0NWCx2PvEXl2zY",  # Coloque sua chave privada VAPID
+            vapid_claims={
+                "sub": "mailto:suporteerichedu@gmail.com"
+            }
+        )
+        return response
+    except WebPushException as e:
+        print(f"Erro ao enviar push: {e}")
 
 @app.route('/cardapio', methods=['GET', 'POST'])
 @login_required
@@ -1726,6 +1794,11 @@ def criadores():
 @app.route('/favicon.ico')
 def fiv():
     return send_from_directory('static', 'favicon.ico')
+
+
+@app.route('/sw.js')
+def swjs():
+    return send_from_directory('static', 'sw.js')
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():

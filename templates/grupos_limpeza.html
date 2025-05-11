@@ -221,6 +221,40 @@
         </div>
 
         <div class="p-6">
+
+            <!-- Seção de Grupos Cadastrados -->
+<div class="mb-8">
+    <h2 class="text-xl font-semibold mb-4 text-{{ primary_collor }}">Grupos Cadastrados</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {% for grupo in grupos_limpeza %}
+        <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+            <div class="flex justify-between items-start mb-2">
+                <h3 class="font-semibold text-lg">{{ grupo.nome }}</h3>
+                <div class="flex space-x-2">
+                    <a href="{{ url_for('editar_grupo_limpeza', grupo_id=grupo.id) }}" 
+                       class="text-blue-500 hover:text-blue-700 text-sm">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    <a href="{{ url_for('excluir_grupo_limpeza', grupo_id=grupo.id) }}" 
+                       class="text-red-500 hover:text-red-700 text-sm"
+                       onclick="return confirm('Tem certeza que deseja excluir este grupo?');">
+                        <i class="fas fa-trash"></i>
+                    </a>
+                </div>
+            </div>
+            <p class="text-sm text-gray-500 mb-2">Modelo: {{ grupo.modelo.value }}</p>
+            <div class="text-sm">
+                <span class="font-medium">Membros:</span>
+                <ul class="list-disc list-inside pl-2 mt-1">
+                    {% for membro in grupo.membros %}
+                    <li>{{ membro.nome_completo }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
             <!-- Modern Calendar Section -->
             <div class="mb-8">
                 <h2 class="text-xl font-semibold mb-4 text-{{ primary_collor }}">Calendário de Limpeza</h2>
