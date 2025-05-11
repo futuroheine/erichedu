@@ -123,6 +123,40 @@ aviso_turma = db.Table('aviso_turma',
     db.Column('turma_id', db.Integer, db.ForeignKey('turma.id'), primary_key=True)
 )
 
+from flask import jsonify, request
+from datetime import datetime
+
+@app.route('/api/novos-avisos/<int:turma_id>', methods=['GET'])
+def get_novos_avisos(turma_id):
+    try:
+        # Timestamp do último aviso (pode ser enviado pelo Service Worker)
+        last_timestamp = request.args.get('last_timestamp', type=int)
+        
+        if last_timestamp is None:
+            last_timestamp = 0  # Se não for fornecido, assume que o usuário não tem avisos
+
+        # Buscar os avisos para a turma, filtrando por timestamp maior que o último
+        avisos = Aviso.query.join(aviso_turma).join(Turma).filter(
+            Turma.id == turma_id,
+            Aviso.timestamp > datetime.fromtimestamp(last_timestamp)
+        ).all()
+
+        # Converter os avisos para um formato JSON
+        avisos_data = [
+            {
+                'titulo': aviso.titulo,
+                'mensagem': aviso.mensagem,
+                'timestamp': aviso.timestamp.isoformat()
+            }
+            for aviso in avisos
+        ]
+        
+        return jsonify({'avisos': avisos_data})
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 
 class Falta(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -931,14 +965,24 @@ def login():
         user = User.query.filter_by(email=email).first()
 
         if user and check_password_hash(user.senha_hash, senha):
+            # Armazena o usuário na sessão
             login_user(user)
             session['user_id'] = user.id
+            
+            # Supondo que a turma esteja associada ao usuário
+            # Vamos buscar a turma do usuário e armazená-la na sessão
+            turma = user.turma  # Aqui você pega a turma associada ao usuário
+            if turma:
+                session['turma_id'] = turma.id
+                print('turma na sessão')  # Armazena o ID da turma na sessão
+            
             flash('Login bem-sucedido!', 'success')
             return redirect(url_for('home'))
         else:
             flash('Email ou senha inválidos.', 'danger')
     
     return render_template('login.html')
+
 
 @app.route('/materias', methods=['GET'])
 @login_required
