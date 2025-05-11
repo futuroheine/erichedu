@@ -5,6 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ErichEdu - Home</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        window.onload = function() {
+            // Captura o parâmetro 'turma_id' da URL (não está sendo usado, mas pode ser útil)
+            const urlParams = new URLSearchParams(window.location.search);
+            const turmaIdUrl = urlParams.get('turma_id'); // Se você quiser pegar diretamente da URL, use esse valor
+    
+            // Verifica se o localStorage tem a turmaId
+            const turmaId = localStorage.getItem('turmaId') || turmaIdUrl; // Prioriza o localStorage, mas usa a URL se não encontrar no localStorage
+    
+            if (turmaId) {
+                // Verifique se o Service Worker está ativo antes de enviar a mensagem
+                if (navigator.serviceWorker.controller) {
+                    console.log('Service Worker encontrado');
+                    navigator.serviceWorker.controller.postMessage({
+                        type: 'SET_TURMA_ID',
+                        turmaId: turmaId
+                    });
+                }
+            } else {
+                console.log('turmaId não encontrado');
+            }
+        };
+    </script>
+    
+
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {

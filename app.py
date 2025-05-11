@@ -965,23 +965,22 @@ def login():
         user = User.query.filter_by(email=email).first()
 
         if user and check_password_hash(user.senha_hash, senha):
-            # Armazena o usuário na sessão
             login_user(user)
             session['user_id'] = user.id
-            
-            # Supondo que a turma esteja associada ao usuário
-            # Vamos buscar a turma do usuário e armazená-la na sessão
-            turma = user.turma  # Aqui você pega a turma associada ao usuário
+            # Aqui pegamos a turma associada ao usuário
+            turma = user.turma
             if turma:
                 session['turma_id'] = turma.id
-                print('turma na sessão')  # Armazena o ID da turma na sessão
-            
+                print('Turma na sessão:', turma.id)  # Apenas para fins de depuração
+                # Aqui você pode enviar o turma_id para o frontend de alguma forma
+                return redirect(url_for('home', turma_id=turma.id))
             flash('Login bem-sucedido!', 'success')
             return redirect(url_for('home'))
         else:
             flash('Email ou senha inválidos.', 'danger')
     
     return render_template('login.html')
+
 
 
 @app.route('/materias', methods=['GET'])
@@ -1509,6 +1508,7 @@ def projetos():
 from pywebpush import webpush, WebPushException
 import json
 
+@app.route('/add_aviso', methods=['POST'])
 def add_aviso():
     titulo = request.form.get('titulo')
     mensagem = request.form.get('mensagem')
