@@ -1,6 +1,6 @@
 # ErichEDU
 
-ErichEDU é uma plataforma educacional proprietária desenvolvida por Andrew (ou pela empresa responsável). Este software é distribuído sob uma licença fechada; todos os direitos são reservados.
+ErichEDU é uma plataforma educacional proprietária desenvolvida por Andrew Cunha. Este software é distribuído sob uma licença fechada; todos os direitos são reservados.
 
 ## Sobre
 
