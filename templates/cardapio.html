@@ -30,127 +30,218 @@
         .section-title {
             color: var(--primary-color);
         }
+
+        /* Mobile table improvements */
+        @media (max-width: 768px) {
+            .mobile-table-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .mobile-card {
+                display: none;
+            }
+            
+            .desktop-table {
+                min-width: 800px;
+            }
+            
+            /* Show cards on very small screens */
+            @media (max-width: 640px) {
+                .desktop-table {
+                    display: none;
+                }
+                
+                .mobile-card {
+                    display: block;
+                }
+            }
+        }
+
+        /* Overlay for sidebar */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 40;
+        }
+        
+        .sidebar-overlay.active {
+            display: block;
+        }
+
+        /* Improved form layout */
+        .form-grid {
+            display: grid;
+            gap: 1rem;
+        }
+        
+        @media (min-width: 640px) {
+            .form-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (min-width: 1024px) {
+            .form-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
     </style>
 </head>
 <body class="flex min-h-screen relative">
+    <!-- Overlay para fechar sidebar -->
+    <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
     <!-- Sidebar Mobile-Friendly -->
     <div id="sidebar" class="fixed top-0 bottom-0 left-0 z-50 w-64 text-white transform -translate-x-full transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:block overflow-y-auto">
-        <div class="p-5">
-            <h2 class="text-2xl font-bold mb-6">ErichEdu</h2>
+        <div class="p-4 sm:p-5">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl sm:text-2xl font-bold">ErichEdu</h2>
+                <button id="closeSidebar" class="md:hidden text-white hover:text-gray-300">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
             <nav>
-                <ul class="space-y-3">
-                                    <li><a href="{{ url_for('home') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
-                                        <i class="fas fa-home mr-3"></i>Início</a></li>
-                                    <li><a href="{{ url_for('profile') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
-                                        <i class="fas fa-user mr-3"></i>Perfil</a></li>
-                                    <li><a href="{{ url_for('materias') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
-                                        <i class="fas fa-book mr-3"></i>Matérias</a></li>
-                                    <li><a href="{{ url_for('cardapio') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
-                                        <i class="fas fa-utensils mr-3"></i>Cardápio</a></li>
-                                    <li><a href="{{ url_for('suporte') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
-                                        <i class="fas fa-headset mr-3"></i>Suporte</a></li>
-                                    <li><a href="{{ url_for('criadores') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
-                                        <i class="fas fa-users mr-3"></i>Criadores</a></li>
-                                    <li><a href="{{ url_for('projetos') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
-                                        <i class="fas fa-project-diagram mr-3"></i>Projetos</a></li>
-                                    {% if current_user.is_admin %}
-                                    <li><a href="{{ url_for('admin') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
-                                        <i class="fas fa-cogs mr-3"></i>Admin</a></li>
-                                    {% endif %}
-                                    <li><a href="{{ url_for('logout') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
-                                        <i class="fas fa-sign-out-alt mr-3"></i>Logout</a></li>
+                <ul class="space-y-2 sm:space-y-3">
+                    <li><a href="{{ url_for('home') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition text-sm sm:text-base">
+                        <i class="fas fa-home mr-3"></i>Início</a></li>
+                    <li><a href="{{ url_for('profile') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition text-sm sm:text-base">
+                        <i class="fas fa-user mr-3"></i>Perfil</a></li>
+                    <li><a href="{{ url_for('materias') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition text-sm sm:text-base">
+                        <i class="fas fa-book mr-3"></i>Matérias</a></li>
+                    <li><a href="{{ url_for('cardapio') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition text-sm sm:text-base">
+                        <i class="fas fa-utensils mr-3"></i>Cardápio</a></li>
+                    <li><a href="{{ url_for('suporte') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition text-sm sm:text-base">
+                        <i class="fas fa-headset mr-3"></i>Suporte</a></li>
+                    <li><a href="{{ url_for('criadores') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition text-sm sm:text-base">
+                        <i class="fas fa-users mr-3"></i>Criadores</a></li>
+                    <li><a href="{{ url_for('projetos') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition text-sm sm:text-base">
+                        <i class="fas fa-project-diagram mr-3"></i>Projetos</a></li>
+                    {% if current_user.is_admin %}
+                    <li><a href="{{ url_for('admin') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition text-sm sm:text-base">
+                        <i class="fas fa-cogs mr-3"></i>Admin</a></li>
+                    {% endif %}
+                    <li><a href="{{ url_for('logout') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition text-sm sm:text-base">
+                        <i class="fas fa-sign-out-alt mr-3"></i>Logout</a></li>
                 </ul>
             </nav>
         </div>
     </div>
 
     <!-- Conteúdo Principal -->
-    <main class="flex-1 pt-16 p-4 md:p-8 transition-all duration-300 ease-in-out">
+    <main class="flex-1 pt-14 sm:pt-16 p-3 sm:p-4 md:p-8 transition-all duration-300 ease-in-out">
         <!-- Botão Mobile Toggle Sidebar -->
-        <button id="sidebarToggle" class="md:hidden fixed top-4 left-4 z-60 text-white p-2 rounded-full shadow-lg" style="background-color: var(--primary-color)">
-            <i class="fas fa-bars"></i>
+        <button id="sidebarToggle" class="md:hidden fixed top-3 left-3 z-60 text-white p-2 rounded-full shadow-lg" style="background-color: var(--primary-color)">
+            <i class="fas fa-bars text-lg"></i>
         </button>
 
         <!-- Cabeçalho -->
-        <header class="mb-6">
-            <h1 class="text-3xl font-bold text-gray-800">Cardápio</h1>
+        <header class="mb-4 sm:mb-6">
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">Cardápio</h1>
+            <p class="text-gray-600 mt-1 text-sm sm:text-base">Confira o cardápio da semana</p>
         </header>
 
-        <!-- Tabela de Cardápio -->
-        <div class="bg-white p-5 rounded-lg shadow-md">
-            <table class="w-full border-collapse">
-                <thead>
-                    <tr class="bg-green-500 text-white">
-                        <th class="p-3 text-left">Dia</th>
-                        <th class="p-3 text-left">Almoço</th>
-                        <th class="p-3 text-left">Café</th>
-                        <th class="p-3 text-left">1º Ano</th>
-                        <th class="p-3 text-left">2º Ano</th>
-                        <th class="p-3 text-left">3º Ano</th>
-                    </tr>
-                </thead>
-                <tbody>
+        <!-- Tabela de Cardápio - Desktop -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden mb-4">
+
+
+            <!-- Cards para Mobile (telas muito pequenas) -->
+            <div class="mobile-card p-4">
+                <div class="space-y-4">
                     {% for item in menu_items %}
-                    <tr class="border-b hover:bg-gray-100 transition">
-                        <td class="p-3">{{ item.day }}</td>
-                        <td class="p-3">{{ item.lunch }}</td>
-                        <td class="p-3">{{ item.coffee }}</td>
-                        <td class="p-3">{{ item.first_year_time }}</td>
-                        <td class="p-3">{{ item.second_year_time }}</td>
-                        <td class="p-3">{{ item.third_year_time }}</td>
-                    </tr>
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="font-semibold text-lg text-green-600">{{ item.day }}</h3>
+                            <i class="fas fa-calendar-day text-green-500"></i>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex items-start">
+                                <i class="fas fa-utensils text-gray-500 mt-1 mr-2 w-4"></i>
+                                <div>
+                                    <span class="font-medium text-sm">Almoço:</span>
+                                    <p class="text-sm text-gray-600">{{ item.lunch }}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <i class="fas fa-coffee text-gray-500 mt-1 mr-2 w-4"></i>
+                                <div>
+                                    <span class="font-medium text-sm">Café:</span>
+                                    <p class="text-sm text-gray-600">{{ item.coffee }}</p>
+                                </div>
+                            </div>
+                            <div class="bg-gray-50 rounded p-2 mt-3">
+                                <h4 class="font-medium text-sm mb-2">Horários:</h4>
+                                <div class="grid grid-cols-3 gap-2 text-xs">
+                                    <div class="text-center">
+                                        <div class="font-medium">1º Ano</div>
+                                        <div class="text-gray-600">{{ item.first_year_time }}</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="font-medium">2º Ano</div>
+                                        <div class="text-gray-600">{{ item.second_year_time }}</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="font-medium">3º Ano</div>
+                                        <div class="text-gray-600">{{ item.third_year_time }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     {% endfor %}
-                </tbody>
-            </table>
+                </div>
+            </div>
         </div>
 
         <!-- Seção de Edição (para usuários do grêmio) -->
         {% if is_gremio %}
-        <div class="mt-6">
+        <div class="mt-4 sm:mt-6">
             <button 
                 id="toggleEditButton" 
-                class="px-4 py-2 rounded text-white transition hover:opacity-80" 
+                class="w-full sm:w-auto px-4 py-3 rounded text-white transition hover:opacity-80 flex items-center justify-center" 
                 style="background-color: var(--primary-color)"
                 onclick="toggleEditMenu()"
             >
                 <i class="fas fa-edit mr-2"></i>Editar Cardápio
             </button>
 
-            <div id="editMenuSection" class="hidden mt-4 bg-white p-5 rounded-lg shadow-md">
-                <h2 class="text-xl font-semibold mb-4 section-title">Adicionar/Editar Cardápio</h2>
+            <div id="editMenuSection" class="hidden mt-4 bg-white p-4 sm:p-5 rounded-lg shadow-md">
+                <h2 class="text-lg sm:text-xl font-semibold mb-4 section-title">Adicionar/Editar Cardápio</h2>
                 <form method="POST" class="space-y-4">
-                    <div class="grid md:grid-cols-2 gap-4">
+                    <div class="form-grid">
                         <div>
-                            <label class="block mb-2">Dia</label>
-                            <input type="text" name="day" required class="w-full p-2 border rounded">
+                            <label class="block mb-2 text-sm font-medium">Dia</label>
+                            <input type="text" name="day" required class="w-full p-2 sm:p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
                         </div>
                         <div>
-                            <label class="block mb-2">Almoço</label>
-                            <input type="text" name="lunch" required class="w-full p-2 border rounded">
+                            <label class="block mb-2 text-sm font-medium">Almoço</label>
+                            <input type="text" name="lunch" required class="w-full p-2 sm:p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
                         </div>
                         <div>
-                            <label class="block mb-2">Café</label>
-                            <input type="text" name="coffee" required class="w-full p-2 border rounded">
+                            <label class="block mb-2 text-sm font-medium">Café</label>
+                            <input type="text" name="coffee" required class="w-full p-2 sm:p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
                         </div>
                         <div>
-                            <label class="block mb-2">Horário 1º Ano</label>
-                            <input type="text" name="first_year_time" required class="w-full p-2 border rounded">
+                            <label class="block mb-2 text-sm font-medium">Horário 1º Ano</label>
+                            <input type="text" name="first_year_time" required class="w-full p-2 sm:p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
                         </div>
                         <div>
-                            <label class="block mb-2">Horário 2º Ano</label>
-                            <input type="text" name="second_year_time" required class="w-full p-2 border rounded">
+                            <label class="block mb-2 text-sm font-medium">Horário 2º Ano</label>
+                            <input type="text" name="second_year_time" required class="w-full p-2 sm:p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
                         </div>
                         <div>
-                            <label class="block mb-2">Horário 3º Ano</label>
-                            <input type="text" name="third_year_time" required class="w-full p-2 border rounded">
+                            <label class="block mb-2 text-sm font-medium">Horário 3º Ano</label>
+                            <input type="text" name="third_year_time" required class="w-full p-2 sm:p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
                         </div>
                     </div>
                     <button 
                         type="submit" 
-                        class="px-4 py-2 rounded text-white transition hover:opacity-80 mt-4" 
+                        class="w-full sm:w-auto px-6 py-3 rounded text-white transition hover:opacity-80 mt-4 flex items-center justify-center" 
                         style="background-color: var(--primary-color)"
                     >
-                        Salvar
+                        <i class="fas fa-save mr-2"></i>Salvar
                     </button>
                 </form>
             </div>
@@ -159,29 +250,83 @@
     </main>
 
     <script>
-        document.getElementById('sidebarToggle').addEventListener('click', function() {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('-translate-x-full');
-        });
+        // Toggle sidebar
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const closeSidebar = document.getElementById('closeSidebar');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
 
-        // Adicionar overlay para fechar sidebar ao clicar fora
+        function openSidebar() {
+            sidebar.classList.remove('-translate-x-full');
+            sidebarOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Prevent background scroll
+        }
+
+        function closeSidebarMenu() {
+            sidebar.classList.add('-translate-x-full');
+            sidebarOverlay.classList.remove('active');
+            document.body.style.overflow = 'auto'; // Re-enable background scroll
+        }
+
+        sidebarToggle.addEventListener('click', openSidebar);
+        closeSidebar.addEventListener('click', closeSidebarMenu);
+        sidebarOverlay.addEventListener('click', closeSidebarMenu);
+
+        // Close sidebar when clicking outside (only on mobile)
         document.addEventListener('click', function(event) {
-            const sidebar = document.getElementById('sidebar');
-            const sidebarToggle = document.getElementById('sidebarToggle');
+            if (window.innerWidth >= 768) return; // Only on mobile
+            
             const isClickInsideSidebar = sidebar.contains(event.target);
             const isClickOnToggle = sidebarToggle.contains(event.target);
 
             if (!isClickInsideSidebar && !isClickOnToggle && !sidebar.classList.contains('-translate-x-full')) {
-                sidebar.classList.add('-translate-x-full');
+                closeSidebarMenu();
             }
         });
 
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            if (window.innerWidth >= 768) {
+                // Desktop - ensure sidebar is visible and body scroll is enabled
+                sidebar.classList.remove('-translate-x-full');
+                sidebarOverlay.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            } else {
+                // Mobile - ensure sidebar is hidden on resize
+                if (!sidebar.classList.contains('-translate-x-full')) {
+                    closeSidebarMenu();
+                }
+            }
+        });
+
+        // Toggle edit menu
         function toggleEditMenu() {
             const editMenuSection = document.getElementById('editMenuSection');
             const toggleEditButton = document.getElementById('toggleEditButton');
             
             editMenuSection.classList.toggle('hidden');
+            
+            // Update button text
+            const icon = toggleEditButton.querySelector('i');
+            const text = toggleEditButton.querySelector('i').nextSibling;
+            
+            if (editMenuSection.classList.contains('hidden')) {
+                icon.className = 'fas fa-edit mr-2';
+                toggleEditButton.innerHTML = '<i class="fas fa-edit mr-2"></i>Editar Cardápio';
+            } else {
+                icon.className = 'fas fa-times mr-2';
+                toggleEditButton.innerHTML = '<i class="fas fa-times mr-2"></i>Fechar Edição';
+            }
         }
+
+        // Smooth scroll for form inputs on mobile
+        document.addEventListener('focusin', function(e) {
+            if (window.innerWidth <= 768 && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) {
+                setTimeout(() => {
+                    e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 300);
+            }
+        });
     </script>
 </body>
 </html>

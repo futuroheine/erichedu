@@ -35,36 +35,119 @@
             background-color: var(--primary-color);
             z-index: 60;
         }
+
+        /* Mobile table improvements */
+        @media (max-width: 768px) {
+            .table-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .mobile-card {
+                display: none;
+            }
+            
+            .desktop-table {
+                min-width: 600px;
+            }
+            
+            /* Show cards on very small screens */
+            @media (max-width: 640px) {
+                .desktop-table {
+                    display: none;
+                }
+                
+                .mobile-card {
+                    display: block;
+                }
+            }
+        }
+
+        /* Overlay for sidebar */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 40;
+        }
+        
+        .sidebar-overlay.active {
+            display: block;
+        }
+
+        /* Improved form layout */
+        .form-grid {
+            display: grid;
+            gap: 1rem;
+        }
+        
+        @media (min-width: 640px) {
+            .form-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        .admin-button {
+            background-color: var(--primary-color);
+            transition: all 0.3s ease;
+        }
+        
+        .admin-button:hover {
+            background-color: var(--primary-color-hover);
+        }
+
+        /* Custom scrollbar for tables */
+        .table-container::-webkit-scrollbar {
+            height: 8px;
+        }
+        
+        .table-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        
+        .table-container::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
     <div class="flex min-h-screen relative">
-        <!-- Sidebar Mobile-Friendly -->
-<div id="sidebar" class="fixed top-0 bottom-0 left-0 z-50 w-64 text-white transform -translate-x-full transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:block overflow-y-auto">
-            <div class="p-5">
-                <h2 class="text-2xl font-bold mb-6">ErichEdu</h2>
-                <nav>
-                    <ul class="space-y-3">
-                        <li><a href="{{ url_for('home') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
-                            <i class="fas fa-home mr-3"></i>Início</a></li>
-                        <li><a href="{{ url_for('profile') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
-                            <i class="fas fa-user mr-3"></i>Perfil</a></li>
-                        <li><a href="{{ url_for('materias') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
-                            <i class="fas fa-book mr-3"></i>Matérias</a></li>
+        <!-- Overlay para fechar sidebar -->
+        <div id="sidebarOverlay" class="sidebar-overlay"></div>
 
-                        <li><a href="{{ url_for('cardapio') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+        <!-- Sidebar Mobile-Friendly -->
+        <div id="sidebar" class="fixed top-0 bottom-0 left-0 z-50 w-64 text-white transform -translate-x-full transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:block overflow-y-auto">
+            <div class="p-4 sm:p-5">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl sm:text-2xl font-bold">ErichEdu</h2>
+                    <button id="closeSidebar" class="md:hidden text-white hover:text-gray-300">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                <nav>
+                    <ul class="space-y-2 sm:space-y-3">
+                        <li><a href="{{ url_for('home') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition text-sm sm:text-base">
+                            <i class="fas fa-home mr-3"></i>Início</a></li>
+                        <li><a href="{{ url_for('profile') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition text-sm sm:text-base">
+                            <i class="fas fa-user mr-3"></i>Perfil</a></li>
+                        <li><a href="{{ url_for('materias') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition text-sm sm:text-base">
+                            <i class="fas fa-book mr-3"></i>Matérias</a></li>
+                        <li><a href="{{ url_for('cardapio') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition text-sm sm:text-base">
                             <i class="fas fa-utensils mr-3"></i>Cardápio</a></li>
-                        <li><a href="{{ url_for('suporte') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                        <li><a href="{{ url_for('suporte') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition text-sm sm:text-base">
                             <i class="fas fa-headset mr-3"></i>Suporte</a></li>
-                        <li><a href="{{ url_for('criadores') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                        <li><a href="{{ url_for('criadores') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition text-sm sm:text-base">
                             <i class="fas fa-users mr-3"></i>Criadores</a></li>
-                        <li><a href="{{ url_for('projetos') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                        <li><a href="{{ url_for('projetos') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition text-sm sm:text-base">
                             <i class="fas fa-project-diagram mr-3"></i>Projetos</a></li>
                         {% if current_user.is_admin %}
-                        <li><a href="{{ url_for('admin') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                        <li><a href="{{ url_for('admin') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition text-sm sm:text-base bg-blue-700">
                             <i class="fas fa-cogs mr-3"></i>Admin</a></li>
                         {% endif %}
-                        <li><a href="{{ url_for('logout') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition">
+                        <li><a href="{{ url_for('logout') }}" class="sidebar-link flex items-center p-2 hover:bg-opacity-80 rounded transition text-sm sm:text-base">
                             <i class="fas fa-sign-out-alt mr-3"></i>Logout</a></li>
                     </ul>
                 </nav>
@@ -72,80 +155,103 @@
         </div>
 
         <!-- Conteúdo Principal -->
-        <main class="flex-1 pt-16 p-4 md:p-8 transition-all duration-300 ease-in-out">
+        <main class="flex-1 pt-14 sm:pt-16 p-3 sm:p-4 md:p-8 transition-all duration-300 ease-in-out">
             <!-- Botão Mobile Toggle Sidebar -->
-            <button id="sidebarToggle" class="md:hidden fixed top-4 left-4 z-60 text-white p-2 rounded-full shadow-lg">
-                <i class="fas fa-bars"></i>
+            <button id="sidebarToggle" class="md:hidden fixed top-3 left-3 z-60 text-white p-2 rounded-full shadow-lg">
+                <i class="fas fa-bars text-lg"></i>
             </button>
 
             <!-- Cabeçalho -->
-            <header class="mb-6">
-                <h1 class="text-3xl font-bold text-gray-800">Painel do Administrador</h1>
+            <header class="mb-4 sm:mb-6">
+                <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">Painel do Administrador</h1>
+                <p class="text-gray-600 mt-1 text-sm sm:text-base">Gerencie todo o sistema ErichEdu</p>
             </header>
 
             <!-- Seções do Painel -->
-            <div class="space-y-6">
-                <!-- Gerenciamento de QHs -->
-                <div class="bg-white p-5 rounded-lg shadow-md">
-                    <h2 class="text-xl font-semibold mb-3 section-title">
-                        <i class="fas fa-calendar-plus mr-2"></i>Gerenciamento de QHs
-                    </h2>
-                    <div class="flex justify-start">
-                        <a href="{{ url_for('add_qh') }}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+            <div class="space-y-4 sm:space-y-6">
+                <!-- Quick Actions Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Gerenciamento de QHs -->
+                    <div class="bg-white p-4 sm:p-5 rounded-lg shadow-md">
+                        <h2 class="text-lg sm:text-xl font-semibold mb-3 section-title flex items-center">
+                            <i class="fas fa-calendar-plus mr-2"></i>
+                            <span class="hidden sm:inline">Gerenciamento de QHs</span>
+                            <span class="sm:hidden">QHs</span>
+                        </h2>
+                        <a href="{{ url_for('add_qh') }}" class="admin-button text-white px-3 sm:px-4 py-2 rounded hover:opacity-90 transition flex items-center justify-center w-full text-sm sm:text-base">
                             <i class="fas fa-plus mr-2"></i>Adicionar QH
                         </a>
                     </div>
-                </div>
-                <div class="bg-white p-5 rounded-lg shadow-md">
-                    <h2 class="text-xl font-semibold mb-3 section-title">
-                        <i class="fas fa-headset mr-2"></i>Gerenciamento de Suporte
-                    </h2>
-                    <div class="flex justify-start">
-                        <a href="{{ url_for('admin_suporte') }}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
-                            <i class="fas fa-plus mr-2"></i>Suporte
+
+                    <!-- Gerenciamento de Suporte -->
+                    <div class="bg-white p-4 sm:p-5 rounded-lg shadow-md">
+                        <h2 class="text-lg sm:text-xl font-semibold mb-3 section-title flex items-center">
+                            <i class="fas fa-headset mr-2"></i>
+                            <span class="hidden sm:inline">Gerenciamento de Suporte</span>
+                            <span class="sm:hidden">Suporte</span>
+                        </h2>
+                        <a href="{{ url_for('admin_suporte') }}" class="admin-button text-white px-3 sm:px-4 py-2 rounded hover:opacity-90 transition flex items-center justify-center w-full text-sm sm:text-base">
+                            <i class="fas fa-tools mr-2"></i>Gerenciar
+                        </a>
+                    </div>
+
+                    <!-- Ver Avisos -->
+                    <div class="bg-white p-4 sm:p-5 rounded-lg shadow-md sm:col-span-2 lg:col-span-1">
+                        <h2 class="text-lg sm:text-xl font-semibold mb-3 section-title flex items-center">
+                            <i class="fas fa-bell mr-2"></i>
+                            <span class="hidden sm:inline">Gerenciar Avisos</span>
+                            <span class="sm:hidden">Avisos</span>
+                        </h2>
+                        <a href="{{ url_for('admin_avisos') }}" class="admin-button text-white px-3 sm:px-4 py-2 rounded hover:opacity-90 transition flex items-center justify-center w-full text-sm sm:text-base">
+                            <i class="fas fa-bell mr-2"></i>Ver Todos
                         </a>
                     </div>
                 </div>
-                <div class="bg-white p-5 rounded-lg shadow-md">
-                    <h2 class="text-xl font-semibold mb-3 section-title">
+
+                <!-- Adicionar Aviso -->
+                <div class="bg-white p-4 sm:p-5 rounded-lg shadow-md">
+                    <h2 class="text-lg sm:text-xl font-semibold mb-4 section-title flex items-center">
                         <i class="fas fa-bell mr-2"></i>Adicionar Aviso
                     </h2>
-                    <form action="{{ url_for('add_aviso') }}" method="POST">
-                        <!-- Título -->
-                        <div class="mb-4">
-                            <label for="titulo" class="block text-gray-700">Título</label>
-                            <input type="text" id="titulo" name="titulo" class="w-full p-2 border border-gray-300 rounded" required>
+                    <form action="{{ url_for('add_aviso') }}" method="POST" class="space-y-4">
+                        <div class="form-grid">
+                            <!-- Título -->
+                            <div>
+                                <label for="titulo" class="block text-gray-700 text-sm font-medium mb-2">Título</label>
+                                <input type="text" id="titulo" name="titulo" class="w-full p-2 sm:p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" required>
+                            </div>
+
+                            <!-- Tipo de Aviso -->
+                            <div>
+                                <label for="tipo_aviso" class="block text-gray-700 text-sm font-medium mb-2">Tipo de Aviso</label>
+                                <select id="tipo_aviso" name="tipo_aviso" class="w-full p-2 sm:p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" onchange="toggleTipoAviso()">
+                                    <option value="geral">Geral</option>
+                                    <option value="serie">Por Série</option>
+                                    <option value="turma">Por Turma</option>
+                                </select>
+                            </div>
                         </div>
-                
+
                         <!-- Mensagem -->
-                        <div class="mb-4">
-                            <label for="mensagem" class="block text-gray-700">Mensagem</label>
-                            <textarea id="mensagem" name="mensagem" class="w-full p-2 border border-gray-300 rounded" required></textarea>
+                        <div>
+                            <label for="mensagem" class="block text-gray-700 text-sm font-medium mb-2">Mensagem</label>
+                            <textarea id="mensagem" name="mensagem" rows="3" class="w-full p-2 sm:p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" required></textarea>
                         </div>
-                
-                        <!-- Tipo de Aviso -->
-                        <div class="mb-4">
-                            <label for="tipo_aviso" class="block text-gray-700">Tipo de Aviso</label>
-                            <select id="tipo_aviso" name="tipo_aviso" class="w-full p-2 border border-gray-300 rounded" onchange="toggleTipoAviso()">
-                                <option value="geral">Geral</option>
-                                <option value="serie">Por Série</option>
-                                <option value="turma">Por Turma</option>
-                            </select>
-                        </div>
-                
-                        <!-- Seleção de Série ou Turma -->
-                        <div id="serie" class="mb-4 hidden">
-                            <label for="serie_select" class="block text-gray-700">Selecione a Série</label>
-                            <select id="serie_select" name="serie" class="w-full p-2 border border-gray-300 rounded">
+
+                        <!-- Seleção de Série -->
+                        <div id="serie" class="hidden">
+                            <label for="serie_select" class="block text-gray-700 text-sm font-medium mb-2">Selecione a Série</label>
+                            <select id="serie_select" name="serie" class="w-full p-2 sm:p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
                                 <option value="1">1º Ano</option>
                                 <option value="2">2º Ano</option>
                                 <option value="3">3º Ano</option>
                             </select>
                         </div>
-                
-                        <div id="turma" class="mb-4 hidden">
-                            <label for="turma_select" class="block text-gray-700">Selecione a Turma</label>
-                            <select id="turma_select" name="turma_id" class="w-full p-2 border border-gray-300 rounded">
+
+                        <!-- Seleção de Turma -->
+                        <div id="turma" class="hidden">
+                            <label for="turma_select" class="block text-gray-700 text-sm font-medium mb-2">Selecione a Turma</label>
+                            <select id="turma_select" name="turma_id" class="w-full p-2 sm:p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
                                 <!-- Turmas de 1001 a 1005 -->
                                 <option value="1">1001</option>
                                 <option value="2">1002</option>
@@ -159,7 +265,7 @@
                                 <option value="8">2003</option>
                                 <option value="9">2004</option>
                                 <option value="10">2005</option>
-                
+
                                 <!-- Turmas de 3001 a 3005 -->
                                 <option value="11">3001</option>
                                 <option value="12">3002</option>
@@ -168,90 +274,225 @@
                                 <option value="15">3005</option>
                             </select>
                         </div>
-                
+
                         <!-- Aviso Geral -->
-                        <div class="mb-4">
-                            <label for="geral" class="flex items-center">
-                                <input type="checkbox" id="geral" name="geral" class="mr-2"> Aviso Geral
-                            </label>
+                        <div class="flex items-center">
+                            <input type="checkbox" id="geral" name="geral" class="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                            <label for="geral" class="text-gray-700 text-sm">Aviso Geral</label>
                         </div>
-                
-                        <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition">
+
+                        <button type="submit" class="admin-button text-white px-4 sm:px-6 py-2 sm:py-3 rounded hover:opacity-90 transition flex items-center justify-center w-full sm:w-auto">
                             <i class="fas fa-plus mr-2"></i>Adicionar Aviso
                         </button>
                     </form>
                 </div>
-                
-<!-- Faltas por Turma -->
-<div class="bg-white p-5 rounded-lg shadow-md">
-    <h2 class="text-xl font-semibold mb-3 section-title">
-        <i class="fas fa-users-slash mr-2"></i>Faltas por Turma
-    </h2>
-    <div class="overflow-x-auto">
-        <table class="w-full">
-            <thead>
-                <tr class="bg-blue-600 text-white">
-                    <th class="p-3 text-left">Turma</th>
-                    <th class="p-3 text-left">Alunos</th>
-                    <th class="p-3 text-left">Total de Faltas</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for turma in turmas %}
-                    <tr class="border-b hover:bg-gray-100 transition">
-                        <td class="p-3">{{ turma.nome }}</td>
-                        <td class="p-3">
-                            <ul class="space-y-1">
-                                {% for aluno in turma.alunos|sort(attribute='nome_completo') %}
-                                    <li>{{ aluno.nome_completo }} - Faltas: {{ aluno.faltas|length }}</li>
-                                {% endfor %}
-                            </ul>
-                        </td>
-                        <td class="p-3">{{ turma.faltas|length }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</div>
-                <!-- Cardápio Atual -->
-                <div class="bg-white p-5 rounded-lg shadow-md">
-                    <h2 class="text-xl font-semibold mb-3 section-title">
-                        <i class="fas fa-utensils mr-2"></i>Cardápio Atual
+
+                <!-- Faltas por Turma -->
+                <div class="bg-white p-4 sm:p-5 rounded-lg shadow-md">
+                    <h2 class="text-lg sm:text-xl font-semibold mb-4 section-title flex items-center">
+                        <i class="fas fa-users-slash mr-2"></i>Faltas por Turma
                     </h2>
-                    <div class="overflow-x-auto">
+                    
+                    <!-- Desktop Table -->
+                    <div class="table-container desktop-table">
                         <table class="w-full">
                             <thead>
-                                <tr class="bg-blue-600 text-white">
-                                    <th class="p-3 text-left">Dia</th>
-                                    <th class="p-3 text-left">Almoço</th>
-                                    <th class="p-3 text-left">Café</th>
-                                    <th class="p-3 text-left">Ação</th>
+                                <tr class="admin-button text-white">
+                                    <th class="p-2 sm:p-3 text-left text-sm sm:text-base">Turma</th>
+                                    <th class="p-2 sm:p-3 text-left text-sm sm:text-base">Alunos</th>
+                                    <th class="p-2 sm:p-3 text-left text-sm sm:text-base">Total de Faltas</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for turma in turmas %}
+                                <tr class="border-b hover:bg-gray-50 transition">
+                                    <td class="p-2 sm:p-3 font-medium text-sm sm:text-base">{{ turma.nome }}</td>
+                                    <td class="p-2 sm:p-3 text-sm">
+                                        <ul class="space-y-1">
+                                            {% for aluno in turma.alunos|sort(attribute='nome_completo') %}
+                                            <li>{{ aluno.nome_completo }} - Faltas: {{ aluno.faltas|length }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </td>
+                                    <td class="p-2 sm:p-3 text-sm sm:text-base">{{ turma.faltas|length }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Mobile Cards -->
+                    <div class="mobile-card space-y-4">
+                        {% for turma in turmas %}
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-3">
+                                <h3 class="font-semibold text-lg text-blue-600">{{ turma.nome }}</h3>
+                                <span class="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs">
+                                    {{ turma.faltas|length }} faltas
+                                </span>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-sm mb-2">Alunos:</h4>
+                                <div class="space-y-1">
+                                    {% for aluno in turma.alunos|sort(attribute='nome_completo') %}
+                                    <div class="flex justify-between items-center text-sm">
+                                        <span>{{ aluno.nome_completo }}</span>
+                                        <span class="text-gray-600">{{ aluno.faltas|length }} faltas</span>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Cardápio Atual -->
+                <div class="bg-white p-4 sm:p-5 rounded-lg shadow-md">
+                    <h2 class="text-lg sm:text-xl font-semibold mb-4 section-title flex items-center">
+                        <i class="fas fa-utensils mr-2"></i>Cardápio Atual
+                    </h2>
+                    
+                    <!-- Desktop Table -->
+                    <div class="table-container desktop-table">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="admin-button text-white">
+                                    <th class="p-2 sm:p-3 text-left text-sm sm:text-base">Dia</th>
+                                    <th class="p-2 sm:p-3 text-left text-sm sm:text-base">Almoço</th>
+                                    <th class="p-2 sm:p-3 text-left text-sm sm:text-base">Café</th>
+                                    <th class="p-2 sm:p-3 text-left text-sm sm:text-base">Ação</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for menu in menus %}
-                                    <tr class="border-b hover:bg-gray-100 transition">
-                                        <td class="p-3">{{ menu.day }}</td>
-                                        <td class="p-3">{{ menu.lunch }}</td>
-                                        <td class="p-3">{{ menu.coffee }}</td>
-                                        <td class="p-3">
-                                            <form action="{{ url_for('delete_menu', menu_id=menu.id) }}" method="POST">
-                                                <button type="submit" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition">
-                                                    <i class="fas fa-trash mr-2"></i>Excluir
-                                                </button>
-                                            </form>
-                                        </td>
-                                    </tr>
+                                <tr class="border-b hover:bg-gray-50 transition">
+                                    <td class="p-2 sm:p-3 font-medium text-sm sm:text-base">{{ menu.day }}</td>
+                                    <td class="p-2 sm:p-3 text-sm sm:text-base">{{ menu.lunch }}</td>
+                                    <td class="p-2 sm:p-3 text-sm sm:text-base">{{ menu.coffee }}</td>
+                                    <td class="p-2 sm:p-3">
+                                        <form action="{{ url_for('delete_menu', menu_id=menu.id) }}" method="POST">
+                                            <button type="submit" class="bg-red-500 text-white px-2 sm:px-3 py-1 rounded hover:bg-red-600 transition text-xs sm:text-sm">
+                                                <i class="fas fa-trash mr-1"></i>Excluir
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
+                    </div>
+
+                    <!-- Mobile Cards -->
+                    <div class="mobile-card space-y-4">
+                        {% for menu in menus %}
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-3">
+                                <h3 class="font-semibold text-lg text-green-600">{{ menu.day }}</h3>
+                                <form action="{{ url_for('delete_menu', menu_id=menu.id) }}" method="POST">
+                                    <button type="submit" class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 transition text-xs">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="flex items-start">
+                                    <i class="fas fa-utensils text-gray-500 mt-1 mr-2 w-4"></i>
+                                    <div>
+                                        <span class="font-medium text-sm">Almoço:</span>
+                                        <p class="text-sm text-gray-600">{{ menu.lunch }}</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start">
+                                    <i class="fas fa-coffee text-gray-500 mt-1 mr-2 w-4"></i>
+                                    <div>
+                                        <span class="font-medium text-sm">Café:</span>
+                                        <p class="text-sm text-gray-600">{{ menu.coffee }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Gerenciamento de Avisos -->
+                <div class="bg-white p-4 sm:p-5 rounded-lg shadow-md">
+                    <h2 class="text-lg sm:text-xl font-semibold mb-4 section-title flex items-center">
+                        <i class="fas fa-bell mr-2"></i>Avisos Recentes
+                    </h2>
+                    
+                    <!-- Desktop Table -->
+                    <div class="table-container desktop-table">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="admin-button text-white">
+                                    <th class="p-2 sm:p-3 text-left text-sm sm:text-base">Título</th>
+                                    <th class="p-2 sm:p-3 text-left text-sm sm:text-base">Mensagem</th>
+                                    <th class="p-2 sm:p-3 text-left text-sm sm:text-base">Data</th>
+                                    <th class="p-2 sm:p-3 text-left text-sm sm:text-base">Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for aviso in avisos %}
+                                <tr class="border-b hover:bg-gray-50 transition">
+                                    <td class="p-2 sm:p-3 font-medium text-sm sm:text-base">{{ aviso.titulo }}</td>
+                                    <td class="p-2 sm:p-3 text-sm">{{ aviso.mensagem[:50] }}{% if aviso.mensagem|length > 50 %}...{% endif %}</td>
+                                    <td class="p-2 sm:p-3 text-xs sm:text-sm">{{ aviso.timestamp.strftime('%d/%m/%Y %H:%M') }}</td>
+                                    <td class="p-2 sm:p-3">
+                                        <form method="POST" action="{{ url_for('admin_avisos') }}">
+                                            <input type="hidden" name="aviso_id" value="{{ aviso.id }}">
+                                            <button type="submit" class="bg-red-500 text-white px-2 sm:px-3 py-1 rounded hover:bg-red-600 transition text-xs sm:text-sm">
+                                                <i class="fas fa-trash mr-1"></i>Excluir
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="4" class="p-4 text-center text-gray-500">Nenhum aviso cadastrado.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Mobile Cards -->
+                    <div class="mobile-card space-y-4">
+                        {% for aviso in avisos %}
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <div class="flex items-start justify-between mb-3">
+                                <div class="flex-1">
+                                    <h3 class="font-semibold text-lg text-blue-600">{{ aviso.titulo }}</h3>
+                                    <p class="text-xs text-gray-500 mt-1">{{ aviso.timestamp.strftime('%d/%m/%Y %H:%M') }}</p>
+                                </div>
+                                <form method="POST" action="{{ url_for('admin_avisos') }}">
+                                    <input type="hidden" name="aviso_id" value="{{ aviso.id }}">
+                                    <button type="submit" class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 transition text-xs">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                            <p class="text-sm text-gray-600">{{ aviso.mensagem }}</p>
+                        </div>
+                        {% else %}
+                        <div class="text-center text-gray-500 py-8">
+                            <i class="fas fa-bell-slash text-4xl mb-2"></i>
+                            <p>Nenhum aviso cadastrado.</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="flex justify-end mt-4">
+                        <a href="{{ url_for('admin_avisos') }}" class="admin-button text-white px-3 sm:px-4 py-2 rounded hover:opacity-90 transition text-sm sm:text-base">
+                            <i class="fas fa-bell mr-2"></i>Ver todos avisos
+                        </a>
                     </div>
                 </div>
 
                 <!-- Botão de Volta -->
                 <div class="flex justify-center mt-6">
-                    <a href="{{ url_for('home') }}" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition">
+                    <a href="{{ url_for('home') }}" class="admin-button text-white px-4 sm:px-6 py-2 sm:py-3 rounded hover:opacity-90 transition text-sm sm:text-base">
                         <i class="fas fa-arrow-left mr-2"></i>Voltar ao Início
                     </a>
                 </div>
@@ -260,7 +501,7 @@
     </div>
 
     <script>
-                function toggleTipoAviso() {
+        function toggleTipoAviso() {
             const tipoAviso = document.getElementById('tipo_aviso').value;
             const serieDiv = document.getElementById('serie');
             const turmaDiv = document.getElementById('turma');
@@ -278,22 +519,69 @@
         
         toggleTipoAviso();
 
-        document.getElementById('sidebarToggle').addEventListener('click', function() {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('-translate-x-full');
-        });
+        // Toggle sidebar
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const closeSidebar = document.getElementById('closeSidebar');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
 
-        // Adicionar overlay para fechar sidebar ao clicar fora
+        function openSidebar() {
+            sidebar.classList.remove('-translate-x-full');
+            sidebarOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeSidebarMenu() {
+            sidebar.classList.add('-translate-x-full');
+            sidebarOverlay.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        sidebarToggle.addEventListener('click', openSidebar);
+        closeSidebar.addEventListener('click', closeSidebarMenu);
+        sidebarOverlay.addEventListener('click', closeSidebarMenu);
+
+        // Close sidebar when clicking outside (only on mobile)
         document.addEventListener('click', function(event) {
-            const sidebar = document.getElementById('sidebar');
-            const sidebarToggle = document.getElementById('sidebarToggle');
+            if (window.innerWidth >= 768) return; // Only on mobile
+            
             const isClickInsideSidebar = sidebar.contains(event.target);
             const isClickOnToggle = sidebarToggle.contains(event.target);
 
             if (!isClickInsideSidebar && !isClickOnToggle && !sidebar.classList.contains('-translate-x-full')) {
-                sidebar.classList.add('-translate-x-full');
+                closeSidebarMenu();
             }
         });
-    </script>
-</body>
-</html>
+
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            if (window.innerWidth >= 768) {
+                // Desktop - ensure sidebar is visible and body scroll is enabled
+                sidebar.classList.remove('-translate-x-full');
+                sidebarOverlay.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            } else {
+                // Mobile - ensure sidebar is hidden on resize
+                if (!sidebar.classList.contains('-translate-x-full')) {
+                    closeSidebarMenu();
+                }
+            }
+        });
+
+        // Smooth scroll for form inputs on mobile
+        document.addEventListener('focusin', function(e) {
+            if (window.innerWidth <= 768 && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT')) {
+                setTimeout(() => {
+                    e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 300);
+            }
+        });
+
+        // Confirm delete actions
+        document.querySelectorAll('form[action*="delete"]').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                if (!confirm('Tem certeza que deseja excluir este item?')) {
+                    e.preventDefault();
+                }
+            });
+        });

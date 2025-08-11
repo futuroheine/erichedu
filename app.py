@@ -7,9 +7,9 @@ from google.cloud import storage
 import hashlib
 import uuid
 import logging
-import svglib
+# import svglib
 import firebase_admin
-from reportlab.graphics import renderPM
+# from reportlab.graphics import renderPM
 from firebase_admin import credentials
 from cryptography.fernet import Fernet, InvalidToken
 import random
@@ -1284,6 +1284,31 @@ def admin_suporte():
     mensagens = Suporte.query.all()  # Pega todas as mensagens de suporte
     return render_template('admin_suporte.html', mensagens=mensagens, primary_collor=cor_primaria)
 
+
+@app.route('/admin/avisos', methods=['GET', 'POST'])
+@login_required
+def admin_avisos():
+    if not current_user.is_admin:
+        flash('Acesso restrito a administradores.', 'danger')
+        return redirect(url_for('home'))
+
+    # Excluir aviso se solicitado via POST
+    if request.method == 'POST':
+        aviso_id = request.form.get('aviso_id')
+        aviso = Aviso.query.get(aviso_id)
+        if aviso:
+            db.session.delete(aviso)
+            db.session.commit()
+            flash('Aviso excluído com sucesso!', 'success')
+        else:
+            flash('Aviso não encontrado.', 'error')
+        return redirect(url_for('admin_avisos'))
+
+    # Buscar todos os avisos
+    avisos = Aviso.query.order_by(Aviso.timestamp.desc()).all()
+    return render_template('admin_avisos.html', avisos=avisos)
+
+
 from flask import Flask, send_file
 import csv
 
@@ -1646,17 +1671,12 @@ def cardapio():
 @app.route('/admin', methods=['GET', 'POST'])
 @login_required
 def admin():
-    # Verifica se o usuário é administrador
     if not current_user.is_admin:
         flash('Acesso negado. Apenas administradores podem acessar esta página.', 'danger')
         return redirect(url_for('index'))
 
-    # Instancia o formulário QHForm
     form = QHForm()
-
-    # Se o formulário for enviado e validado
     if form.validate_on_submit():
-        # Lógica para adicionar um novo QH baseado no formulário
         novo_qh = QH(
             materia=form.materia.data,
             professor=form.professor.data,
@@ -1669,13 +1689,12 @@ def admin():
         flash('QH adicionado com sucesso!', 'success')
         return redirect(url_for('admin'))
 
-    # Busca os dados necessários para exibir na página
     menus = Menu.query.all()
     turmas = Turma.query.all()
     faltas = Falta.query.all()
+    avisos = Aviso.query.order_by(Aviso.timestamp.desc()).all()  # Adicione esta linha
 
-    # Renderiza o template e passa o formulário
-    return render_template('admin.html', form=form, menus=menus, turmas=turmas, faltas=faltas)
+    return render_template('admin.html', form=form, menus=menus, turmas=turmas, faltas=faltas, avisos=avisos)
 
 @app.route('/delete_menu/<int:menu_id>', methods=['POST'])
 @login_required
