@@ -32,7 +32,7 @@ db = SQLAlchemy()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'futuroheine2024'
 app.config['SQLALCHEMY_DATABASE_URI'] = (
-    'postgresql+psycopg2://postgres:futuroheine2024@db.siihlnhoryxbdhrkkmie.supabase.co:5432/postgres'
+    'postgresql+psycopg2://postgres.siihlnhoryxbdhrkkmie:futuroheine2024@aws-0-sa-east-1.pooler.supabase.com:5432/postgres'
 )
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -248,14 +248,16 @@ Turma.materias = db.relationship('Materia', back_populates='turma')
 class QH(db.Model):
     __tablename__ = 'qh'
     id = db.Column(db.Integer, primary_key=True)
-    materia = db.Column(db.String(100), nullable=False)  # Nome da matéria
-    professor = db.Column(db.String(100), nullable=False)  # Nome do professor
-    horario = db.Column(db.Time, nullable=False)  # Campo de horário
+    materia = db.Column(db.String(100), nullable=False)
+    professor_id = db.Column(db.Integer, db.ForeignKey('teacher.id'), nullable=False)  # Alterado
+    horario = db.Column(db.Time, nullable=False)
     turma_id = db.Column(db.Integer, db.ForeignKey('turma.id'), nullable=False)
     dia_da_semana = db.Column(db.String(10), nullable=False)
 
+    professor = db.relationship('Teacher', backref='aulas')  # Relacionamento
+
     def __repr__(self):
-        return f'<QH {self.id}: {self.materia} - {self.professor} - {self.horario} - {self.dia_da_semana} - Turma ID {self.turma_id}>'
+        return f'<QH {self.id}: {self.materia} - {self.professor.nome_completo} - {self.horario} - {self.dia_da_semana} - Turma ID {self.turma_id}>'
     
 from flask_wtf import FlaskForm
 from wtforms import StringField, TimeField, SelectField, SubmitField
@@ -263,7 +265,7 @@ from wtforms.validators import DataRequired
 
 class QHForm(FlaskForm):
     materia = StringField('Matéria', validators=[DataRequired()])
-    professor = StringField('Professor', validators=[DataRequired()])
+    professor_id = SelectField('Professor', coerce=int, validators=[DataRequired()])  # Alterado
     horario = TimeField('Horário', format='%H:%M', validators=[DataRequired()])
     dia_da_semana = SelectField('Dia da Semana', choices=[
         ('segunda', 'Segunda-feira'),
@@ -883,6 +885,7 @@ def save_avatar():
 def add_qh():
     form = QHForm()
     form.turma_id.choices = [(turma.id, turma.nome) for turma in Turma.query.all()]
+    form.professor_id.choices = [(prof.id, prof.nome_completo) for prof in Teacher.query.all()]  # Novo
 
     # Obter a turma do usuári
     user = db.session.get(User, session.get('user_id'))
@@ -893,9 +896,9 @@ def add_qh():
     if form.validate_on_submit():
         nova_aula = QH(
             materia=form.materia.data,
-            professor=form.professor.data,
+            professor_id=form.professor_id.data,  # Alterado
             horario=form.horario.data,
-            dia_da_semana=form.dia_da_semana.data,  # Novo campo
+            dia_da_semana=form.dia_da_semana.data,
             turma_id=form.turma_id.data
         )
         db.session.add(nova_aula)
@@ -1211,8 +1214,6 @@ def profile():
         faltas_mensais=faltas_mensais,
         meses=meses
     )
-
-
 
 # Função de upload de imagem
 def allowed_file(filename):
@@ -1876,6 +1877,7 @@ def signup():
         confirmar_senha = request.form.get('confirmar_senha')
 
         if not all([nome_completo, turma_nome, data_nascimento, email, senha, confirmar_senha]):
+
             flash('Por favor, preencha todos os campos.', 'error')
             return redirect(url_for('signup'))
 
