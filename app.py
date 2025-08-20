@@ -31,7 +31,9 @@ db = SQLAlchemy()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'futuroheine2024'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://postgres.siihlnhoryxbdhrkkmie:futuroheine2024@aws-0-sa-east-1.pooler.supabase.com:6543/postgres'
+app.config['SQLALCHEMY_DATABASE_URI'] = (
+    'postgresql+psycopg2://postgres:futuroheine2024@db.siihlnhoryxbdhrkkmie.supabase.co:5432/postgres'
+)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Inicializar `db` APÓS configurar o app
